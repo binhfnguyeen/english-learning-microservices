@@ -1,23 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.heulwen.backendservice.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "vocabularies")
@@ -45,14 +41,17 @@ public class Vocabulary {
     @Column(name = "picture")
     String picture;
 
-    @ManyToMany(mappedBy = "vocabularies")
+    @ManyToMany(mappedBy = "vocabularies", fetch = FetchType.LAZY)
     List<Topic> topics;
 
-    @OneToMany(mappedBy = "vocabularyId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "vocabulary", cascade = CascadeType.ALL)
     List<LearnedWord> learnedWords;
 
-    @OneToMany(mappedBy = "vocabularyId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "vocabulary", cascade = CascadeType.ALL)
     List<QuestionChoice> questionChoices;
+
+    @OneToMany(mappedBy = "vocabulary", cascade = CascadeType.ALL)
+    List<Exercise> exercises;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

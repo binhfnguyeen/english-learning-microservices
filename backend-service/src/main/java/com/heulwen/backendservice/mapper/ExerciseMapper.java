@@ -1,31 +1,72 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package com.heulwen.backendservice.mapper;
 
-import com.heulwen.backendservice.dto.request.ExerciseRequest;
-import com.heulwen.backendservice.dto.response.ExerciseResponse;
+import com.heulwen.backendservice.dto.ExerciseChoiceDto;
+import com.heulwen.backendservice.dto.ExerciseDto;
+import com.heulwen.backendservice.form.ExerciseChoiceForm;
+import com.heulwen.backendservice.form.ExerciseCreateForm;
 import com.heulwen.backendservice.model.Exercise;
+import com.heulwen.backendservice.model.ExerciseChoice;
+
+import java.util.ArrayList;
 import java.util.List;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
-/**
- *
- * @author Dell
- */
-@Mapper(componentModel = "spring", uses = {ExerciseChoiceMapper.class})
-public interface ExerciseMapper {
+public class ExerciseMapper {
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "exerciseChoiceSet", source = "choices")
-   @Mapping(target = "vocabularyId", ignore = true)
-    Exercise toExercise(ExerciseRequest request);
+    // --- MAP EXERCISE: FORM -> ENTITY ---
+    public static Exercise map(ExerciseCreateForm form) {
+        if (form == null) return null;
 
-    @Mapping(target = "choices", source = "exerciseChoiceSet")
-    @Mapping(target = "vocabularyId", source = "vocabularyId.id")
-    ExerciseResponse toExerciseResponse(Exercise entity);
-    
-    List<ExerciseResponse> toExerciseResponses(List<Exercise> entities);
+        Exercise exercise = new Exercise();
+        exercise.setQuestion(form.getQuestion());
+        exercise.setExerciseType(form.getExerciseType());
+
+        if (form.getChoices() != null) {
+            List<ExerciseChoice> choices = new ArrayList<>();
+            for (ExerciseChoiceForm choiceForm : form.getChoices()) {
+                choices.add(map(choiceForm, exercise));
+            }
+            exercise.setChoices(choices);
+        }
+        return exercise;
+    }
+
+    // --- MAP EXERCISE: ENTITY -> DTO ---
+    public static ExerciseDto map(Exercise exercise) {
+        if (exercise == null) return null;
+
+        ExerciseDto dto = new ExerciseDto();
+        dto.setId(exercise.getId());
+        dto.setQuestion(exercise.getQuestion());
+        dto.setExerciseType(exercise.getExerciseType());
+
+        dto.setVocabulary(VocabularyMapper.map(exercise.getVocabulary()));
+
+        List<ExerciseChoiceDto> choiceDtos = new ArrayList<>();
+        if (exercise.getChoices() != null) {
+            for (ExerciseChoice choice : exercise.getChoices()) {
+                choiceDtos.add(map(choice));
+            }
+        }
+        dto.setChoices(choiceDtos);
+
+        return dto;
+    }
+
+    // --- MAP CHOICE: FORM -> ENTITY ---
+    public static ExerciseChoice map(ExerciseChoiceForm form, Exercise parent) {
+        ExerciseChoice choice = new ExerciseChoice();
+        choice.setContent(form.getContent());
+        choice.setIsCorrect(form.getIsCorrect());
+        choice.setExercise(parent);
+        return choice;
+    }
+
+    // --- MAP CHOICE: ENTITY -> DTO ---
+    public static ExerciseChoiceDto map(ExerciseChoice choice) {
+        ExerciseChoiceDto dto = new ExerciseChoiceDto();
+        dto.setId(choice.getId());
+        dto.setContent(choice.getContent());
+        dto.setIsCorrect(choice.getIsCorrect());
+        return dto;
+    }
 }

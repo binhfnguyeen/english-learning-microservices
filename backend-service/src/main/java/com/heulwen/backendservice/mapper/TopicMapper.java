@@ -1,22 +1,23 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package com.heulwen.backendservice.mapper;
 
-import com.heulwen.backendservice.dto.request.TopicRequest;
-import com.heulwen.backendservice.dto.response.TopicResponse;
+import com.heulwen.backendservice.dto.TopicDto;
+import com.heulwen.backendservice.form.TopicCreateForm;
 import com.heulwen.backendservice.model.Topic;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 
-/**
- *
- * @author Dell
- */
-@Mapper(componentModel = "spring")
-public interface TopicMapper {
-    Topic toTopic(TopicRequest request);
-    TopicResponse toTopicResponse(Topic topic);
-    void updateTopicFromRequest(TopicRequest request, @MappingTarget Topic topic);
+public class TopicMapper {
+
+    public static Topic map(TopicCreateForm form) {
+        var topic = new Topic();
+        topic.setName(form.getName());
+        topic.setDescription(form.getDescription());
+        return topic;
+    }
+
+    public static TopicDto map(Topic topic) {
+        var dto = new TopicDto();
+        dto.setId(topic.getId());
+        dto.setName(topic.getName());
+        dto.setDescription(topic.getDescription());
+        return dto;
+    }
 }

@@ -1,0 +1,13 @@
+package com.heulwen.backendservice.repository;
+
+import com.heulwen.backendservice.model.LearnedWord;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface LearnedWordRepository extends JpaRepository<LearnedWord, Long> {
+    List<LearnedWord> findByUserId(Long userId);
+    boolean existsByUserIdAndVocabularyId(Long userId, Long vocabularyId);
+}

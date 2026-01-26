@@ -1,47 +1,43 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.heulwen.backendservice.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-/**
- *
- * @author Dell
- */
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "answers")
+@EntityListeners(AuditingEntityListener.class)
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Answer {
+public class Answer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     Long id;
 
-    @JoinColumn(name = "test_results_id", referencedColumnName = "id")
-    @ManyToOne
-    @JsonBackReference
-    TestResult testResultId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "test_result_id")
+    TestResult testResult;
 
-    @JoinColumn(name = "question_choice_id", referencedColumnName = "id")
-    @ManyToOne
-    @JsonBackReference
-    QuestionChoice questionChoiceId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "question_choice_id")
+    QuestionChoice questionChoice;
 
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    LocalDateTime updatedAt;
 }

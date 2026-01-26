@@ -14,7 +14,6 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="backend-service" target="17" />
       <module name="content-service" target="17" />
       <module name="examination-service" target="17" />
       <module name="learning-service" target="17" />
@@ -24,7 +23,6 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ai-service" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
-      <module name="backend-service" options="-parameters -Amapstruct.suppressGeneratorTimestamp=true -Amapstruct.defaultComponentModel=spring -Amapstruct.verbose=true" />
       <module name="content-service" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
       <module name="examination-service" options="-parameters" />
