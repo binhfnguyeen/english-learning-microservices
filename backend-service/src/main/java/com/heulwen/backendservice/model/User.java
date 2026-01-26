@@ -1,0 +1,82 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.heulwen.backendservice.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.web.multipart.MultipartFile;
+
+@Entity
+@Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    Long id;
+
+    @Column(name = "first_name")
+    String firstName;
+
+    @Column(name = "last_name")
+    String lastName;
+
+    @Column(name = "email")
+    String email;
+
+    @Column(name = "phone")
+    String phone;
+
+    @Column(name = "username")
+    String username;
+
+    @Column(name = "password")
+    String password;
+
+    @Column(name = "is_active")
+    Boolean isActive;
+
+    @Column(name = "avatar")
+    String avatar;
+
+    @Column(name = "role")
+    String role;
+
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<LearnedWord> learnedWords;
+
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Progress> progressList;
+
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<TestResult> testResults;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    LocalDateTime updatedAt;
+
+    @Transient
+    @JsonIgnore
+    MultipartFile file;
+}
