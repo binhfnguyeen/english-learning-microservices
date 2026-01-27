@@ -1,7 +1,3 @@
-target/
-*.class
-*.jar
-.idea/
-*.iml
+.idea
+.DS_Store
 .env
-.mvn/wrapper/maven-wrapper.properties
