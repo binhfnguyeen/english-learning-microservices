@@ -7,12 +7,12 @@ import com.heulwen.backendservice.form.ExerciseCreateForm;
 import com.heulwen.backendservice.model.Exercise;
 import com.heulwen.backendservice.model.ExerciseChoice;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ExerciseMapper {
-
-    // --- MAP EXERCISE: FORM -> ENTITY ---
+    /**
+    * CREATE
+    */
     public static Exercise map(ExerciseCreateForm form) {
         if (form == null) return null;
 
@@ -20,40 +20,47 @@ public class ExerciseMapper {
         exercise.setQuestion(form.getQuestion());
         exercise.setExerciseType(form.getExerciseType());
 
-        if (form.getChoices() != null) {
-            List<ExerciseChoice> choices = new ArrayList<>();
-            for (ExerciseChoiceForm choiceForm : form.getChoices()) {
-                choices.add(map(choiceForm, exercise));
-            }
+        if (form.getChoices() != null && !form.getChoices().isEmpty()) {
+            List<ExerciseChoice> choices = form.getChoices().stream()
+                    .map(choiceForm -> map(choiceForm, exercise))
+                    .toList();
             exercise.setChoices(choices);
         }
+
         return exercise;
     }
 
-    // --- MAP EXERCISE: ENTITY -> DTO ---
+    /**
+    * READ
+    */
     public static ExerciseDto map(Exercise exercise) {
         if (exercise == null) return null;
 
-        ExerciseDto dto = new ExerciseDto();
-        dto.setId(exercise.getId());
-        dto.setQuestion(exercise.getQuestion());
-        dto.setExerciseType(exercise.getExerciseType());
-
-        dto.setVocabulary(VocabularyMapper.map(exercise.getVocabulary()));
-
-        List<ExerciseChoiceDto> choiceDtos = new ArrayList<>();
-        if (exercise.getChoices() != null) {
-            for (ExerciseChoice choice : exercise.getChoices()) {
-                choiceDtos.add(map(choice));
-            }
-        }
-        dto.setChoices(choiceDtos);
-
-        return dto;
+        return ExerciseDto.builder()
+                .id(exercise.getId())
+                .question(exercise.getQuestion())
+                .exerciseType(exercise.getExerciseType())
+                .vocabulary(
+                        exercise.getVocabulary() != null
+                                ? VocabularyMapper.map(exercise.getVocabulary())
+                                : null
+                )
+                .choices(
+                        exercise.getChoices() == null
+                                ? List.of()
+                                : exercise.getChoices().stream()
+                                .map(ExerciseMapper::map)
+                                .toList()
+                )
+                .build();
     }
 
-    // --- MAP CHOICE: FORM -> ENTITY ---
+    /**
+    * CHOICE
+    */
     public static ExerciseChoice map(ExerciseChoiceForm form, Exercise parent) {
+        if (form == null) return null;
+
         ExerciseChoice choice = new ExerciseChoice();
         choice.setContent(form.getContent());
         choice.setIsCorrect(form.getIsCorrect());
@@ -61,12 +68,13 @@ public class ExerciseMapper {
         return choice;
     }
 
-    // --- MAP CHOICE: ENTITY -> DTO ---
     public static ExerciseChoiceDto map(ExerciseChoice choice) {
-        ExerciseChoiceDto dto = new ExerciseChoiceDto();
-        dto.setId(choice.getId());
-        dto.setContent(choice.getContent());
-        dto.setIsCorrect(choice.getIsCorrect());
-        return dto;
+        if (choice == null) return null;
+
+        return ExerciseChoiceDto.builder()
+                .id(choice.getId())
+                .content(choice.getContent())
+                .isCorrect(choice.getIsCorrect())
+                .build();
     }
 }

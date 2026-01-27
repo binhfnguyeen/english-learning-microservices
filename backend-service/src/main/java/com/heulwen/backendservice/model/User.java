@@ -75,4 +75,3 @@ public class User {
     @JsonIgnore
     MultipartFile file;
 }
-

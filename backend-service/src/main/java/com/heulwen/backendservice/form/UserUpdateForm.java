@@ -9,5 +9,5 @@ public class UserUpdateForm {
     private String lastName;
     private String phone;
     private Boolean isActive;
-    private MultipartFile avatarFile;
+    private String avatar;
 }

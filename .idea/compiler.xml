@@ -12,6 +12,15 @@
         <module name="eureka-server" />
         <module name="ai-service" />
       </profile>
+      <profile name="Annotation profile for backend-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+        </processorPath>
+        <module name="backend-service" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="content-service" target="17" />
@@ -23,6 +32,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ai-service" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
+      <module name="backend-service" options="-parameters" />
       <module name="content-service" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
       <module name="examination-service" options="-parameters" />

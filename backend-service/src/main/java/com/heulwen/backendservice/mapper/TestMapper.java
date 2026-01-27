@@ -1,52 +1,79 @@
 package com.heulwen.backendservice.mapper;
 
-import com.heulwen.backendservice.dto.QuestionDto;
 import com.heulwen.backendservice.dto.TestDto;
-import com.heulwen.backendservice.form.QuestionCreateForm;
 import com.heulwen.backendservice.form.TestCreateForm;
-import com.heulwen.backendservice.model.Question;
 import com.heulwen.backendservice.model.Test;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TestMapper {
 
+    /**
+     * CREATE
+     * TestCreateForm -> Test
+     * Tương đương toTest(TestRequest)
+     */
     public static Test map(TestCreateForm form) {
-        if (form == null) return null;
+        if (form == null) {
+            return null;
+        }
 
         Test test = new Test();
         test.setTitle(form.getTitle());
         test.setDescription(form.getDescription());
-
-        if (form.getQuestions() != null) {
-            List<Question> questions = new ArrayList<>();
-            for (QuestionCreateForm qForm : form.getQuestions()) {
-                Question question = QuestionMapper.map(qForm);
-                question.setTest(test);
-                questions.add(question);
-            }
-            test.setQuestions(questions);
-        }
         return test;
     }
 
-    public static TestDto map(Test test) {
-        if (test == null) return null;
-
-        TestDto dto = new TestDto();
-        dto.setId(test.getId());
-        dto.setTitle(test.getTitle());
-        dto.setDescription(test.getDescription());
-
-        List<QuestionDto> questionDtos = new ArrayList<>();
-        if (test.getQuestions() != null) {
-            for (Question question : test.getQuestions()) {
-                questionDtos.add(QuestionMapper.map(question));
-            }
+    /**
+     * UPDATE
+     * TestCreateForm -> existing Test
+     */
+    public static void map(TestCreateForm form, Test test) {
+        if (form == null || test == null) {
+            return;
         }
-        dto.setQuestions(questionDtos);
 
-        return dto;
+        test.setTitle(form.getTitle());
+        test.setDescription(form.getDescription());
+    }
+
+    /**
+     * READ
+     * Test -> TestDto
+     * Tương đương toTestResponse()
+     */
+    public static TestDto map(Test test) {
+        if (test == null) {
+            return null;
+        }
+
+        return TestDto.builder()
+                .id(test.getId())
+                .title(test.getTitle())
+                .description(test.getDescription())
+                .questions(
+                        test.getQuestions() != null
+                                ? test.getQuestions()
+                                .stream()
+                                .map(QuestionMapper::map)
+                                .collect(Collectors.toList())
+                                : List.of()
+                )
+                .build();
+    }
+
+    /**
+     * READ LIST
+     * List<Test> -> List<TestDto>
+     */
+    public static List<TestDto> map(List<Test> tests) {
+        if (tests == null) {
+            return List.of();
+        }
+
+        return tests.stream()
+                .map(TestMapper::map)
+                .collect(Collectors.toList());
     }
 }

@@ -12,5 +12,5 @@ public class UserCreateForm {
     private String username;
     private String password;
     private String role;
-    private MultipartFile avatarFile;
+    private String avatar;
 }

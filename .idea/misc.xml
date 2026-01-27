@@ -12,6 +12,7 @@
         <option value="$PROJECT_DIR$/learning-service/pom.xml" />
         <option value="$PROJECT_DIR$/examination-service/pom.xml" />
         <option value="$PROJECT_DIR$/ai-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend-service/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

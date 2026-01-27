@@ -7,39 +7,76 @@ import com.heulwen.backendservice.model.User;
 
 public class UserMapper {
 
+    /**
+     * CREATE
+     * UserCreateForm -> User
+     * Tương đương toUser(UserCreationRequest)
+     */
     public static User map(UserCreateForm form) {
-        var user = new User();
-        user.setFirstName(form.getFirstName());
-        user.setLastName(form.getLastName());
-        user.setEmail(form.getEmail());
-        user.setPhone(form.getPhone());
-        user.setUsername(form.getUsername());
-        user.setPassword(form.getPassword());
-        user.setRole(form.getRole());
-        user.setIsActive(true);
-        return user;
+        if (form == null) {
+            return null;
+        }
+
+        return User.builder()
+                .firstName(form.getFirstName())
+                .lastName(form.getLastName())
+                .email(form.getEmail())
+                .phone(form.getPhone())
+                .username(form.getUsername())
+                .password(form.getPassword())
+                .avatar(form.getAvatar())
+                .role(form.getRole())
+                .isActive(true) // mặc định active
+                .build();
     }
 
+    /**
+     * READ
+     * User -> UserDto
+     * Tương đương toUserResponse()
+     */
     public static UserDto map(User user) {
-        var dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        dto.setEmail(user.getEmail());
-        dto.setPhone(user.getPhone());
-        dto.setUsername(user.getUsername());
-        dto.setIsActive(user.getIsActive());
-        dto.setAvatar(user.getAvatar());
-        dto.setRole(user.getRole());
-        dto.setCreatedAt(user.getCreatedAt());
-        dto.setUpdatedAt(user.getUpdatedAt());
-        return dto;
+        if (user == null) {
+            return null;
+        }
+
+        return UserDto.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .username(user.getUsername())
+                .isActive(user.getIsActive())
+                .avatar(user.getAvatar())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
     }
 
+    /**
+     * UPDATE
+     * UserUpdateForm -> existing User
+     * (MapStruct-style: chỉ update field được gửi)
+     */
     public static void map(UserUpdateForm form, User user) {
-        user.setFirstName(form.getFirstName());
-        user.setLastName(form.getLastName());
-        user.setPhone(form.getPhone());
+        if (form == null || user == null) {
+            return;
+        }
+
+        if (form.getFirstName() != null) {
+            user.setFirstName(form.getFirstName());
+        }
+        if (form.getLastName() != null) {
+            user.setLastName(form.getLastName());
+        }
+        if (form.getPhone() != null) {
+            user.setPhone(form.getPhone());
+        }
+        if (form.getAvatar() != null) {
+            user.setAvatar(form.getAvatar());
+        }
         if (form.getIsActive() != null) {
             user.setIsActive(form.getIsActive());
         }

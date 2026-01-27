@@ -6,62 +6,96 @@ import com.heulwen.backendservice.form.QuestionChoiceForm;
 import com.heulwen.backendservice.form.QuestionCreateForm;
 import com.heulwen.backendservice.model.Question;
 import com.heulwen.backendservice.model.QuestionChoice;
+import com.heulwen.backendservice.model.Vocabulary;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class QuestionMapper {
 
-    // --- MAP QUESTION: FORM -> ENTITY ---
+    /**
+     * CREATE
+     * QuestionCreateForm -> Question
+     */
     public static Question map(QuestionCreateForm form) {
-        if (form == null) return null;
+        if (form == null) {
+            return null;
+        }
 
         Question question = new Question();
         question.setContent(form.getContent());
-
-        if (form.getChoices() != null) {
-            List<QuestionChoice> choices = new ArrayList<>();
-            for (QuestionChoiceForm choiceForm : form.getChoices()) {
-                choices.add(map(choiceForm, question));
-            }
-            question.setChoices(choices);
-        }
         return question;
     }
 
-    // --- MAP QUESTION: ENTITY -> DTO ---
-    public static QuestionDto map(Question question) {
-        if (question == null) return null;
-
-        QuestionDto dto = new QuestionDto();
-        dto.setId(question.getId());
-        dto.setContent(question.getContent());
-
-        List<QuestionChoiceDto> choiceDtos = new ArrayList<>();
-        if (question.getChoices() != null) {
-            for (QuestionChoice choice : question.getChoices()) {
-                choiceDtos.add(map(choice));
-            }
+    /**
+     * UPDATE
+     * QuestionCreateForm -> existing Question
+     */
+    public static void map(QuestionCreateForm form, Question question) {
+        if (form == null || question == null) {
+            return;
         }
-        dto.setChoices(choiceDtos);
 
-        return dto;
+        question.setContent(form.getContent());
     }
 
-    // --- MAP CHOICE: FORM -> ENTITY ---
-    public static QuestionChoice map(QuestionChoiceForm form, Question parent) {
+    /**
+     * READ
+     * Question -> QuestionDto
+     */
+    public static QuestionDto map(Question question) {
+        if (question == null) {
+            return null;
+        }
+
+        return QuestionDto.builder()
+                .id(question.getId())
+                .content(question.getContent())
+                .choices(
+                        question.getChoices() != null
+                                ? question.getChoices()
+                                .stream()
+                                .map(QuestionMapper::map)
+                                .collect(Collectors.toList())
+                                : List.of()
+                )
+                .build();
+    }
+
+    /**
+     * CREATE
+     * QuestionChoiceForm + resolved Vocabulary -> QuestionChoice
+     */
+    public static QuestionChoice map(
+            QuestionChoiceForm form,
+            Question question,
+            Vocabulary vocabulary
+    ) {
+        if (form == null) {
+            return null;
+        }
+
         QuestionChoice choice = new QuestionChoice();
         choice.setIsCorrect(form.getIsCorrect());
-        choice.setQuestion(parent);
+        choice.setQuestion(question);
+        choice.setVocabulary(vocabulary);
+
         return choice;
     }
 
-    // --- MAP CHOICE: ENTITY -> DTO ---
+    /**
+     * READ
+     * QuestionChoice -> QuestionChoiceDto
+     */
     public static QuestionChoiceDto map(QuestionChoice choice) {
-        QuestionChoiceDto dto = new QuestionChoiceDto();
-        dto.setId(choice.getId());
-        dto.setIsCorrect(choice.getIsCorrect());
-        dto.setVocabulary(VocabularyMapper.map(choice.getVocabulary()));
-        return dto;
+        if (choice == null) {
+            return null;
+        }
+
+        return QuestionChoiceDto.builder()
+                .id(choice.getId())
+                .isCorrect(choice.getIsCorrect())
+                .vocabulary(VocabularyMapper.map(choice.getVocabulary()))
+                .build();
     }
 }

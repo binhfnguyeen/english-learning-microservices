@@ -6,23 +6,61 @@ import com.heulwen.backendservice.model.Vocabulary;
 
 public class VocabularyMapper {
 
+    /**
+     * CREATE
+     * VocabularyCreateForm -> Vocabulary
+     */
     public static Vocabulary map(VocabularyCreateForm form) {
-        var vocab = new Vocabulary();
+        if (form == null) {
+            return null;
+        }
+
+        Vocabulary vocab = new Vocabulary();
         vocab.setWord(form.getWord());
         vocab.setMeaning(form.getMeaning());
         vocab.setPartOfSpeech(form.getPartOfSpeech());
+
+        // MultipartFile không persist → gán vào field transient
+        vocab.setPicFile(form.getImageFile());
+
+        // topics KHÔNG map ở đây (xử lý ở Service)
         return vocab;
     }
 
-    public static VocabularyDto map(Vocabulary vocab) {
-        if (vocab == null) return null;
+    /**
+     * UPDATE
+     * VocabularyCreateForm -> existing Vocabulary
+     */
+    public static void map(VocabularyCreateForm form, Vocabulary vocab) {
+        if (form == null || vocab == null) {
+            return;
+        }
 
-        var dto = new VocabularyDto();
-        dto.setId(vocab.getId());
-        dto.setWord(vocab.getWord());
-        dto.setMeaning(vocab.getMeaning());
-        dto.setPartOfSpeech(vocab.getPartOfSpeech());
-        dto.setPicture(vocab.getPicture());
-        return dto;
+        vocab.setWord(form.getWord());
+        vocab.setMeaning(form.getMeaning());
+        vocab.setPartOfSpeech(form.getPartOfSpeech());
+
+        // nếu client gửi ảnh mới
+        if (form.getImageFile() != null && !form.getImageFile().isEmpty()) {
+            vocab.setPicFile(form.getImageFile());
+        }
+    }
+
+    /**
+     * READ
+     * Vocabulary -> VocabularyDto
+     */
+    public static VocabularyDto map(Vocabulary vocab) {
+        if (vocab == null) {
+            return null;
+        }
+
+        return VocabularyDto.builder()
+                .id(vocab.getId())
+                .word(vocab.getWord())
+                .meaning(vocab.getMeaning())
+                .partOfSpeech(vocab.getPartOfSpeech())
+                .picture(vocab.getPicture())
+                .build();
     }
 }

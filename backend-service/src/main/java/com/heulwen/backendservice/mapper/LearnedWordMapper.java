@@ -3,16 +3,46 @@ package com.heulwen.backendservice.mapper;
 import com.heulwen.backendservice.dto.LearnedWordDto;
 import com.heulwen.backendservice.model.LearnedWord;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class LearnedWordMapper {
 
+    /**
+     * READ
+     * LearnedWord -> LearnedWordDto
+     */
     public static LearnedWordDto map(LearnedWord entity) {
-        var dto = new LearnedWordDto();
-        dto.setId(entity.getId());
-        dto.setUserId(entity.getUser() != null ? entity.getUser().getId() : null);
-        dto.setLearnedDate(entity.getCreatedAt());
+        if (entity == null) {
+            return null;
+        }
 
-        dto.setVocabulary(VocabularyMapper.map(entity.getVocabulary()));
+        return LearnedWordDto.builder()
+                .id(entity.getId())
+                .userId(
+                        entity.getUser() != null
+                                ? entity.getUser().getId()
+                                : null
+                )
+                .learnedDate(entity.getCreatedAt())
+                .vocabulary(
+                        entity.getVocabulary() != null
+                                ? VocabularyMapper.map(entity.getVocabulary())
+                                : null
+                )
+                .build();
+    }
 
-        return dto;
+    /**
+     * READ LIST
+     */
+    public static List<LearnedWordDto> map(List<LearnedWord> entities) {
+        if (entities == null) {
+            return List.of();
+        }
+
+        return entities.stream()
+                .map(LearnedWordMapper::map)
+                .collect(Collectors.toList());
     }
 }
