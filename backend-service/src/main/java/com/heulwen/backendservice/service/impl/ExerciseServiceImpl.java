@@ -2,45 +2,90 @@ package com.heulwen.backendservice.service.impl;
 
 import com.heulwen.backendservice.dto.ExerciseDto;
 import com.heulwen.backendservice.exception.ResourceNotFoundException;
+import com.heulwen.backendservice.form.ExerciseChoiceForm;
 import com.heulwen.backendservice.form.ExerciseCreateForm;
+import com.heulwen.backendservice.mapper.ExerciseChoiceMapper;
 import com.heulwen.backendservice.mapper.ExerciseMapper;
 import com.heulwen.backendservice.model.Exercise;
+import com.heulwen.backendservice.model.ExerciseChoice;
+import com.heulwen.backendservice.model.ExerciseType;
 import com.heulwen.backendservice.model.Vocabulary;
 import com.heulwen.backendservice.repository.ExerciseRepository;
 import com.heulwen.backendservice.repository.VocabularyRepository;
 import com.heulwen.backendservice.service.ExerciseService;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ExerciseServiceImpl implements ExerciseService {
 
-    private final ExerciseRepository exerciseRepository;
-    private final VocabularyRepository vocabularyRepository;
+    ExerciseRepository exerciseRepository;
+    VocabularyRepository vocabularyRepository;
 
     @Override
+    @Transactional
     public ExerciseDto createExercise(ExerciseCreateForm form) {
-        Vocabulary vocabulary = vocabularyRepository.findById(form.getVocabularyId())
+        // 1. Kiểm tra Vocabulary tồn tại
+        Vocabulary vocab = vocabularyRepository.findById(form.getVocabularyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found id: " + form.getVocabularyId()));
 
-        Exercise exercise = ExerciseMapper.map(form);
-        exercise.setVocabulary(vocabulary);
+        // 2. Kiểm tra logic nghiệp vụ
+        if (ExerciseType.LISTEN_AND_TYPE.equals(form.getExerciseType())) {
+            boolean exists = exerciseRepository.existsByVocabulary_IdAndExerciseType(
+                    form.getVocabularyId(),
+                    ExerciseType.LISTEN_AND_TYPE
+            );
+            if (exists) {
+                throw new RuntimeException("Exercise LISTEN_AND_TYPE already exists for this vocabulary");
+            }
+        }
 
-        exercise = exerciseRepository.save(exercise);
-        return ExerciseMapper.map(exercise);
+        // 3. Map Form -> Entity (Exercise)
+        Exercise exercise = ExerciseMapper.map(form);
+        exercise.setVocabulary(vocab);
+
+        // 4. Xử lý ExerciseChoices (Sử dụng Mapper mới của bạn)
+        if (form.getChoices() != null && !form.getChoices().isEmpty()) {
+            List<ExerciseChoice> choices = new ArrayList<>();
+            for (ExerciseChoiceForm choiceForm : form.getChoices()) {
+                // GỌI HÀM MAP 2 THAM SỐ (Form + Parent)
+                ExerciseChoice choice = ExerciseChoiceMapper.map(choiceForm, exercise);
+                choices.add(choice);
+            }
+            exercise.setChoices(choices);
+        }
+
+        // 5. Save
+        return ExerciseMapper.map(exerciseRepository.save(exercise));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<ExerciseDto> getExercisesByVocabularyId(Long vocabularyId) {
+        // Kiểm tra vocab tồn tại (tùy chọn, để báo lỗi rõ ràng hơn)
+        if (!vocabularyRepository.existsById(vocabularyId)) {
+            throw new ResourceNotFoundException("Vocabulary not found id: " + vocabularyId);
+        }
+
+        // Repository cần có hàm findByVocabularyId trả về List<Exercise>
         return exerciseRepository.findByVocabularyId(vocabularyId).stream()
                 .map(ExerciseMapper::map)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteExercise(Long id) {
+        if (!exerciseRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Exercise not found id: " + id);
+        }
+        exerciseRepository.deleteById(id);
     }
 }

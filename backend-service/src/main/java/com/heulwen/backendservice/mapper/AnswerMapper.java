@@ -11,7 +11,7 @@ public class AnswerMapper {
     /**
      * FORM -> ENTITY
      */
-    public static Answer toEntity(
+    public static Answer map(
             AnswerCreateForm form,
             TestResult testResult,
             QuestionChoice questionChoice
@@ -28,7 +28,7 @@ public class AnswerMapper {
     /**
      * ENTITY -> DTO
      */
-    public static AnswerDto toDto(Answer entity) {
+    public static AnswerDto map(Answer entity) {
         if (entity == null) return null;
 
         return AnswerDto.builder()

@@ -16,5 +16,5 @@ public interface ProgressRepository extends JpaRepository<Progress, Long> {
     long countDistinctDaysByUserId(@Param("userId") Long userId);
     @Query("SELECT p FROM Progress p WHERE p.user.id = :userId")
     Progress findByUserId(@Param("userId") Long userId);
-    boolean existsByUser_IdAndLearnedDate(Long userId, LocalDateTime learnedDate);
+    boolean existsByUserIdAndLearnedDateBetween(Long userId, LocalDateTime startOfDay, LocalDateTime endOfDay);
 }

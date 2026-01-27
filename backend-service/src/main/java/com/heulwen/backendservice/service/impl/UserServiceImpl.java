@@ -1,5 +1,7 @@
 package com.heulwen.backendservice.service.impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.heulwen.backendservice.dto.UserDto;
 import com.heulwen.backendservice.exception.ResourceNotFoundException;
 import com.heulwen.backendservice.form.UserCreateForm;
@@ -12,16 +14,18 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,71 +34,83 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     UserRepository userRepository;
-    UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     Cloudinary cloudinary;
 
     @Override
+    @Transactional
     public UserDto createUser(UserCreateForm form, MultipartFile avatar) {
         if (userRepository.existsByUsername(form.getUsername())) {
-            throw new RuntimeException("User existed"); // Hoặc dùng Custom Exception
+            throw new RuntimeException("User existed"); // Hoặc Custom Exception
         }
 
-        User user = userMapper.map(form);
+        // 1. Map Form -> Entity
+        User user = UserMapper.map(form);
+
+        // 2. Set các giá trị mặc định/bảo mật
         user.setPassword(passwordEncoder.encode(form.getPassword()));
         user.setIsActive(true);
-        user.setRole("USER");
+        user.setRole("USER"); // Model User đang dùng String cho Role
 
+        // 3. Upload Avatar
         uploadAvatarIfExists(user, avatar);
 
-        return userMapper.map(userRepository.save(user));
+        // 4. Save & Map to DTO
+        return UserMapper.map(userRepository.save(user));
     }
 
     @Override
+    @Transactional
     public UserDto createAdmin(UserCreateForm form, MultipartFile avatar) {
         if (userRepository.existsByUsername(form.getUsername())) {
             throw new RuntimeException("User existed");
         }
 
-        User user = userMapper.map(form);
+        User user = UserMapper.map(form);
         user.setPassword(passwordEncoder.encode(form.getPassword()));
         user.setIsActive(true);
         user.setRole("ADMIN");
 
         uploadAvatarIfExists(user, avatar);
 
-        return userMapper.map(userRepository.save(user));
+        return UserMapper.map(userRepository.save(user));
     }
 
     @Override
-    public UserDto updateUser(Integer userId, UserUpdateForm form, MultipartFile avatar) {
+    @Transactional
+    public UserDto updateUser(Long userId, UserUpdateForm form, MultipartFile avatar) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found id: " + userId));
 
-        userMapper.map(form, user); // Overload map để update entity
+        // Update thông tin từ Form vào User hiện tại
+        UserMapper.map(form, user);
+
         uploadAvatarIfExists(user, avatar);
 
-        return userMapper.map(userRepository.save(user));
+        return UserMapper.map(userRepository.save(user));
     }
 
     @Override
-    public void deleteAdmin(int id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        userRepository.delete(user);
+    @Transactional
+    public void deleteAdmin(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found id: " + id);
+        }
+        userRepository.deleteById(id);
     }
 
     @Override
     public List<UserDto> getUsersAdmin(String role) {
+        // Repository cần hàm findByRole(String role)
         return userRepository.findByRole(role).stream()
-                .map(userMapper::map)
+                .map(UserMapper::map)
                 .toList();
     }
 
     @Override
     public List<UserDto> getUsers() {
         return userRepository.findAll().stream()
-                .map(userMapper::map)
+                .map(UserMapper::map)
                 .toList();
     }
 
@@ -115,6 +131,9 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    /**
+     * Helper method upload ảnh
+     */
     private void uploadAvatarIfExists(User user, MultipartFile avatar) {
         if (avatar != null && !avatar.isEmpty()) {
             try {

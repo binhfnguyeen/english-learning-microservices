@@ -9,14 +9,12 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface TopicService {
-    TopicDto addOrUpdateTopic(Integer id, TopicCreateForm form);
+    TopicDto addOrUpdateTopic(Long id, TopicCreateForm form); // Long id
     Page<TopicDto> getTopics(String keyword, Pageable pageable);
-    TopicDto getTopicById(int id);
-    void deleteTopic(int id);
-
-    // Logic Vocabulary trong Topic
-    void addVocabToTopic(int topicId, int vocabId);
-    Page<VocabularyDto> getVocabulariesWithTopic(int topicId, String keyword, Pageable pageable);
-    List<VocabularyDto> getVocabNotInTopic(int topicId, String keyword);
-    void removeVocabFromTopic(int topicId, int vocabId);
+    TopicDto getTopicById(Long id); // Long id
+    void deleteTopic(Long id); // Long id
+    void addVocabToTopic(Long topicId, Long vocabId);
+    Page<VocabularyDto> getVocabulariesWithTopic(Long topicId, String keyword, Pageable pageable);
+    List<VocabularyDto> getVocabNotInTopic(Long topicId, String keyword);
+    void removeVocabFromTopic(Long topicId, Long vocabId);
 }

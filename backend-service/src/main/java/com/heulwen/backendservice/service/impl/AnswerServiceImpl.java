@@ -5,21 +5,26 @@ import com.heulwen.backendservice.mapper.AnswerMapper;
 import com.heulwen.backendservice.model.Answer;
 import com.heulwen.backendservice.repository.AnswerRepository;
 import com.heulwen.backendservice.service.AnswerService;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AnswerServiceImpl implements AnswerService {
-    private final AnswerRepository answerRepository;
+
+    AnswerRepository answerRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<AnswerDto> getAnswersByTestResultId(Long testResultId) {
-        List<Answer> answers = answerRepository.getAnswerByTestResult_Id(testResultId);
-        return answers.stream().map(AnswerMapper::map).toList();
+        return answerRepository.getAnswerByTestResult_Id(testResultId).stream()
+                .map(AnswerMapper::map)
+                .toList();
     }
 }

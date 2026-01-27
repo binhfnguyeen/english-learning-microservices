@@ -8,4 +8,5 @@ import java.util.List;
 public interface ExerciseService {
     ExerciseDto createExercise(ExerciseCreateForm form);
     List<ExerciseDto> getExercisesByVocabularyId(Long vocabularyId);
+    void deleteExercise(Long id);
 }
