@@ -1,4 +1,4 @@
-package com.heulwen.backendservice.model;
+package com.heulwen.userservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,38 +9,31 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "test_results")
+@Table(name = "otp_tokens")
 @EntityListeners(AuditingEntityListener.class)
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TestResult implements Serializable {
+public class OtpToken implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     Long id;
 
-    @Column(name = "score")
-    Integer score;
+    @Column(name = "otp_code", length = 6)
+    String otpCode;
 
-    @Column(name = "date_taken")
-    LocalDateTime dateTaken;
+    @Column(name = "expiry_date")
+    LocalDateTime expiryDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "test_id")
-    Test test;
-
-    @Column(name = "user_id")
-    Long userId;
-
-    @OneToMany(mappedBy = "testResult", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<Answer> answers;
+    @JoinColumn(name = "user_id")
+    User user;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

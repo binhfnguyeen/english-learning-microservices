@@ -25,9 +25,8 @@ public class LearnedWord implements Serializable {
     @Column(name = "id")
     Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    User user;
+    @Column(name = "user_id")
+    Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vocabulary_id")

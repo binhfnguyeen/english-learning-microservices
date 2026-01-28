@@ -28,9 +28,8 @@ public class Progress implements Serializable {
     @Column(name = "learned_date")
     LocalDateTime learnedDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    User user;
+    @Column(name = "user_id")
+    Long userId;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
