@@ -25,6 +25,7 @@ import java.util.Map;
 public class UserController {
     UserService userService;
 
+    // --- CREATE USER ---
     @PostMapping(path = "/users",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -37,7 +38,6 @@ public class UserController {
             @RequestParam("phone") String phone,
             @RequestParam(value = "avatar", required = false) MultipartFile avatar
     ) {
-        // Map params to Form
         UserCreateForm form = new UserCreateForm();
         form.setUsername(username);
         form.setPassword(password);
