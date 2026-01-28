@@ -19,11 +19,7 @@ public class LearnedWordMapper {
 
         return LearnedWordDto.builder()
                 .id(entity.getId())
-                .userId(
-                        entity.getUser() != null
-                                ? entity.getUser().getId()
-                                : null
-                )
+                .userId(entity.getUserId())
                 .learnedDate(entity.getCreatedAt())
                 .vocabulary(
                         entity.getVocabulary() != null

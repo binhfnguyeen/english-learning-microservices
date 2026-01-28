@@ -43,7 +43,6 @@ public class TestController {
     // --- CREATE TEST (Hỗ trợ cả tạo thường và tạo Full câu hỏi) ---
     @PostMapping
     public ApiDto<TestDto> createTest(@RequestBody TestCreateForm request) {
-        // Logic trong Service đã xử lý việc loop qua questions và choices nếu có trong request
         return ApiDto.<TestDto>builder()
                 .code(1000)
                 .result(testService.createTest(request))

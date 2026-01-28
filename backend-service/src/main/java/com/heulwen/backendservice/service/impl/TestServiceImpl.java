@@ -42,7 +42,6 @@ public class TestServiceImpl implements TestService {
         Test test = TestMapper.map(form);
 
         // 2. Xử lý danh sách câu hỏi (Questions) nếu có trong form
-        // Logic này thay thế cho createFullTest cũ
         if (form.getQuestions() != null && !form.getQuestions().isEmpty()) {
             List<Question> questions = new ArrayList<>();
 

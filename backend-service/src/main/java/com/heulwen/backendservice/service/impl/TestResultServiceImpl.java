@@ -29,46 +29,32 @@ public class TestResultServiceImpl implements TestResultService {
 
     TestResultRepository testResultRepository;
     QuestionChoiceRepository questionChoiceRepository;
-    UserRepository userRepository;
     TestRepository testRepository;
 
     @Override
     @Transactional
     public TestResultDto createTestResult(TestSubmissionForm form) {
-        // 1. Fetch User và Test để set relationship
-        User user = userRepository.findById(form.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found id: " + form.getUserId()));
-
         Test test = testRepository.findById(form.getTestId())
                 .orElseThrow(() -> new ResourceNotFoundException("Test not found id: " + form.getTestId()));
 
-        // 2. Khởi tạo TestResult (Manual Map cơ bản)
         TestResult testResult = new TestResult();
-        testResult.setUser(user);
+        testResult.setUserId(form.getUserId());
         testResult.setTest(test);
         testResult.setDateTaken(LocalDateTime.now());
-        // testResult.setScore(...) // Logic tính điểm có thể thêm ở đây nếu cần
 
-        // 3. Xử lý danh sách câu trả lời (Answers)
         if (form.getAnswers() != null && !form.getAnswers().isEmpty()) {
             List<Answer> answers = new ArrayList<>();
-
             for (AnswerSubmissionForm ansForm : form.getAnswers()) {
                 QuestionChoice choice = questionChoiceRepository.findById(ansForm.getQuestionChoiceId())
                         .orElseThrow(() -> new ResourceNotFoundException("Choice not found id: " + ansForm.getQuestionChoiceId()));
-
                 Answer answer = new Answer();
                 answer.setQuestionChoice(choice);
                 answer.setTestResult(testResult);
-
                 answers.add(answer);
             }
             testResult.setAnswers(answers);
         }
-
-        // 4. Save (Cascade sẽ tự lưu Answers)
         TestResult saved = testResultRepository.save(testResult);
-
         return TestResultMapper.map(saved);
     }
 
@@ -88,7 +74,7 @@ public class TestResultServiceImpl implements TestResultService {
 
     @Override
     public List<TestResultDto> getTestResultsByUserAndTest(Long userId, Long testId) {
-        List<TestResult> results = testResultRepository.findByUser_IdAndTest_Id(userId, testId);
+        List<TestResult> results = testResultRepository.findByUserIdAndTestId(userId, testId);
         return results.stream()
                 .map(TestResultMapper::map)
                 .toList();

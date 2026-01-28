@@ -1,16 +1,20 @@
 package com.heulwen.backendservice.service.impl;
 
+import com.heulwen.backendservice.dto.ApiDto;
 import com.heulwen.backendservice.dto.ProgressDto;
 import com.heulwen.backendservice.dto.ProgressOverviewDto;
+import com.heulwen.backendservice.dto.UserDto;
 import com.heulwen.backendservice.exception.ResourceNotFoundException;
 import com.heulwen.backendservice.mapper.ProgressMapper;
 import com.heulwen.backendservice.model.Progress;
 import com.heulwen.backendservice.repository.LearnedWordRepository;
 import com.heulwen.backendservice.repository.ProgressRepository;
+import com.heulwen.backendservice.repository.httpClient.UserClient;
 import com.heulwen.backendservice.service.ProgressService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,27 +25,33 @@ import java.time.LocalTime;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class ProgressServiceImpl implements ProgressService {
 
     ProgressRepository progressRepository;
     LearnedWordRepository learnedWordRepository;
-    UserRepository userRepository;
+    UserClient userClient;
 
     @Override
     public ProgressOverviewDto getProgressOverview(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found id: " + userId));
+        UserDto userDto = new UserDto();
+        try {
+            ApiDto<UserDto> response = userClient.getUserById(userId);
+            if (response != null && response.getResult() != null) {
+                userDto = response.getResult();
+            }
+        } catch (Exception e) {
+            log.error("Cannot fetch user info for overview", e);
+            userDto.setId(userId);
+            userDto.setUsername("Unknown");
+        }
 
-        // Logic đếm ngày: Giả định mỗi record Progress là 1 ngày học (do logic trackDailyProgress chặn trùng)
         long daysStudied = progressRepository.countDistinctDaysByUserId(userId);
-
-        // Logic đếm từ: Đếm số record trong bảng learned_words của user
-        long totalWordsLearned = learnedWordRepository.sumWordsLearnedByUser_Id(userId);
-
+        long totalWordsLearned = learnedWordRepository.sumWordsLearnedByUserId(userId);
         String level = calculateLevel(daysStudied, totalWordsLearned);
 
         return ProgressOverviewDto.builder()
-                .user(UserMapper.map(user))
+                .user(userDto)
                 .daysStudied((int) daysStudied)
                 .wordsLearned((int) totalWordsLearned)
                 .level(level)
@@ -51,9 +61,6 @@ public class ProgressServiceImpl implements ProgressService {
     @Override
     @Transactional
     public ProgressDto trackDailyProgress(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found id: " + userId));
-
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
@@ -65,7 +72,7 @@ public class ProgressServiceImpl implements ProgressService {
         }
 
         Progress progress = new Progress();
-        progress.setUser(user);
+        progress.setUserId(userId);
         progress.setLearnedDate(LocalDateTime.now());
 
         return ProgressMapper.map(progressRepository.save(progress));

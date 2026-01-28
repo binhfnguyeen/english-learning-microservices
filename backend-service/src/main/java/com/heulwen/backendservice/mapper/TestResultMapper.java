@@ -27,11 +27,7 @@ public class TestResultMapper {
                                 ? entity.getTest().getTitle()
                                 : null
                 )
-                .userId(
-                        entity.getUser() != null
-                                ? entity.getUser().getId()
-                                : null
-                )
+                .userId(entity.getUserId())
                 .build();
     }
 

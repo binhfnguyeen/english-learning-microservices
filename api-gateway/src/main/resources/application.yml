@@ -5,42 +5,60 @@ spring:
   application:
     name: api-gateway
 
-  main:
-    web-application-type: reactive
-
+  # Cấu hình Eureka để tìm service
   cloud:
-    discovery:
-      reactive:
-        enabled: true
-
     gateway:
       discovery:
         locator:
-          enabled: false
+          enabled: true
+          lower-case-service-id: true
 
+      # --- CẤU HÌNH ROUTING ---
       routes:
-        - id: user-service-route
-          uri: lb://user-service
+        # 1. Route cho User Service
+        # Các API: Login, Register, Profile, Forgot Pass
+        - id: user-service
+          uri: lb://user-service  # "lb" là Load Balancer, trỏ đến tên service trong Eureka
           predicates:
-            - Path=/api/users/**
+            - Path=/api/login, /api/auth/**, /api/users/**, /api/forgot-password, /api/reset-password, /api/secure/**
 
-        - id: ai-service-route
+        # 2. Route cho Backend Service
+        # Các API: Từ vựng, Bài tập, Topic, Test...
+        - id: backend-service
+          uri: lb://backend-service
+          predicates:
+            - Path=/api/vocabularies/**, /api/topics/**, /api/tests/**, /api/questions/**, /api/exercises/**, /api/answers/**, /api/progress/**, /api/learned-words/**
+
+        # 3. Route cho AI Service
+        - id: ai-service
           uri: lb://ai-service
           predicates:
             - Path=/api/ai/**
 
-        - id: learning-service-route
-          uri: lb://learning-service
-          predicates:
-            - Path=/api/learning/**
+      # --- CẤU HÌNH CORS (Để Frontend gọi được) ---
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "https://englearn-frontend.onrender.com"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
 
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true
 
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+    org.springframework.http.server.reactive: DEBUG
