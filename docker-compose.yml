@@ -56,18 +56,39 @@ services:
     networks:
       - microservice-network
 
+  backend-service:
+    build:
+      context: ./backend-service
+    image: elearn-backend-service
+    container_name: elearn-backend-service
+    env_file:
+      - .env
+    environment:
+      SPRING_APPLICATION_NAME: backend-service
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      EMAIL_USERNAME: ${EMAIL_USERNAME}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+    ports:
+      - "8082:8082"
+    networks:
+      - microservice-network
+
   ai-service:
     build:
       context: ./ai-service
-    image: ai-service
-    container_name: ai-service
+    image: elearn-ai-service
+    container_name: elearn-ai-service
     env_file:
       - .env
     environment:
       SPRING_APPLICATION_NAME: ai-service
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
     ports:
-      - "8084:8084"
+      - "8083:8083"
     networks:
       - microservice-network
 
