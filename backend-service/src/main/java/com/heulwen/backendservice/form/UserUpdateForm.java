@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserUpdateForm {
     private String firstName;
     private String lastName;
+    private String email;
     private String phone;
     private Boolean isActive;
     private String avatar;

@@ -71,6 +71,9 @@ public class UserMapper {
         if (form.getLastName() != null) {
             user.setLastName(form.getLastName());
         }
+        if (form.getEmail() != null) {
+            user.setEmail(form.getEmail());
+        }
         if (form.getPhone() != null) {
             user.setPhone(form.getPhone());
         }

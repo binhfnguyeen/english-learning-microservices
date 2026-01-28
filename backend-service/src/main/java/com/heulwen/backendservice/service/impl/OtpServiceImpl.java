@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,26 +27,18 @@ public class OtpServiceImpl implements OtpService {
     OtpTokenRepository otpTokenRepository;
     UserRepository userRepository;
     EmailService emailService;
-    PasswordEncoder passwordEncoder; // Inject Bean cấu hình chung thay vì new thủ công
+    PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public void generateAndSendOtp(String email) {
-        // Tìm user, ném lỗi nếu không tồn tại
         User user = userRepository.findByEmail(email);
-
-        // Generate OTP
         String otp = generateRandomOtp();
-
-        // Tạo OtpToken entity
         OtpToken otpToken = new OtpToken();
         otpToken.setOtpCode(otp);
         otpToken.setExpiryDate(LocalDateTime.now().plusMinutes(5));
-        otpToken.setUser(user); // Set quan hệ User
-
+        otpToken.setUser(user);
         otpTokenRepository.save(otpToken);
-
-        // Gửi email
         emailService.sendOtpEmail(user.getEmail(), otp);
     }
 

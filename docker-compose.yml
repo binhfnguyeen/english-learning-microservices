@@ -9,6 +9,22 @@ services:
     networks:
       - microservice-network
 
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_elearn
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservice-network
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -57,3 +73,5 @@ services:
 networks:
   microservice-network:
     driver: bridge
+volumes:
+  postgres_data:
