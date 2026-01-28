@@ -29,6 +29,7 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
     @Value("${spring.jwt.signerkey}")
     protected String SIGNER_KEY;
 
@@ -36,42 +37,47 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(request
-                        -> request.requestMatchers(HttpMethod.GET, "/api/secure/users").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/secure/users/admin").hasAuthority("ROLE_ADMIN")
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request -> request
+                        // 1. Các API PUBLIC (Không cần đăng nhập)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/pronunciation/score/{postId}").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/pronunciation/post/{postId}").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users/{userId}").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/vocabularies").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/topics").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/topics/{topicId}/vocabularies").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/tests").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/tests/full").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/questions").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/secure/users/admin").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/exercises").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/exercises/{exersId}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/vocabularies/{id}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/tests/{id}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/questions/{id}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/topics/{topicId}/vocabularies").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/secure/users/{userId}/admin").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/exercises/{exersId}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/secure/profile").authenticated()
-                        .anyRequest().permitAll());
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/login").permitAll() // Đăng nhập
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()      // Đăng ký
+                        .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password", "/api/forgot-password").permitAll() // Quên mật khẩu
 
+                        // 2. Các API cần quyền ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ROLE_ADMIN") // Xem danh sách user
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasAuthority("ROLE_ADMIN") // Xóa user
+
+                        // 3. Các API cần xác thực (User đã đăng nhập)
+                        .requestMatchers(HttpMethod.GET, "/api/users/profile", "/api/users/{id}").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/{id}").authenticated() // Cập nhật thông tin
+
+                        // Mặc định: Tất cả request khác đều phải có Token
+                        .anyRequest().authenticated()
+                );
+
+        // Cấu hình Resource Server để service này cũng hiểu được Token (để bảo vệ API update profile)
         httpSecurity.oauth2ResourceServer(oauth2
                 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
                 .decoder(jwtDecoder())
                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
         );
-        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+
         return httpSecurity.build();
     }
 
+    // ---------------------------------------------------------
+    // CÁC BEAN QUAN TRỌNG CHO USER-SERVICE
+    // ---------------------------------------------------------
+
+    // 1. PasswordEncoder: BẮT BUỘC để mã hóa mật khẩu khi đăng ký/đăng nhập
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(10);
+    }
+
+    // 2. JwtDecoder: Để giải mã Token (khi user gọi API lấy profile của chính mình)
     @Bean
     public JwtDecoder jwtDecoder() {
         SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNER_KEY.getBytes(), "HS512");
@@ -81,6 +87,7 @@ public class SecurityConfig {
                 .build();
     }
 
+    // 3. Converter: Đọc Role từ Token
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
@@ -90,27 +97,20 @@ public class SecurityConfig {
         return jwtAuthenticationConverter;
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
-    }
-
+    // 4. Cloudinary: Để upload Avatar
     @Bean
     public Cloudinary cloudinary() {
-        Cloudinary cloudinary
-                = new Cloudinary(ObjectUtils.asMap(
+        return new Cloudinary(ObjectUtils.asMap(
                 "cloud_name", "dwivkhh8t",
                 "api_key", "925656835271691",
                 "api_secret", "xggQhqIzVzwLbOJx05apmM4Od7U",
                 "secure", true));
-        return cloudinary;
     }
 
+    // 5. CORS: Cho phép Frontend gọi API
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "https://englearn-frontend.onrender.com"
@@ -122,7 +122,6 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
         return source;
     }
 }

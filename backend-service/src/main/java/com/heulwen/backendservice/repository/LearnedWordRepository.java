@@ -1,7 +1,6 @@
 package com.heulwen.backendservice.repository;
 
 import com.heulwen.backendservice.model.LearnedWord;
-import com.heulwen.backendservice.model.User;
 import com.heulwen.backendservice.model.Vocabulary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

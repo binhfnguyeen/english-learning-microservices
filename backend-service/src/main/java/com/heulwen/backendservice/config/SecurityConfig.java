@@ -36,39 +36,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(request
-                        -> request.requestMatchers(HttpMethod.GET, "/api/secure/users").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/secure/users/admin").hasAuthority("ROLE_ADMIN")
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/pronunciation/score/{postId}").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/pronunciation/post/{postId}").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users/{userId}").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/vocabularies").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/topics").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/topics/{topicId}/vocabularies").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/tests").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/tests/full").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/questions").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/secure/users/admin").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/exercises").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/exercises/{exersId}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/vocabularies/{id}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/tests/{id}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/questions/{id}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/topics/{topicId}/vocabularies").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/secure/users/{userId}/admin").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/exercises/{exersId}").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/secure/profile").authenticated()
-                        .anyRequest().permitAll());
-
-        httpSecurity.oauth2ResourceServer(oauth2
-                -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
-                .decoder(jwtDecoder())
-                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
-        );
-        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+                        .requestMatchers(HttpMethod.POST, "/api/vocabularies/**", "/api/topics/**", "/api/tests/**", "/api/questions/**", "/api/exercises/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/vocabularies/**", "/api/topics/**", "/api/tests/**", "/api/questions/**", "/api/exercises/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/vocabularies/**", "/api/topics/**", "/api/tests/**", "/api/questions/**", "/api/exercises/**").hasAuthority("ROLE_ADMIN")
+                        .anyRequest().authenticated()
+                ).oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
+                        .decoder(jwtDecoder())
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                );
         return httpSecurity.build();
     }
 
@@ -88,11 +66,6 @@ public class SecurityConfig {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
     }
 
     @Bean

@@ -19,11 +19,7 @@ public class ProgressMapper {
 
         return ProgressDto.builder()
                 .id(entity.getId())
-                .userId(
-                        entity.getUser() != null
-                                ? entity.getUser().getId()
-                                : null
-                )
+                .userId(entity.getUserId())
                 .learnedDate(entity.getLearnedDate())
                 .build();
     }

@@ -9,7 +9,6 @@ import com.heulwen.backendservice.model.*;
 import com.heulwen.backendservice.repository.QuestionChoiceRepository;
 import com.heulwen.backendservice.repository.TestRepository;
 import com.heulwen.backendservice.repository.TestResultRepository;
-import com.heulwen.backendservice.repository.UserRepository;
 import com.heulwen.backendservice.service.TestResultService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
