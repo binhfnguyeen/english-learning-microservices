@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="Black">
+    <option name="sdkName" value="Python 3.12 (ai-service)" />
+  </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="MavenProjectsManager">
     <option name="originalFiles">
@@ -17,6 +20,7 @@
     </option>
     <option name="ignoredFiles">
       <set>
+        <option value="$PROJECT_DIR$/ai-service/pom.xml" />
         <option value="$PROJECT_DIR$/content-service/pom.xml" />
         <option value="$PROJECT_DIR$/examination-service/pom.xml" />
         <option value="$PROJECT_DIR$/learning-service/pom.xml" />

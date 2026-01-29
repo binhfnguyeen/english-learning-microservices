@@ -10,7 +10,6 @@
         <module name="api-gateway" />
         <module name="user-service" />
         <module name="eureka-server" />
-        <module name="ai-service" />
       </profile>
       <profile name="Annotation profile for backend-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -23,6 +22,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="ai-service" target="17" />
       <module name="content-service" target="17" />
       <module name="examination-service" target="17" />
       <module name="learning-service" target="17" />
