@@ -33,21 +33,74 @@ public class SecurityConfig {
     protected String SIGNER_KEY;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request
+                .authorizeHttpRequests(auth -> auth
+                        // =========================
+                        // OPTIONS (CORS)
+                        // =========================
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/vocabularies/**", "/api/topics/**", "/api/tests/**", "/api/questions/**", "/api/exercises/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/vocabularies/**", "/api/topics/**", "/api/tests/**", "/api/questions/**", "/api/exercises/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/vocabularies/**", "/api/topics/**", "/api/tests/**", "/api/questions/**", "/api/exercises/**").hasAuthority("ROLE_ADMIN")
+                        // =========================
+                        // ADMIN APIs (CRUD content)
+                        // =========================
+                        // Vocabulary
+                        .requestMatchers(HttpMethod.POST,   "/api/vocabularies/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/vocabularies/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/vocabularies/**").hasAuthority("ROLE_ADMIN")
+                        // Topic
+                        .requestMatchers(HttpMethod.POST,   "/api/topics/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/topics/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/topics/**").hasAuthority("ROLE_ADMIN")
+                        // Test
+                        .requestMatchers(HttpMethod.POST,   "/api/tests/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/tests/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/tests/**").hasAuthority("ROLE_ADMIN")
+                        // Question
+                        .requestMatchers(HttpMethod.POST,   "/api/questions/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/questions/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/questions/**").hasAuthority("ROLE_ADMIN")
+                        // Exercise
+                        .requestMatchers(HttpMethod.POST,   "/api/exercises/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/exercises/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/exercises/**").hasAuthority("ROLE_ADMIN")
+                        // =========================
+                        // AUTHENTICATED USER APIs
+                        // =========================
+                        // GET vocab / topic / test / question / exercise
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/vocabularies/**",
+                                "/api/topics/**",
+                                "/api/tests/**",
+                                "/api/questions/**",
+                                "/api/exercises/**"
+                        ).authenticated()
+                        // Learned words
+                        .requestMatchers("/api/learnedWords/**").authenticated()
+                        .requestMatchers("/api/users/learnedWords").authenticated()
+                        // Progress
+                        .requestMatchers("/api/progress/**").authenticated()
+                        // Test results & answers
+                        .requestMatchers("/api/test-results/**").authenticated()
+                        .requestMatchers("/api/tests/*/results").authenticated()
+                        .requestMatchers("/api/test-results/*/answers").authenticated()
+                        // =========================
+                        // DEFAULT
+                        // =========================
                         .anyRequest().authenticated()
-                ).oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
-                        .decoder(jwtDecoder())
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                )
+
+                // =========================
+                // JWT Resource Server
+                // =========================
+                .oauth2ResourceServer(oauth2 ->
+                        oauth2.jwt(jwt -> jwt
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                        )
                 );
-        return httpSecurity.build();
+        return http.build();
     }
 
     @Bean

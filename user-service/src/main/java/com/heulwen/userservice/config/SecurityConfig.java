@@ -38,22 +38,36 @@ public class SecurityConfig {
         httpSecurity
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request
-                        // 1. Các API PUBLIC (Không cần đăng nhập)
+                .authorizeHttpRequests(auth -> auth
+                        // ========================
+                        // 1. PUBLIC APIs (No login)
+                        // ========================
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/login").permitAll() // Đăng nhập
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()      // Đăng ký
-                        .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password", "/api/forgot-password").permitAll() // Quên mật khẩu
-
-                        // 2. Các API cần quyền ADMIN
-                        .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ROLE_ADMIN") // Xem danh sách user
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasAuthority("ROLE_ADMIN") // Xóa user
-
-                        // 3. Các API cần xác thực (User đã đăng nhập)
-                        .requestMatchers(HttpMethod.GET, "/api/users/profile", "/api/users/{id}").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/users/{id}").authenticated() // Cập nhật thông tin
-
-                        // Mặc định: Tất cả request khác đều phải có Token
+                        // Auth
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/login",
+                                "/api/forgot-password",
+                                "/api/reset-password"
+                        ).permitAll()
+                        // Register user
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        // ========================
+                        // 2. ADMIN APIs
+                        // ========================
+                        // TẤT CẢ API /secure/**
+                        .requestMatchers("/api/secure/**").hasAuthority("ROLE_ADMIN")
+                        // ========================
+                        // 3. AUTHENTICATED USER APIs
+                        // ========================
+                        // Profile
+                        .requestMatchers(HttpMethod.GET, "/api/secure/profile").authenticated()
+                        // Update user (multipart)
+                        .requestMatchers(HttpMethod.POST, "/api/users/*").authenticated()
+                        // Get user by id
+                        .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
+                        // ========================
+                        // 4. DEFAULT
+                        // ========================
                         .anyRequest().authenticated()
                 );
 

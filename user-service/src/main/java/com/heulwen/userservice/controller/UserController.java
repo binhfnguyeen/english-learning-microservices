@@ -130,4 +130,13 @@ public class UserController {
         userService.deleteAdmin(userId);
         return ResponseEntity.ok(Map.of("message", "Xóa tài khoản Quản trị viên thành công!"));
     }
+
+    // --- GET USER BY ID ---
+    @GetMapping("/users/{userId}")
+    public ApiDto<UserDto> getUserById(@PathVariable("userId") Long userId) {
+        return ApiDto.<UserDto>builder()
+                .code(1000)
+                .result(userService.getUserById(userId))
+                .build();
+    }
 }

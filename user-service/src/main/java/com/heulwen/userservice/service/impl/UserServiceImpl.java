@@ -91,6 +91,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDto getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return UserMapper.map(user);
+    }
+
+    @Override
     @Transactional
     public void deleteAdmin(Long id) {
         if (!userRepository.existsById(id)) {

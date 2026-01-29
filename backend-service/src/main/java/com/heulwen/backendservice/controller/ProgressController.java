@@ -30,7 +30,6 @@ public class ProgressController {
     // --- TRACK DAILY PROGRESS ---
     @PostMapping("/{userId}/date-learned")
     public ApiDto<ProgressDto> trackDailyProgress(@PathVariable("userId") Long userId) {
-        // Gọi hàm trackDailyProgress đã define trong Service mới
         return ApiDto.<ProgressDto>builder()
                 .code(1000)
                 .result(progressService.trackDailyProgress(userId))

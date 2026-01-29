@@ -13,6 +13,7 @@ public interface UserService extends UserDetailsService {
     UserDto createUser(UserCreateForm form, MultipartFile avatar);
     UserDto createAdmin(UserCreateForm form, MultipartFile avatar);
     UserDto updateUser(Long userId, UserUpdateForm form, MultipartFile avatar);
+    UserDto getUserById(Long userId);
     void deleteAdmin(Long id);
     List<UserDto> getUsersAdmin(String role);
     List<UserDto> getUsers();

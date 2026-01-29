@@ -34,7 +34,6 @@ public class QuestionController {
     // --- CREATE QUESTION ---
     @PostMapping
     public ApiDto<QuestionDto> create(@RequestBody QuestionCreateForm request) {
-        // Logic trong Service đã bao gồm xử lý choices và map vocabulary
         return ApiDto.<QuestionDto>builder()
                 .code(1000)
                 .result(questionService.createQuestion(request))
