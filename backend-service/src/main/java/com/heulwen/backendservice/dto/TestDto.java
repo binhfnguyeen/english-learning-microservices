@@ -15,5 +15,6 @@ public class TestDto {
     private Long id;
     private String title;
     private String description;
+    private String difficultyLevel;
     private List<QuestionDto> questions;
 }

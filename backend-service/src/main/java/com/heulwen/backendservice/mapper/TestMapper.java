@@ -22,6 +22,7 @@ public class TestMapper {
         Test test = new Test();
         test.setTitle(form.getTitle());
         test.setDescription(form.getDescription());
+        test.setDifficultyLevel(form.getDifficultyLevel());
         return test;
     }
 
@@ -36,6 +37,7 @@ public class TestMapper {
 
         test.setTitle(form.getTitle());
         test.setDescription(form.getDescription());
+        test.setDifficultyLevel(form.getDifficultyLevel());
     }
 
     /**
@@ -52,6 +54,7 @@ public class TestMapper {
                 .id(test.getId())
                 .title(test.getTitle())
                 .description(test.getDescription())
+                .difficultyLevel(test.getDifficultyLevel())
                 .questions(
                         test.getQuestions() != null
                                 ? test.getQuestions()
