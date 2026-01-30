@@ -19,6 +19,7 @@ public class VocabularyMapper {
         vocab.setWord(form.getWord());
         vocab.setMeaning(form.getMeaning());
         vocab.setPartOfSpeech(form.getPartOfSpeech());
+        vocab.setLevel(form.getLevel());
 
         // MultipartFile không persist → gán vào field transient
         vocab.setPicFile(form.getImageFile());
@@ -39,6 +40,7 @@ public class VocabularyMapper {
         vocab.setWord(form.getWord());
         vocab.setMeaning(form.getMeaning());
         vocab.setPartOfSpeech(form.getPartOfSpeech());
+        vocab.setLevel(form.getLevel());
 
         // nếu client gửi ảnh mới
         if (form.getImageFile() != null && !form.getImageFile().isEmpty()) {

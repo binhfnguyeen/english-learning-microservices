@@ -9,6 +9,7 @@ import com.heulwen.backendservice.mapper.ProgressMapper;
 import com.heulwen.backendservice.model.Progress;
 import com.heulwen.backendservice.repository.LearnedWordRepository;
 import com.heulwen.backendservice.repository.ProgressRepository;
+import com.heulwen.backendservice.repository.TestResultRepository;
 import com.heulwen.backendservice.repository.httpClient.UserClient;
 import com.heulwen.backendservice.service.ProgressService;
 import lombok.AccessLevel;
@@ -30,6 +31,7 @@ public class ProgressServiceImpl implements ProgressService {
 
     ProgressRepository progressRepository;
     LearnedWordRepository learnedWordRepository;
+    TestResultRepository testResultRepository;
     UserClient userClient;
 
     @Override
@@ -48,7 +50,7 @@ public class ProgressServiceImpl implements ProgressService {
 
         long daysStudied = progressRepository.countDistinctDaysByUserId(userId);
         long totalWordsLearned = learnedWordRepository.sumWordsLearnedByUserId(userId);
-        String level = calculateLevel(daysStudied, totalWordsLearned);
+        String level = calculateCefrLevel(userId);
 
         return ProgressOverviewDto.builder()
                 .user(userDto)
@@ -78,13 +80,29 @@ public class ProgressServiceImpl implements ProgressService {
         return ProgressMapper.map(progressRepository.save(progress));
     }
 
-    private String calculateLevel(long daysStudied, long totalWordsLearned) {
-        if (daysStudied >= 10 && totalWordsLearned >= 50) {
-            return "intermediate";
-        } else if (daysStudied >= 5 && totalWordsLearned >= 20) {
-            return "beginner";
-        } else {
-            return "newbie";
-        }
+    private String calculateCefrLevel(Long userId) {
+        long scoreA1 = learnedWordRepository.countLearnedWordsByLevel(userId, "A1");
+        long scoreA2 = learnedWordRepository.countLearnedWordsByLevel(userId, "A2") * 2;
+        long scoreB1 = learnedWordRepository.countLearnedWordsByLevel(userId, "B1") * 3;
+        long scoreB2 = learnedWordRepository.countLearnedWordsByLevel(userId, "B2") * 4;
+        long scoreC1 = learnedWordRepository.countLearnedWordsByLevel(userId, "C1") * 5;
+        long scoreC2 = learnedWordRepository.countLearnedWordsByLevel(userId, "C1") * 6;
+
+        long totalVocabPoints = scoreA1 + scoreA2 + scoreB1 + scoreB2 + scoreC1 + scoreC2;
+
+        Double avgTestScore = testResultRepository.getAverageTestScore(userId);
+        if (avgTestScore == null) avgTestScore = 0.0;
+
+        long totalTestPoints = (long) (testResultRepository.countByUserId(userId)*avgTestScore*10);
+
+        long totalXP = totalVocabPoints + totalTestPoints;
+
+        if (totalXP < 100) return "A0 (Newbie)";
+        if (totalXP < 500) return "A1";
+        if (totalXP < 1200) return "A2";
+        if (totalXP < 2500) return "B1";
+        if (totalXP < 4000) return "B2";
+        if (totalXP < 6000) return "C1";
+        return "C2";
     }
 }

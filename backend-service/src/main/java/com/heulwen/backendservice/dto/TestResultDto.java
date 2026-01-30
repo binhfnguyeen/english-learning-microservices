@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TestResultDto {
     private Long id;
-    private Integer score;
+    private Double score;
     private LocalDateTime dateTaken;
     private String testTitle;
     private Long userId;

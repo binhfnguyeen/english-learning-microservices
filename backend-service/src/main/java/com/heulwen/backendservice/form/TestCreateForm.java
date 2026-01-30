@@ -8,5 +8,6 @@ import java.util.List;
 public class TestCreateForm {
     private String title;
     private String description;
+    private String difficultyLevel;
     private List<QuestionCreateForm> questions;
 }

@@ -37,6 +37,8 @@ public class TestResultServiceImpl implements TestResultService {
         Test test = testRepository.findById(form.getTestId())
                 .orElseThrow(() -> new ResourceNotFoundException("Test not found id: " + form.getTestId()));
 
+        int totalQuestions = test.getQuestions().size();
+
         TestResult testResult = new TestResult();
         testResult.setUserId(form.getUserId());
         testResult.setTest(test);
@@ -44,15 +46,21 @@ public class TestResultServiceImpl implements TestResultService {
 
         if (form.getAnswers() != null && !form.getAnswers().isEmpty()) {
             List<Answer> answers = new ArrayList<>();
+            long correctCount = 0;
             for (AnswerSubmissionForm ansForm : form.getAnswers()) {
                 QuestionChoice choice = questionChoiceRepository.findById(ansForm.getQuestionChoiceId())
                         .orElseThrow(() -> new ResourceNotFoundException("Choice not found id: " + ansForm.getQuestionChoiceId()));
+                if (Boolean.TRUE.equals(choice.getIsCorrect())) {
+                    correctCount++;
+                }
                 Answer answer = new Answer();
                 answer.setQuestionChoice(choice);
                 answer.setTestResult(testResult);
                 answers.add(answer);
             }
             testResult.setAnswers(answers);
+            double score = (totalQuestions > 0) ? (10.0 * correctCount) / totalQuestions : 0;
+            testResult.setScore(score);
         }
         TestResult saved = testResultRepository.save(testResult);
         return TestResultMapper.map(saved);

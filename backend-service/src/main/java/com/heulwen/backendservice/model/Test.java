@@ -33,6 +33,9 @@ public class Test implements Serializable {
     @Column(name = "description")
     String description;
 
+    @Column(name = "difficulty_level")
+    String difficultyLevel;
+
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Question> questions;
 

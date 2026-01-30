@@ -14,5 +14,6 @@ public class VocabularyDto {
     private String word;
     private String meaning;
     private String partOfSpeech;
+    private String level;
     private String picture;
 }

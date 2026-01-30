@@ -10,6 +10,7 @@ public class VocabularyCreateForm {
     private String word;
     private String meaning;
     private String partOfSpeech;
+    private String level;
     private MultipartFile imageFile;
     private List<Long> topicIds;
 }

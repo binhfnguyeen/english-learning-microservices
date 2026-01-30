@@ -27,7 +27,7 @@ public class TestResult implements Serializable {
     Long id;
 
     @Column(name = "score")
-    Integer score;
+    Double score;
 
     @Column(name = "date_taken")
     LocalDateTime dateTaken;

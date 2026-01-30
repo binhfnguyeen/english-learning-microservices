@@ -38,6 +38,9 @@ public class Vocabulary {
     @Column(name = "part_of_speech")
     String partOfSpeech;
 
+    @Column(name = "level")
+    String level;
+
     @Column(name = "picture")
     String picture;
 
