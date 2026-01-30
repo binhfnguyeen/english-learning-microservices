@@ -33,6 +33,9 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+      - ./docker/ollama/ollama-init.sh:/ollama-init.sh
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: ["chmod +x /ollama-init.sh && /ollama-init.sh"]
     restart: always
     networks:
       - microservice-network
