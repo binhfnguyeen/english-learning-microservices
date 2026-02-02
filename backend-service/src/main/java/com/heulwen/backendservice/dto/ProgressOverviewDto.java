@@ -12,5 +12,8 @@ public class ProgressOverviewDto {
     UserDto user;
     Integer daysStudied;
     Integer wordsLearned;
-    String level;
+
+    String cefr;
+    String proficiency;
+    Long xp;
 }

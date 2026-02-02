@@ -50,13 +50,18 @@ public class ProgressServiceImpl implements ProgressService {
 
         long daysStudied = progressRepository.countDistinctDaysByUserId(userId);
         long totalWordsLearned = learnedWordRepository.sumWordsLearnedByUserId(userId);
-        String level = calculateCefrLevel(userId);
+
+        long totalXP = calculateTotalXP(userId);
+        String cefr = getCefrFromXP(totalXP);
+        String proficiency = mapProficiency(cefr);
 
         return ProgressOverviewDto.builder()
                 .user(userDto)
                 .daysStudied((int) daysStudied)
                 .wordsLearned((int) totalWordsLearned)
-                .level(level)
+                .cefr(cefr)
+                .proficiency(proficiency)
+                .xp(totalXP)
                 .build();
     }
 
@@ -80,23 +85,25 @@ public class ProgressServiceImpl implements ProgressService {
         return ProgressMapper.map(progressRepository.save(progress));
     }
 
-    private String calculateCefrLevel(Long userId) {
+    private long calculateTotalXP(Long userId){
         long scoreA1 = learnedWordRepository.countLearnedWordsByLevel(userId, "A1");
         long scoreA2 = learnedWordRepository.countLearnedWordsByLevel(userId, "A2") * 2;
         long scoreB1 = learnedWordRepository.countLearnedWordsByLevel(userId, "B1") * 3;
         long scoreB2 = learnedWordRepository.countLearnedWordsByLevel(userId, "B2") * 4;
         long scoreC1 = learnedWordRepository.countLearnedWordsByLevel(userId, "C1") * 5;
-        long scoreC2 = learnedWordRepository.countLearnedWordsByLevel(userId, "C1") * 6;
+        long scoreC2 = learnedWordRepository.countLearnedWordsByLevel(userId, "C2") * 6;
 
         long totalVocabPoints = scoreA1 + scoreA2 + scoreB1 + scoreB2 + scoreC1 + scoreC2;
 
         Double avgTestScore = testResultRepository.getAverageTestScore(userId);
         if (avgTestScore == null) avgTestScore = 0.0;
 
-        long totalTestPoints = (long) (testResultRepository.countByUserId(userId)*avgTestScore*10);
+        long distinctTests = testResultRepository.countDistinctTestByUser(userId);
+        long totalTestPoints = (long) (distinctTests * avgTestScore * 3);
+        return totalVocabPoints + totalTestPoints;
+    }
 
-        long totalXP = totalVocabPoints + totalTestPoints;
-
+    private String getCefrFromXP(long totalXP) {
         if (totalXP < 100) return "A0 (Newbie)";
         if (totalXP < 500) return "A1";
         if (totalXP < 1200) return "A2";
@@ -104,5 +111,16 @@ public class ProgressServiceImpl implements ProgressService {
         if (totalXP < 4000) return "B2";
         if (totalXP < 6000) return "C1";
         return "C2";
+    }
+
+    private String mapProficiency(String cefr){
+        if (cefr.contains("A0")) return "Newbie";
+        return switch (cefr) {
+            case "A2" -> "Elementary";
+            case "B1" -> "Intermediate";
+            case "B2" -> "Upper-Intermediate";
+            case "C1", "C2" -> "Advanced";
+            default -> "Beginner";
+        };
     }
 }

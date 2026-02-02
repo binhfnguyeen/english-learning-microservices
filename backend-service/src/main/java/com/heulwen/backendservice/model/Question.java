@@ -26,7 +26,6 @@ public class Question implements Serializable {
     @Column(name = "id")
     Long id;
 
-    @Lob
     @Column(name = "content")
     String content;
 

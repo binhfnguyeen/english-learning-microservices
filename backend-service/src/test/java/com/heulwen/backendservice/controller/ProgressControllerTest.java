@@ -41,8 +41,14 @@ public class ProgressControllerTest {
         mockProgressOverviewDto = ProgressOverviewDto.builder()
                 .daysStudied(10)
                 .wordsLearned(50)
-                .level("A2")
-                .user(UserDto.builder().id(USER_ID).username("testuser").build()).build()
+                .cefr("A2")
+                .proficiency("Elementary")
+                .xp(1500L)
+                .user(UserDto.builder()
+                        .id(USER_ID)
+                        .username("testuser")
+                        .build())
+                .build();
         ;
 
         mockProgressDto = ProgressDto.builder()
@@ -60,8 +66,9 @@ public class ProgressControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(1000))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result.level").value("A2"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.result.wordsLearned").value(50));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result.cefr").value("A2"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result.wordsLearned").value(50))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.result.proficiency").value("Elementary"));
 
     }
 
