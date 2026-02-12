@@ -1,9 +1,17 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from api.v1.endpoints import chat, vocab, learning_path, health
+from core.eureka import init_eureka
 
-app = FastAPI(title="AI Service")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_eureka(app)
+    yield
+
+app = FastAPI(title="AI Service", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

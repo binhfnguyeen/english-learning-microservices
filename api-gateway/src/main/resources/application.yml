@@ -31,9 +31,9 @@ spring:
 
         # 3. Route cho AI Service
         - id: ai-service
-          uri: lb://ai-service
+          uri: lb://ai-service:8083
           predicates:
-            - Path=/api/ai/**
+            - Path=/api/ai/**, /docs, /openapi.json
 
       # --- CẤU HÌNH CORS (Để Frontend gọi được) ---
       globalcors:

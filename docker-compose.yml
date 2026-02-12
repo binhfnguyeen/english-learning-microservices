@@ -97,6 +97,22 @@ services:
     networks:
       - microservice-network
 
+  ai-service:
+    build:
+      context: ./ai-service
+    container_name: ai-service
+    ports:
+      - "8083:8083"
+    environment:
+      - OLLAMA_API_URL=http://ollama:11434/api/generate
+      - BACKEND_API_URL=http://api-gateway:8080/api
+    networks:
+      - microservice-network
+    depends_on:
+      - backend-service
+      - ollama
+      - eureka-server
+
 networks:
   microservice-network:
     driver: bridge
