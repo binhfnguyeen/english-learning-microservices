@@ -11,7 +11,12 @@ async def lifespan(app: FastAPI):
     await init_eureka(app)
     yield
 
-app = FastAPI(title="AI Service", lifespan=lifespan)
+app = FastAPI(
+    title="AI Service",
+    lifespan=lifespan,
+    docs_url="/api/ai/docs",
+    openapi_url="/api/ai/openapi.json"
+)
 
 app.add_middleware(
     CORSMiddleware,

@@ -33,7 +33,7 @@ spring:
         - id: ai-service
           uri: lb://ai-service:8083
           predicates:
-            - Path=/api/ai/**, /docs, /openapi.json
+            - Path=/api/ai/**
 
       # --- CẤU HÌNH CORS (Để Frontend gọi được) ---
       globalcors:
