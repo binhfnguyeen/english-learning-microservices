@@ -1,0 +1,33 @@
+const endpoints = {
+    login:"/login",
+    profile:"/secure/profile",
+    topics:"/topics",
+    register: "/users",
+    topic:(id: number) => `/topics/${id}`,
+    topic_vocabs:(id: number) => `/topics/${id}/vocabularies`,
+    vocabularies: "/vocabularies",
+    vocabulary: (id: number) => `/vocabularies/${id}`,
+    vocabNotInTopic: (id: number) => `/topics/${id}/vocabularies/not-in`,
+    Tests: "/tests",
+    Test: (id: number) => `/tests/${id}`,
+    fullTests: (id: number) => `/tests/full/${id}`,
+    testResults: (id: number) => `/tests/${id}/results`,
+    addTestResult: "/test-results",
+    answers: (trId: number) => `/test-results/${trId}/answer`,
+    learnedWords: "/learnedWords",
+    learnedWord: (userId: number) => `/learnedWords/${userId}`,
+    userLearnedWords: "/users/learnedWords",
+    progress: (userId: number) => `/progress/${userId}/overview`,
+    dateLearned:  (userId: number) => `/progress/${userId}/date-learned`,
+    resetPassword: "/reset-password",
+    forgotPassword: "/forgot-password",
+    updateProfile: (userId: number) => `/users/${userId}`,
+    listAdmin: "/secure/users/admin",
+    deleteAdmin: (userId: number) => `/secure/users/${userId}/admin`,
+    addExercise: "/exercises",
+    VocabExercises: (vocabId: number) => `/vocabularies/${vocabId}/exercises`,
+    delExercise: (exersId: number) => `/exercises/${exersId}`,
+    score: (postId: string) => `/pronunciation/score/${postId}`
+}
+
+export default endpoints;

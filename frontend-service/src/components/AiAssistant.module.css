@@ -1,0 +1,14 @@
+.hintBubble {
+  position: relative;
+}
+
+.hintBubble::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  right: 15px;
+  border-width: 8px 8px 0 8px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+  filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.2));
+}

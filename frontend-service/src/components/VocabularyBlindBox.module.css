@@ -1,0 +1,138 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  padding: 2rem;
+  background: transparent !important;
+}
+
+.card {
+  width: 200px;
+  height: 260px;
+  perspective: 1200px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.card.flipped .inner {
+  transform: rotateY(180deg);
+}
+
+.front,
+.back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  backface-visibility: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.front {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  letter-spacing: 1px;
+  text-transform: capitalize;
+}
+
+.back {
+  background: #fff;
+  color: #222;
+  transform: rotateY(180deg);
+  font-size: 1rem;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.8rem;
+  animation: fadeIn 0.6s ease;
+}
+
+.meaning {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.example {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: #555;
+  background: #f9f9f9;
+  padding: 0.6rem;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.quizContainer {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 40px auto;
+  text-align: center;
+  animation: fadeIn 0.6s ease;
+}
+
+.quizContainer h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.quizContainer h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 24px;
+}
+
+.quizContainer button {
+  transition: all 0.3s ease;
+  border-radius: 8px !important;
+  font-size: 16px;
+  padding: 10px 16px;
+}
+
+.quizContainer button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.quizContainer button:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.3;
+    transform: rotateY(180deg) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: rotateY(180deg) scale(1);
+  }
+}
