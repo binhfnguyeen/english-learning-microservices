@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+MODEL=phi3
+
 echo "🚀 Starting Ollama server..."
 ollama serve &
 
@@ -10,17 +12,17 @@ until ollama list >/dev/null 2>&1; do
 done
 
 # Check model existence
-if ollama list | grep -q "^llama3"; then
-  echo "✅ llama3 already exists. Skip pull."
+if ollama list | grep -q "^$MODEL"; then
+  echo "✅ $MODEL already exists. Skip pull."
 else
-  echo "📥 Pulling llama3 model..."
-  ollama pull llama3
+  echo "📥 Pulling $MODEL model..."
+  ollama pull $MODEL
 fi
 
 # Optional warm-up
 if [ "${OLLAMA_WARMUP:-true}" = "true" ]; then
-  echo "🔥 Warming up llama3..."
-  ollama run llama3 "hello" >/dev/null 2>&1 || true
+  echo "🔥 Warming up $MODEL..."
+  ollama run $MODEL "hello" >/dev/null 2>&1 || true
 fi
 
 wait
