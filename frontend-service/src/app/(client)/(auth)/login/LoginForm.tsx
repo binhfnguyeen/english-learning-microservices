@@ -31,9 +31,9 @@ export default function LoginForm() {
                 const token = res.data.result.token;
                 Cookies.set("accessToken", token, { path: "/", sameSite: "lax" });
 
-                const profile = await authApis.post(endpoints["profile"]);
+                const profile = await authApis.get(endpoints["profile"]);
                 dispatch({ type: "login", payload: profile.data.result });
-                await Apis.post(endpoints["dateLearned"](profile.data.result.id));
+                await authApis.post(endpoints["dateLearned"](profile.data.result.id));
                 setMsg("Đăng nhập thành công!");
                 router.push("/");
             }

@@ -25,7 +25,6 @@ public class ExerciseController {
     // --- CREATE EXERCISE ---
     @PostMapping("/exercises")
     public ApiDto<ExerciseDto> createExercise(@RequestBody ExerciseCreateForm request) {
-        // Logic trong Service đã xử lý map Parent (Vocabulary) và Children (Choices)
         return ApiDto.<ExerciseDto>builder()
                 .code(1000)
                 .result(exerciseService.createExercise(request))

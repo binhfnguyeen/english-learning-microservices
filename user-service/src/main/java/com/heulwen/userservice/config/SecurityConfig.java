@@ -52,21 +52,21 @@ public class SecurityConfig {
                         // Register user
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         // ========================
-                        // 2. ADMIN APIs
-                        // ========================
-                        // TẤT CẢ API /secure/**
-                        .requestMatchers("/api/secure/**").hasAuthority("ROLE_ADMIN")
-                        // ========================
-                        // 3. AUTHENTICATED USER APIs
+                        // 2. AUTHENTICATED USER APIs
                         // ========================
                         // Profile
                         .requestMatchers(HttpMethod.GET, "/api/secure/profile").authenticated()
+                        // ========================
+                        // 3. ADMIN APIs
+                        // ========================
+                        // TẤT CẢ API /secure/**
+                        .requestMatchers("/api/secure/**").hasAuthority("ROLE_ADMIN")
                         // Update user (multipart)
                         .requestMatchers(HttpMethod.POST, "/api/users/*").authenticated()
                         // Get user by id
                         .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
                         // ========================
-                        // 4. DEFAULT
+                        // 5. DEFAULT
                         // ========================
                         .anyRequest().authenticated()
                 );

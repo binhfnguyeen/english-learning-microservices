@@ -31,9 +31,11 @@ export default function AdminLogin() {
 
             if (res.data.code == 1000) {
                 const token = res.data.result.token;
-                Cookies.set("accessToken", token, { path: "/", sameSite: "lax" });
+                if (token) {
+                    Cookies.set("accessToken", token, { path: "/" });
+                }
 
-                const profile = await authApis.post(endpoints["profile"]);
+                const profile = await authApis.get(endpoints["profile"]);
                 dispatch({ type: "login", payload: profile.data.result });
                 setMsg("Đăng nhập thành công!")
                 router.push("/admin");

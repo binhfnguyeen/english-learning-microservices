@@ -1,7 +1,8 @@
 package com.heulwen.backendservice.service.impl;
 
 import com.heulwen.backendservice.dto.ExerciseDto;
-import com.heulwen.backendservice.exception.ResourceNotFoundException;
+import com.heulwen.backendservice.exception.AppException;
+import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.form.ExerciseChoiceForm;
 import com.heulwen.backendservice.form.ExerciseCreateForm;
 import com.heulwen.backendservice.mapper.ExerciseChoiceMapper;
@@ -35,7 +36,7 @@ public class ExerciseServiceImpl implements ExerciseService {
     public ExerciseDto createExercise(ExerciseCreateForm form) {
         // 1. Kiểm tra Vocabulary tồn tại
         Vocabulary vocab = vocabularyRepository.findById(form.getVocabularyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found id: " + form.getVocabularyId()));
+                .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
 
         // 2. Kiểm tra logic nghiệp vụ
         if (ExerciseType.LISTEN_AND_TYPE.equals(form.getExerciseType())) {
@@ -44,7 +45,7 @@ public class ExerciseServiceImpl implements ExerciseService {
                     ExerciseType.LISTEN_AND_TYPE
             );
             if (exists) {
-                throw new RuntimeException("Exercise LISTEN_AND_TYPE already exists for this vocabulary");
+                throw new AppException(ErrorCode.EXERCISE_ALREADY_EXISTS);
             }
         }
 
@@ -69,9 +70,8 @@ public class ExerciseServiceImpl implements ExerciseService {
 
     @Override
     public List<ExerciseDto> getExercisesByVocabularyId(Long vocabularyId) {
-        // Kiểm tra vocab tồn tại (tùy chọn, để báo lỗi rõ ràng hơn)
         if (!vocabularyRepository.existsById(vocabularyId)) {
-            throw new ResourceNotFoundException("Vocabulary not found id: " + vocabularyId);
+            throw new AppException(ErrorCode.VOCAB_NOT_FOUND);
         }
 
         // Repository cần có hàm findByVocabularyId trả về List<Exercise>
@@ -84,7 +84,7 @@ public class ExerciseServiceImpl implements ExerciseService {
     @Transactional
     public void deleteExercise(Long id) {
         if (!exerciseRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Exercise not found id: " + id);
+            throw new AppException(ErrorCode.EXERCISE_NOT_FOUND);
         }
         exerciseRepository.deleteById(id);
     }

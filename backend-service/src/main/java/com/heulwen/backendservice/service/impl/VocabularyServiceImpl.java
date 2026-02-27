@@ -3,7 +3,8 @@ package com.heulwen.backendservice.service.impl;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.heulwen.backendservice.dto.VocabularyDto;
-import com.heulwen.backendservice.exception.ResourceNotFoundException;
+import com.heulwen.backendservice.exception.AppException;
+import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.form.VocabularyCreateForm;
 import com.heulwen.backendservice.mapper.VocabularyMapper;
 import com.heulwen.backendservice.model.Vocabulary;
@@ -43,7 +44,7 @@ public class VocabularyServiceImpl implements VocabularyService {
     @Transactional
     public VocabularyDto updateVocabulary(Long id, VocabularyCreateForm form, MultipartFile image) {
         Vocabulary vocab = vocabularyRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
         VocabularyMapper.map(form, vocab);
         uploadImageIfExists(vocab, image);
         return VocabularyMapper.map(vocabularyRepository.save(vocab));
@@ -64,7 +65,7 @@ public class VocabularyServiceImpl implements VocabularyService {
     @Override
     public VocabularyDto getVocabularyById(Long id) {
         Vocabulary vocab = vocabularyRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
         return VocabularyMapper.map(vocab);
     }
 
@@ -72,7 +73,7 @@ public class VocabularyServiceImpl implements VocabularyService {
     @Transactional
     public void deleteVocabulary(Long id) {
         if (!vocabularyRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Vocabulary not found with id: " + id);
+            throw new AppException(ErrorCode.VOCAB_NOT_FOUND);
         }
         vocabularyRepository.deleteById(id);
     }

@@ -3,6 +3,8 @@ package com.heulwen.userservice.service.impl;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.heulwen.userservice.dto.UserDto;
+import com.heulwen.userservice.exception.AppException;
+import com.heulwen.userservice.exception.ErrorCode;
 import com.heulwen.userservice.exception.ResourceNotFoundException;
 import com.heulwen.userservice.form.UserCreateForm;
 import com.heulwen.userservice.form.UserUpdateForm;
@@ -41,7 +43,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto createUser(UserCreateForm form, MultipartFile avatar) {
         if (userRepository.existsByUsername(form.getUsername())) {
-            throw new RuntimeException("User existed"); // Hoặc Custom Exception
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         // 1. Map Form -> Entity
@@ -50,7 +52,7 @@ public class UserServiceImpl implements UserService {
         // 2. Set các giá trị mặc định/bảo mật
         user.setPassword(passwordEncoder.encode(form.getPassword()));
         user.setIsActive(true);
-        user.setRole("USER"); // Model User đang dùng String cho Role
+        user.setRole("USER");
 
         // 3. Upload Avatar
         uploadAvatarIfExists(user, avatar);
@@ -63,7 +65,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto createAdmin(UserCreateForm form, MultipartFile avatar) {
         if (userRepository.existsByUsername(form.getUsername())) {
-            throw new RuntimeException("User existed");
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         User user = UserMapper.map(form);
@@ -80,7 +82,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto updateUser(Long userId, UserUpdateForm form, MultipartFile avatar) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found id: " + userId));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         // Update thông tin từ Form vào User hiện tại
         UserMapper.map(form, user);
@@ -93,7 +95,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return UserMapper.map(user);
     }
 
@@ -101,14 +103,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteAdmin(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found id: " + id);
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
         }
         userRepository.deleteById(id);
     }
 
     @Override
     public List<UserDto> getUsersAdmin(String role) {
-        // Repository cần hàm findByRole(String role)
         return userRepository.findByRole(role).stream()
                 .map(UserMapper::map)
                 .toList();
@@ -129,7 +130,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Invalid username!"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),

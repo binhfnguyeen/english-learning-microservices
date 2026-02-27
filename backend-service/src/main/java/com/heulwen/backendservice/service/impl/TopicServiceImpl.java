@@ -2,7 +2,8 @@ package com.heulwen.backendservice.service.impl;
 
 import com.heulwen.backendservice.dto.TopicDto;
 import com.heulwen.backendservice.dto.VocabularyDto;
-import com.heulwen.backendservice.exception.ResourceNotFoundException;
+import com.heulwen.backendservice.exception.AppException;
+import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.form.TopicCreateForm;
 import com.heulwen.backendservice.mapper.TopicMapper;
 import com.heulwen.backendservice.mapper.VocabularyMapper;
@@ -19,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -35,7 +35,7 @@ public class TopicServiceImpl implements TopicService {
         Topic topic;
         if (id != null) {
             topic = topicRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
+                    .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
             TopicMapper.map(form, topic);
         } else {
             topic = TopicMapper.map(form);
@@ -57,7 +57,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public TopicDto getTopicById(Long id) {
         Topic topic = topicRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
         return TopicMapper.map(topic);
     }
 
@@ -69,9 +69,9 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public void addVocabToTopic(Long topicId, Long vocabId) {
         Topic topic = topicRepository.findById(topicId)
-                .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
         Vocabulary vocab = vocabularyRepository.findById(vocabId)
-                .orElseThrow(() -> new ResourceNotFoundException("Vocab not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
 
         if (topic.getVocabularies() == null) {
             topic.setVocabularies(new ArrayList<>());
@@ -100,9 +100,9 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public void removeVocabFromTopic(Long topicId, Long vocabId) {
         Topic topic = topicRepository.findById(topicId)
-                .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
         Vocabulary vocabulary = vocabularyRepository.findById(vocabId)
-                .orElseThrow(() -> new ResourceNotFoundException("Vocab not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
 
         if (topic.getVocabularies() != null) {
             topic.getVocabularies().remove(vocabulary);

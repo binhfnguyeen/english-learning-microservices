@@ -77,8 +77,7 @@ public class SecurityConfig {
                                 "/api/exercises/**"
                         ).authenticated()
                         // Learned words
-                        .requestMatchers("/api/learnedWords/**").authenticated()
-                        .requestMatchers("/api/users/learnedWords").authenticated()
+                        .requestMatchers("/api/learned-words/**").authenticated()
                         // Progress
                         .requestMatchers("/api/progress/**").authenticated()
                         // Test results & answers

@@ -4,7 +4,8 @@ import com.heulwen.backendservice.dto.ApiDto;
 import com.heulwen.backendservice.dto.ProgressDto;
 import com.heulwen.backendservice.dto.ProgressOverviewDto;
 import com.heulwen.backendservice.dto.UserDto;
-import com.heulwen.backendservice.exception.ResourceNotFoundException;
+import com.heulwen.backendservice.exception.AppException;
+import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.mapper.ProgressMapper;
 import com.heulwen.backendservice.model.Progress;
 import com.heulwen.backendservice.repository.LearnedWordRepository;
@@ -75,7 +76,7 @@ public class ProgressServiceImpl implements ProgressService {
         boolean exists = progressRepository.existsByUserIdAndLearnedDateBetween(userId, startOfDay, endOfDay);
 
         if (exists) {
-            throw new RuntimeException("Learned date already exists for today");
+            throw new AppException(ErrorCode.LEARNED_DATE_ALREADY_EXISTS);
         }
 
         Progress progress = new Progress();

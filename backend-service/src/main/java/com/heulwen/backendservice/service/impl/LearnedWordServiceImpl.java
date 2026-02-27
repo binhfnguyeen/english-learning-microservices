@@ -4,7 +4,8 @@ import com.heulwen.backendservice.dto.ApiDto;
 import com.heulwen.backendservice.dto.LearnedWordDto;
 import com.heulwen.backendservice.dto.UserDto;
 import com.heulwen.backendservice.dto.UserStatsDto;
-import com.heulwen.backendservice.exception.ResourceNotFoundException;
+import com.heulwen.backendservice.exception.AppException;
+import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.form.LearnedWordCreateForm;
 import com.heulwen.backendservice.mapper.LearnedWordMapper;
 import com.heulwen.backendservice.model.LearnedWord;
@@ -39,9 +40,9 @@ public class LearnedWordServiceImpl implements LearnedWordService {
     public LearnedWordDto addLearnedWord(LearnedWordCreateForm form) {
         Long userId = form.getUserId();
         Vocabulary vocab = vocabularyRepository.findById(form.getVocabularyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found id: " + form.getVocabularyId()));
+                .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
         if (learnedWordRepository.existsByUserIdAndVocabulary(userId, vocab)) {
-            throw new RuntimeException("Word already learned");
+            throw new AppException(ErrorCode.WORD_ALREADY_LEARNED);
         }
         LearnedWord learnedWord = new LearnedWord();
         learnedWord.setUserId(userId);

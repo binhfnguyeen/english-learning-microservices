@@ -1,6 +1,8 @@
 package com.heulwen.userservice.service.impl;
 
 import com.heulwen.userservice.dto.AuthenticateDto;
+import com.heulwen.userservice.exception.AppException;
+import com.heulwen.userservice.exception.ErrorCode;
 import com.heulwen.userservice.exception.ResourceNotFoundException;
 import com.heulwen.userservice.form.AuthenticateForm;
 import com.heulwen.userservice.model.User;
@@ -37,13 +39,13 @@ public class AuthenticateServiceImpl implements AuthenticateService {
     @Override
     public AuthenticateDto authenticate(AuthenticateForm form) {
         User user = userRepository.findByUsername(form.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not existed"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         // 2. Check Password
         boolean authenticated = passwordEncoder.matches(form.getPassword(), user.getPassword());
 
         if (!authenticated) {
-            throw new RuntimeException("Unauthenticated"); // Nên dùng BadCredentialsException của Spring Security
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
         // 3. Generate Token

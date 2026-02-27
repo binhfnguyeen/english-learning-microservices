@@ -1,8 +1,8 @@
 package com.heulwen.backendservice.service.impl;
 
 import com.heulwen.backendservice.dto.TestDto;
-import com.heulwen.backendservice.exception.ResourceNotFoundException;
-import com.heulwen.backendservice.form.ExerciseChoiceForm; // Tạm dùng nếu chưa có QuestionChoiceForm
+import com.heulwen.backendservice.exception.AppException;
+import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.form.QuestionChoiceForm; // Cần tạo form này
 import com.heulwen.backendservice.form.QuestionCreateForm; // Cần tạo form này
 import com.heulwen.backendservice.form.TestCreateForm;
@@ -60,7 +60,7 @@ public class TestServiceImpl implements TestService {
                         // 4. Lookup Vocabulary (Logic cũ: check vocabularyId)
                         if (cForm.getVocabularyId() != null) {
                             Vocabulary vocab = vocabularyRepository.findById(cForm.getVocabularyId())
-                                    .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found id: " + cForm.getVocabularyId()));
+                                    .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
                             choice.setVocabulary(vocab);
                         }
                         choices.add(choice);
@@ -78,7 +78,7 @@ public class TestServiceImpl implements TestService {
     @Transactional
     public TestDto updateTest(Long id, TestCreateForm form) {
         Test test = testRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Test not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
         TestMapper.map(form, test);
 
         return TestMapper.map(testRepository.save(test));
@@ -98,7 +98,7 @@ public class TestServiceImpl implements TestService {
     @Override
     public TestDto getTestById(Long id) {
         Test test = testRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Test not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
         return TestMapper.map(test);
     }
 
@@ -106,7 +106,7 @@ public class TestServiceImpl implements TestService {
     @Transactional
     public void deleteTest(Long id) {
         if (!testRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Test not found with id: " + id);
+            throw new AppException(ErrorCode.TEST_NOT_FOUND);
         }
         testRepository.deleteById(id);
     }

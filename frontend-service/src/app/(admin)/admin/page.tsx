@@ -18,6 +18,7 @@ import { Bar, Pie } from "react-chartjs-2";
 
 import { Container, Row, Col, Card, Spinner } from "react-bootstrap";
 import { AwardFill, BarChartFill, BookFill, PeopleFill } from "react-bootstrap-icons";
+import authApis from "@/configs/AuthApis";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement, BarElement, CategoryScale, LinearScale);
 
@@ -36,7 +37,7 @@ interface User {
 
 interface Stats {
     user: User;
-    totalLearnedWords: number;
+    totalWords: number;
 }
 
 export default function AdminDashboard() {
@@ -46,7 +47,7 @@ export default function AdminDashboard() {
     const loadStats = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["userLearnedWords"]);
+            const res = await authApis.get(endpoints["learnedWords"]);
             setStats(res.data.result);
         } catch (err) {
             console.error(err);
@@ -60,14 +61,14 @@ export default function AdminDashboard() {
     }, []);
 
     const labels = stats.map((s) => s.user.username);
-    const values = stats.map((s) => s.totalLearnedWords);
+    const values = stats.map((s) => s.totalWords);
 
     const totalUsers = stats.length;
     const totalWords = values.reduce((a, b) => a + b, 0);
-    const topUser = stats.reduce(
-        (max, s) => (s.totalLearnedWords > max.totalLearnedWords ? s : max),
-        stats[0] || { user: { username: "" }, totalLearnedWords: 0 }
-    );
+
+    const topUser = stats.length > 0
+        ? stats.reduce((max, s) => (s.totalWords > max.totalWords ? s : max))
+        : { user: { username: "" }, totalWords: 0 };
 
     const barData = {
         labels,
@@ -148,7 +149,7 @@ export default function AdminDashboard() {
                                     <div className="mb-2 fs-3"><AwardFill /></div>
                                     <h6 className="text-uppercase fw-semibold">Top User</h6>
                                     <h5 className="fw-bold">{topUser?.user?.username || "N/A"}</h5>
-                                    <p className="mb-0">{topUser?.totalLearnedWords || 0} words</p>
+                                    <p className="mb-0">{topUser?.totalWords || 0} words</p>
                                 </Card.Body>
                             </Card>
                         </Col>

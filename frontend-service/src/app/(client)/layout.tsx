@@ -17,7 +17,7 @@ export default function ClientRootLayout({ children }: { children: React.ReactNo
             const token = Cookies.get("accessToken");
             if (token) {
                 try {
-                    const res = await authApis.post(endpoints['profile']);
+                    const res = await authApis.get(endpoints['profile']);
                     dispatch({
                         type: "login",
                         payload: res.data.result

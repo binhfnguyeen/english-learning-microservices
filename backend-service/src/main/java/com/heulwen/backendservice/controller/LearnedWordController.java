@@ -22,7 +22,7 @@ public class LearnedWordController {
     LearnedWordService learnedWordService;
 
     // --- ADD LEARNED WORD ---
-    @PostMapping("/learnedWords")
+    @PostMapping("/learned-words")
     public ApiDto<LearnedWordDto> addLearnedWord(@RequestBody LearnedWordCreateForm request) {
         return ApiDto.<LearnedWordDto>builder()
                 .code(1000)
@@ -31,7 +31,7 @@ public class LearnedWordController {
     }
 
     // --- GET LEARNED WORDS BY USER ---
-    @GetMapping("/learnedWords/{userId}")
+    @GetMapping("/learned-words/{userId}")
     public ApiDto<List<LearnedWordDto>> getLearnedWordsByUser(@PathVariable("userId") Long userId) { // Đổi int -> Long
         return ApiDto.<List<LearnedWordDto>>builder()
                 .code(1000)
@@ -40,7 +40,7 @@ public class LearnedWordController {
     }
 
     // --- GET USER STATS (Leaderboard/Thống kê) ---
-    @GetMapping("/users/learnedWords")
+    @GetMapping("learned-words")
     public ApiDto<List<UserStatsDto>> getUserLearnedWordsStats() {
         return ApiDto.<List<UserStatsDto>>builder()
                 .code(1000)

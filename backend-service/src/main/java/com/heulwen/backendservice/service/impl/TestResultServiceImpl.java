@@ -1,7 +1,8 @@
 package com.heulwen.backendservice.service.impl;
 
 import com.heulwen.backendservice.dto.TestResultDto;
-import com.heulwen.backendservice.exception.ResourceNotFoundException;
+import com.heulwen.backendservice.exception.AppException;
+import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.form.AnswerSubmissionForm;
 import com.heulwen.backendservice.form.TestSubmissionForm;
 import com.heulwen.backendservice.mapper.TestResultMapper;
@@ -35,7 +36,7 @@ public class TestResultServiceImpl implements TestResultService {
     @Transactional
     public TestResultDto createTestResult(TestSubmissionForm form) {
         Test test = testRepository.findById(form.getTestId())
-                .orElseThrow(() -> new ResourceNotFoundException("Test not found id: " + form.getTestId()));
+                .orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
 
         int totalQuestions = test.getQuestions().size();
 
@@ -49,7 +50,7 @@ public class TestResultServiceImpl implements TestResultService {
             long correctCount = 0;
             for (AnswerSubmissionForm ansForm : form.getAnswers()) {
                 QuestionChoice choice = questionChoiceRepository.findById(ansForm.getQuestionChoiceId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Choice not found id: " + ansForm.getQuestionChoiceId()));
+                        .orElseThrow(() -> new AppException(ErrorCode.CHOICE_NOT_FOUND));
                 if (Boolean.TRUE.equals(choice.getIsCorrect())) {
                     correctCount++;
                 }
@@ -76,7 +77,7 @@ public class TestResultServiceImpl implements TestResultService {
     @Override
     public TestResultDto getTestResultById(Long id) {
         TestResult testResult = testResultRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Test result not found id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.TEST_RESULTS_NOT_FOUND));
         return TestResultMapper.map(testResult);
     }
 

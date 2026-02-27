@@ -1,7 +1,8 @@
 package com.heulwen.backendservice.service.impl;
 
 import com.heulwen.backendservice.dto.QuestionDto;
-import com.heulwen.backendservice.exception.ResourceNotFoundException;
+import com.heulwen.backendservice.exception.AppException;
+import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.form.QuestionChoiceForm;
 import com.heulwen.backendservice.form.QuestionCreateForm;
 import com.heulwen.backendservice.mapper.QuestionChoiceMapper;
@@ -41,7 +42,7 @@ public class QuestionServiceImpl implements QuestionService {
         // 2. Link tới Test (Parent)
         if (form.getTestId() != null) {
             Test test = testRepository.findById(form.getTestId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Test not found id: " + form.getTestId()));
+                    .orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
             question.setTest(test);
         }
 
@@ -55,7 +56,7 @@ public class QuestionServiceImpl implements QuestionService {
                 // Link tới Vocabulary nếu có
                 if (choiceForm.getVocabularyId() != null) {
                     Vocabulary vocab = vocabularyRepository.findById(choiceForm.getVocabularyId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found id: " + choiceForm.getVocabularyId()));
+                            .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
                     choice.setVocabulary(vocab);
                 }
                 choices.add(choice);
@@ -71,7 +72,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public QuestionDto updateQuestion(Long id, QuestionCreateForm form) {
         Question question = questionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Question not found id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
 
         // Update thông tin cơ bản
         QuestionMapper.map(form, question);
@@ -79,11 +80,10 @@ public class QuestionServiceImpl implements QuestionService {
         // Update link tới Test nếu thay đổi
         if (form.getTestId() != null) {
             Test test = testRepository.findById(form.getTestId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Test not found id: " + form.getTestId()));
+                    .orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
             question.setTest(test);
         }
 
-        // Lưu ý: Logic update danh sách Choices (One-to-Many) thường phức tạp (orphan removal).
         // Nếu form gửi lên danh sách choices mới, cách đơn giản nhất là xóa cũ thêm mới:
         if (form.getChoices() != null) {
             // Xóa danh sách cũ (cần cấu hình orphanRemoval=true trong Entity Question)
@@ -96,7 +96,7 @@ public class QuestionServiceImpl implements QuestionService {
 
                 if (choiceForm.getVocabularyId() != null) {
                     Vocabulary vocab = vocabularyRepository.findById(choiceForm.getVocabularyId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Vocabulary not found id: " + choiceForm.getVocabularyId()));
+                            .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
                     choice.setVocabulary(vocab);
                 }
                 question.getChoices().add(choice);
@@ -116,14 +116,14 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public QuestionDto getQuestionById(Long id) {
         Question question = questionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Question not found id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
         return QuestionMapper.map(question);
     }
 
     @Override
     public void deleteQuestion(Long id) {
         if (!questionRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Question not found id: " + id);
+            throw new AppException(ErrorCode.QUESTION_NOT_FOUND);
         }
         questionRepository.deleteById(id);
     }
