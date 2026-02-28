@@ -6,12 +6,21 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Badge, Card, Container, ListGroup, Nav } from "react-bootstrap";
+import authApis from "@/configs/AuthApis";
 
-interface TestFull {
+interface Vocabulary {
     id: number;
-    title: string;
-    description: string;
-    questions: Question[];
+    word: string;
+    meaning: string;
+    partOfSpeech: string;
+    level: string | null;
+    picture: string | null;
+}
+
+interface Choice {
+    id: number;
+    isCorrect: boolean | null;
+    vocabulary: Vocabulary;
 }
 
 interface Question {
@@ -20,11 +29,11 @@ interface Question {
     choices: Choice[];
 }
 
-interface Choice {
+interface TestFull {
     id: number;
-    isCorrect: boolean;
-    vocabularyId: number;
-    word: string;
+    title: string;
+    description: string;
+    questions: Question[];
 }
 
 export default function FullTest() {
@@ -36,7 +45,7 @@ export default function FullTest() {
     const loadFullTest = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["fullTests"](id));
+            const res = await authApis.get(endpoints["Test"](id));
             setTest(res.data.result);
         } catch (err) {
             console.error(err);
@@ -76,8 +85,8 @@ export default function FullTest() {
                                             const label = String.fromCharCode(65 + choiceIndex);
                                             return (
                                                 <li key={c.id}>
-                                                    <strong>{label}.</strong> {c.word}{" "}
-                                                    {c.isCorrect && (
+                                                    <strong>{label}.</strong> {c.vocabulary.word}{" "}
+                                                    {c.isCorrect === true && (
                                                         <Badge bg="success" className="ms-2">
                                                             Đáp án đúng
                                                         </Badge>

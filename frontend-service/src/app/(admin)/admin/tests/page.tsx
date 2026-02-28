@@ -10,6 +10,7 @@ interface Test {
     id: number;
     title: string;
     description: string;
+    difficultyLevel: string;
 }
 
 export default function Tests() {
@@ -26,7 +27,7 @@ export default function Tests() {
 
         try {
             setLoading(true);
-            const res = await Apis.get(url);
+            const res = await authApis.get(url);
             const content = res.data.result.content || [];
             setHasMore(!res.data.result.last);
 
@@ -124,6 +125,7 @@ export default function Tests() {
                                 <Card.Body>
                                     <Card.Title className="fw-bold text-dark">{test.title}</Card.Title>
                                     <Card.Text className="text-muted small">{test.description}</Card.Text>
+                                    <Card.Text className="text-muted small">{test.difficultyLevel}</Card.Text>
                                 </Card.Body>
                                 <Card.Footer className="bg-white border-0 pt-0 pb-3 px-3">
                                     <div className="d-flex gap-2">

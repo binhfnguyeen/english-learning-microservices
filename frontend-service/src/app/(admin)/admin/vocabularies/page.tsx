@@ -13,6 +13,7 @@ interface Vocabulary {
     word: string;
     meaning: string;
     partOfSpeech: string;
+    level: string;
     picture: string;
 }
 export default function Vocabularies() {
@@ -30,7 +31,7 @@ export default function Vocabularies() {
         }
         try {
             setLoading(true);
-            const res = await Apis.get(url);
+            const res = await authApis.get(url);
 
             const content = res.data.result.content || [];
             setHasMore(!res.data.result.last)
@@ -121,6 +122,7 @@ export default function Vocabularies() {
                                     {vocab.word}{" "}
                                     <small className="text-muted">({vocab.partOfSpeech})</small>
                                 </Card.Title>
+                                <Card.Text>{vocab.level}</Card.Text>
                                 <Card.Text>{vocab.meaning}</Card.Text>
 
                                 <div className="d-flex gap-2 mt-2">

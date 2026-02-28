@@ -15,12 +15,14 @@ import {
     InputGroup,
     Table,
 } from "react-bootstrap";
+import authApis from "@/configs/AuthApis";
 
 interface Vocabulary {
     id: number;
     word: string;
     meaning: string;
     partOfSpeech: string;
+    level: string;
     speech: string;
     picture: string;
 }
@@ -38,7 +40,7 @@ export default function VocabsPage() {
         }
         try {
             setLoading(true);
-            const res = await Apis.get(url);
+            const res = await authApis.get(url);
 
             const content = res.data.result.content || [];
             setHasMore(!res.data.result.last);
@@ -97,6 +99,7 @@ export default function VocabsPage() {
                                 <th>STT</th>
                                 <th>Từ vựng</th>
                                 <th>Nghĩa</th>
+                                <th>Mức độ</th>
                                 <th>Loại từ</th>
                                 <th>Hành động</th>
                             </tr>
@@ -114,6 +117,7 @@ export default function VocabsPage() {
                                         <td className="text-center fw-semibold">{idx + 1}</td>
                                         <td className="fw-bold">{v.word}</td>
                                         <td>{v.meaning}</td>
+                                        <td>{v.level}</td>
                                         <td className="text-center">
                                             <span className="badge bg-success text-light">
                                                 {v.partOfSpeech}

@@ -47,12 +47,14 @@ public class VocabularyController {
             @RequestParam("word") String word,
             @RequestParam("meaning") String meaning,
             @RequestParam("partOfSpeech") String partOfSpeech,
+            @RequestParam("level") String level,
             @RequestParam(value = "picture", required = false) MultipartFile picFile
     ) {
         VocabularyCreateForm form = new VocabularyCreateForm();
         form.setWord(word);
         form.setMeaning(meaning);
         form.setPartOfSpeech(partOfSpeech);
+        form.setLevel(level);
 
         VocabularyDto result;
         if (id != null) {

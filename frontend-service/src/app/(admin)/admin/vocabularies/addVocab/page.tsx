@@ -10,6 +10,7 @@ export default function AddVocabs() {
     const [word, setWord] = useState<string>("");
     const [meaning, setMeaning] = useState<string>("");
     const [partOfSpeech, setPartOfSpeech] = useState<string>("");
+    const [level, setLevel] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function AddVocabs() {
             formData.append("word", word);
             formData.append("meaning", meaning);
             formData.append("partOfSpeech", partOfSpeech);
+            formData.append("level", level);
             if (imageRef.current?.files?.[0]) {
                 formData.append("picture", imageRef.current.files[0]);
             }
@@ -39,6 +41,7 @@ export default function AddVocabs() {
             setWord("");
             setMeaning("");
             setPartOfSpeech("");
+            setLevel("");
             setPreviewImage(null);
             if (imageRef.current) imageRef.current.value = "";
         } catch (ex) {
@@ -116,6 +119,24 @@ export default function AddVocabs() {
                                         onChange={(e) => setPartOfSpeech(e.target.value)}
                                         required
                                     />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label className="fw-semibold">Mức độ</Form.Label>
+                                    <Form.Select
+                                        value={level}
+                                        onChange={(e) => setLevel(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">-- Chọn mức độ --</option>
+                                        <option value="A1">A1</option>
+                                        <option value="A2">A2</option>
+                                        <option value="B1">B1</option>
+                                        <option value="B2">B2</option>
+                                        <option value="C1">C1</option>
+                                        <option value="C2">C2</option>
+                                    </Form.Select>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>

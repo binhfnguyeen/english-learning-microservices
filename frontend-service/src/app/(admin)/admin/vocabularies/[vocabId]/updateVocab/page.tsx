@@ -12,6 +12,7 @@ interface Vocabulary {
     word: string;
     meaning: string;
     partOfSpeech: string;
+    level: string;
     picture: string;
 }
 
@@ -22,6 +23,7 @@ export default function UpdateVocab() {
     const [word, setWord] = useState<string>("");
     const [meaning, setMeaning] = useState<string>("");
     const [partOfSpeech, setPartOfSpeech] = useState<string>("");
+    const [level, setLevel] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export default function UpdateVocab() {
     const loadVocabulary = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["vocabulary"](id));
+            const res = await authApis.get(endpoints["vocabulary"](id));
             setVocabulary(res.data.result);
         } catch (err) {
             console.error(err);
@@ -48,6 +50,7 @@ export default function UpdateVocab() {
             formData.append("word", word);
             formData.append("meaning", meaning);
             formData.append("partOfSpeech", partOfSpeech);
+            formData.append("level", level);
             if (imageRef.current?.files?.[0]) {
                 formData.append("picture", imageRef.current.files[0]);
             }
@@ -73,6 +76,7 @@ export default function UpdateVocab() {
             setWord(vocabulary.word || "");
             setMeaning(vocabulary.meaning || "");
             setPartOfSpeech(vocabulary.partOfSpeech || "");
+            setLevel(vocabulary.level || "");
             setPreviewImage(vocabulary.picture || "");
         }
     }, [vocabulary])
@@ -149,6 +153,24 @@ export default function UpdateVocab() {
                                         onChange={(e) => setPartOfSpeech(e.target.value)}
                                         required
                                     />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label className="fw-semibold">Mức độ</Form.Label>
+                                    <Form.Select
+                                        value={level}
+                                        onChange={(e) => setLevel(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">-- Chọn mức độ --</option>
+                                        <option value="A1">A1</option>
+                                        <option value="A2">A2</option>
+                                        <option value="B1">B1</option>
+                                        <option value="B2">B2</option>
+                                        <option value="C1">C1</option>
+                                        <option value="C2">C2</option>
+                                    </Form.Select>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>

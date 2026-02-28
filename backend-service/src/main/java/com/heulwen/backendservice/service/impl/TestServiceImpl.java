@@ -57,6 +57,7 @@ public class TestServiceImpl implements TestService {
                         QuestionChoice choice = QuestionChoiceMapper.map(cForm);
                         choice.setQuestion(question); // Set relationship Parent
 
+
                         // 4. Lookup Vocabulary (Logic cũ: check vocabularyId)
                         if (cForm.getVocabularyId() != null) {
                             Vocabulary vocab = vocabularyRepository.findById(cForm.getVocabularyId())

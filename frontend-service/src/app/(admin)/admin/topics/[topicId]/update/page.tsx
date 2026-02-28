@@ -25,7 +25,7 @@ export default function Update() {
     const loadTopic = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["topic"](id));
+            const res = await authApis.get(endpoints["topic"](id));
             setTopic(res.data.result);
         } catch (ex) {
             console.error(ex);
@@ -39,11 +39,10 @@ export default function Update() {
         try {
             setLoading(true);
             const body = {
-                id,
                 name,
                 description
             }
-            const res = await authApis.post(endpoints["topics"], body);
+            const res = await authApis.put(endpoints["topic"](id), body);
             console.info(res.data);
             setMsg("Cập nhật chủ đề thành công!");
         } catch (ex) {

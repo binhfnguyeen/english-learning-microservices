@@ -10,7 +10,6 @@ const endpoints = {
     vocabNotInTopic: (id: number) => `/topics/${id}/vocabularies/not-in`,
     Tests: "/tests",
     Test: (id: number) => `/tests/${id}`,
-    fullTests: (id: number) => `/tests/full/${id}`,
     testResults: (id: number) => `/tests/${id}/results`,
     addTestResult: "/test-results",
     answers: (trId: number) => `/test-results/${trId}/answer`,

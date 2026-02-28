@@ -37,7 +37,7 @@ export default function VocabTopic() {
 
         try {
             setLoading(true);
-            const res = await Apis.get(url);
+            const res = await authApis.get(url);
             const content = res.data.result.content || [];
             setHasMore(!res.data.result.last)
 

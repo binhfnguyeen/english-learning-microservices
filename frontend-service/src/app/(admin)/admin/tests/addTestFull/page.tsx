@@ -1,5 +1,4 @@
 "use client";
-import Apis from "@/configs/Apis";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
@@ -18,7 +17,7 @@ interface Topic {
 
 interface ChoiceForm {
     vocabularyId: number;
-    correct: boolean;
+    isCorrect: boolean;
 }
 
 interface QuestionForm {
@@ -32,11 +31,12 @@ export default function AddTestFull() {
     const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
     const [title, setTitle] = useState<string>("");
     const [description, setDescription] = useState<string>("");
+    const [difficultyLevel, setDifficultyLevel] = useState<string>("");
     const [questions, setQuestions] = useState<QuestionForm[]>([]);
 
     useEffect(() => {
         const loadTopics = async () => {
-            const res = await Apis.get(`${endpoints["topics"]}?page=0&size=9999`);
+            const res = await authApis.get(`${endpoints["topics"]}?page=0&size=9999`);
             setTopics(res.data.result.content || []);
         };
 
@@ -46,7 +46,7 @@ export default function AddTestFull() {
     const handleSelectTopic = async (id: number) => {
         setSelectedTopicId(id);
         const url = `${endpoints["topic_vocabs"](id)}?page=0&size=9999`;
-        const res = await Apis.get(url);
+        const res = await authApis.get(url);
         setVocabularies(res.data.result.content || []);
     };
 
@@ -63,7 +63,7 @@ export default function AddTestFull() {
 
     const addChoice = (questionIndex: number) => {
         const updated = [...questions];
-        updated[questionIndex].choices.push({ vocabularyId: 0, correct: false });
+        updated[questionIndex].choices.push({ vocabularyId: 0, isCorrect: false });
         setQuestions(updated);
     };
 
@@ -85,11 +85,12 @@ export default function AddTestFull() {
         const payload = {
             title,
             description,
+            difficultyLevel,
             questions
         };
         try {
             console.log(JSON.stringify(payload, null, 2));
-            await authApis.post("/tests/full", payload);
+            await authApis.post(endpoints["Tests"], payload);
             alert("Thêm đề thành công!");
         } catch (err) {
             console.error(err);
@@ -140,6 +141,14 @@ export default function AddTestFull() {
                 />
             </Form.Group>
 
+            <Form.Group className="mb-3">
+                <Form.Label>Mức độ</Form.Label>
+                <Form.Control
+                    value={difficultyLevel}
+                    onChange={(e) => setDifficultyLevel(e.target.value)}
+                />
+            </Form.Group>
+
             {questions.map((q, qIndex) => (
                 <div key={qIndex} className="border p-3 mb-3">
                     <Form.Group>
@@ -169,9 +178,9 @@ export default function AddTestFull() {
                             <Form.Check
                                 type="checkbox"
                                 label="Đúng"
-                                checked={c.correct}
+                                checked={c.isCorrect}
                                 onChange={(e) =>
-                                    updateChoice(qIndex, cIndex, "correct", e.target.checked)
+                                    updateChoice(qIndex, cIndex, "isCorrect", e.target.checked)
                                 }
                             />
                         </div>

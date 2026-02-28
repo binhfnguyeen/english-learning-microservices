@@ -34,7 +34,7 @@ export default function ExercisesVocabPage() {
     const loadExercises = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["VocabExercises"](id));
+            const res = await authApis.get(endpoints["VocabExercises"](id));
             setExercises(res.data.result);
         } catch (err) {
             console.error(err);

@@ -62,6 +62,7 @@ public class VocabularyMapper {
                 .word(vocab.getWord())
                 .meaning(vocab.getMeaning())
                 .partOfSpeech(vocab.getPartOfSpeech())
+                .level(vocab.getLevel())
                 .picture(vocab.getPicture())
                 .build();
     }

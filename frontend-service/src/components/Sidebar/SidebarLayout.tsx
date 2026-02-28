@@ -34,6 +34,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
 
     const handleLogout = () => {
         dispatch({ type: "logout" });
+        window.location.reload();
     };
 
     return (

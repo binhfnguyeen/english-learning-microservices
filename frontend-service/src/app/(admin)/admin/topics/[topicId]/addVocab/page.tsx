@@ -31,7 +31,7 @@ export default function AddVocab() {
             if (keyword) {
                 url += `?keyword=${encodeURIComponent(keyword)}`;
             }
-            const res = await Apis.get(url);
+            const res = await authApis.get(url);
             setVocabularies(res.data.result || []);
         } catch (err) {
             console.error(err);
