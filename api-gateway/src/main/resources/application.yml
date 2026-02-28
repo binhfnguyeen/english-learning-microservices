@@ -10,7 +10,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
           lower-case-service-id: true
 
       # --- CẤU HÌNH ROUTING ---
@@ -20,7 +20,7 @@ spring:
         - id: user-service
           uri: lb://user-service  # "lb" là Load Balancer, trỏ đến tên service trong Eureka
           predicates:
-            - Path=/api/login, /api/forgot-password, /api/reset-password, /api/secure/**, /api/auth/**, /api/users/**,
+            - Path=/api/login, /api/forgot-password, /api/reset-password, /api/secure/**, /api/users/**
 
         # 2. Route cho Backend Service
         # Các API: Từ vựng, Bài tập, Topic, Test...

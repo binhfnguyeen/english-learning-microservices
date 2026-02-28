@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Container, Nav } from "react-bootstrap";
+import authApis from "@/configs/AuthApis";
 
 interface Topic {
     id: number;
@@ -23,7 +24,7 @@ export default function StartLearn() {
     const loadTopic = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["topic"](id));
+            const res = await authApis.get(endpoints["topic"](id));
             setTopic(res.data.result);
         } catch (err) {
             console.error(err);

@@ -17,7 +17,9 @@ export default function ForgotPassword() {
     const handleForgotPassword = async () => {
         try {
             setLoading(true);
-            await Apis.post(endpoints["forgotPassword"], { email: email });
+            await Apis.post(
+                `${endpoints["forgotPassword"]}?email=${encodeURIComponent(email)}`
+            );
             setMsg("Mã OTP đã được gửi đến email của bạn!");
             setStep(2);
         } catch (err: unknown) {
@@ -35,12 +37,9 @@ export default function ForgotPassword() {
     const handleResetPassword = async () => {
         try {
             setLoading(true);
-            const body = {
-                email: email,
-                otp: otp,
-                newPassword: newPassword
-            }
-            await Apis.post(endpoints["resetPassword"], body);
+            await Apis.post(
+                `${endpoints["resetPassword"]}?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`
+            );
             setMsg("Đổi mật khẩu thành công! Hãy đăng nhập lại.");
             setStep(1);
             setEmail("");

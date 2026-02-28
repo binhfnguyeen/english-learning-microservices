@@ -54,7 +54,7 @@ export default function FullTest() {
     const loadFullTest = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["fullTests"](id));
+            const res = await authApis.get(endpoints["Test"](id));
             setTest(res.data.result);
         } catch (err) {
             console.error(err);

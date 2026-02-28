@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { Button, Card, Container, Nav, Spinner, Table } from "react-bootstrap";
+import authApis from "@/configs/AuthApis";
 
 interface Test {
     id: number;
@@ -68,7 +69,7 @@ export default function StartTest() {
     const loadFullTest = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["fullTests"](id));
+            const res = await Apis.get(endpoints["Test"](id));
             setFullTest(res.data.result);
         } catch (err) {
             console.error(err);
@@ -93,12 +94,12 @@ export default function StartTest() {
         try {
             if (!user) return;
             setLoading(true);
-            const res = await Apis.get(endpoints["testResults"](id), {
+            const res = await authApis.get(endpoints["testResults"](id), {
                 params: { userId: user.id }
             });
-            setTestResult(res.data.result);
+            setTestResult(res.data.result || []);
         } catch (err) {
-            console.error(err);
+            console.error("Lỗi tải kết quả thi:", err);
         } finally {
             setLoading(false);
         }

@@ -11,6 +11,7 @@ import * as Icon from 'react-bootstrap-icons';
 import Swal from "sweetalert2";
 import Exercise from "./Exercise";
 import useTTS from "@/utils/useTTS";
+import authApis from "@/configs/AuthApis";
 
 interface Vocabulary {
     id: number;
@@ -38,7 +39,7 @@ export default function Learning() {
         const url = `${endpoints["topic_vocabs"](id)}?page=${page}&size=1`;
         try {
             setLoading(true);
-            const res = await Apis.get(url);
+            const res = await authApis.get(url);
 
             const content = res.data.result.content || [];
             setHasMore(!res.data.result.last)
@@ -63,7 +64,7 @@ export default function Learning() {
     const handleNext = async (vocabId: number) => {
         try {
             if (!user) return;
-            await Apis.post(endpoints["learnedWords"], {
+            await authApis.post(endpoints["learnedWords"], {
                 date: new Date().toISOString().split('T')[0],
                 userId: user.id,
                 vocabularyId: vocabId
@@ -83,7 +84,7 @@ export default function Learning() {
 
         try {
             if (!user) return;
-            await Apis.post(endpoints["learnedWords"], {
+            await authApis.post(endpoints["learnedWords"], {
                 date: new Date().toISOString().split('T')[0],
                 userId: user.id,
                 vocabularyId: vocabId

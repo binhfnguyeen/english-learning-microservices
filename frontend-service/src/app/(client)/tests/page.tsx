@@ -1,14 +1,15 @@
 "use client"
-import Apis from "@/configs/Apis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Alert, Button, Card, Container, Form, Nav, Spinner } from "react-bootstrap";
+import authApis from "@/configs/AuthApis";
 
 interface Test {
     id: number;
     title: string;
     description: string;
+    difficultyLevel: string;
 }
 
 export default function Tests() {
@@ -19,19 +20,22 @@ export default function Tests() {
     const [loading, setLoading] = useState<boolean>(false);
 
     const loadTests = async () => {
-        let url = `${endpoints["Tests"]}?page=${page}`;
+        let url = `${endpoints["Tests"]}?page=${page}&size=6`;
         if (keyword) url += `&keyword=${keyword}`;
 
         try {
             setLoading(true);
-            const res = await Apis.get(url);
-            const content = res.data.result.content || [];
-            setHasMore(!res.data.result.last);
+            const res = await authApis.get(url);
+
+            const pageData = res.data.result;
+            const content: Test[] = pageData.content || [];
+
+            setHasMore(!pageData.last);
 
             if (page === 0) {
                 setTests(content);
             } else {
-                setTests((prev) => [...prev, ...content]);
+                setTests(prev => [...prev, ...content]);
             }
         } catch (err) {
             console.error(err);
@@ -82,8 +86,19 @@ export default function Tests() {
                         <div key={test.id} className="col-md-6 col-lg-4">
                             <Card className="shadow-sm border-0 h-100 hover-shadow transition">
                                 <Card.Body>
-                                    <Card.Title className="fw-bold text-dark">{test.title}</Card.Title>
-                                    <Card.Text className="text-muted small">{test.description}</Card.Text>
+                                    <Card.Title className="fw-bold text-dark">
+                                        {test.title}
+                                    </Card.Title>
+
+                                    <div className="mb-2">
+                                        <span className="badge bg-warning text-dark">
+                                            {test.difficultyLevel}
+                                        </span>
+                                    </div>
+
+                                    <Card.Text className="text-muted small">
+                                        {test.description}
+                                    </Card.Text>
                                 </Card.Body>
                                 <Card.Footer className="bg-white border-0 pt-0 pb-3 px-3">
                                     <div className="d-flex gap-2">

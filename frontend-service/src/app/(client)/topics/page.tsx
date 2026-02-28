@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Alert, Button, Card, Col, Container, Form, Modal, Row } from "react-bootstrap";
 import { useWindowSize } from '@react-hook/window-size';
 import { GiftFill } from "react-bootstrap-icons";
+import authApis from "@/configs/AuthApis";
 interface Topic {
     id: number;
     name: string;
@@ -29,7 +30,7 @@ export default function Topics() {
 
         try {
             setLoading(true);
-            const res = await Apis.get(url);
+            const res = await authApis.get(url);
             const content = res.data.result.content || [];
             setHasMore(!res.data.result.last);
 
@@ -70,14 +71,6 @@ export default function Topics() {
                 <h2 className="fw-bold text-primary m-0">English Topics</h2>
 
                 <div className="d-flex gap-3 align-items-center flex-wrap">
-                    <Button
-                        style={{background: "linear-gradient(135deg, #6a11cb, #2575fc)"}}
-                        className="px-4 py-2 fw-semibold shadow-sm d-flex align-items-center gap-2 rounded-3"
-                        onClick={() => setShowBlindBox(true)}
-                    >
-                        <GiftFill size={15}/> Open Blind Box
-                    </Button>
-
                     <Form className="mb-0">
                         <div className="position-relative">
                             <Form.Control

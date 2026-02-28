@@ -5,6 +5,7 @@ import useTTS from "@/utils/useTTS";
 import React, { useEffect, useState } from "react";
 import { Card, Button, Form, Spinner } from "react-bootstrap";
 import { VolumeUp } from "react-bootstrap-icons";
+import authApis from "@/configs/AuthApis";
 
 interface Props {
     vocabId: number;
@@ -38,7 +39,7 @@ export default function Exercise({ vocabId, onDone }: Props) {
         const loadExercises = async (): Promise<void> => {
             try {
                 setLoading(true);
-                const res = await Apis.get(endpoints["VocabExercises"](vocabId));
+                const res = await authApis.get(endpoints["VocabExercises"](vocabId));
                 const data: Exercise[] = res.data.result || [];
                 if (data.length === 0) {
                     onDone();
