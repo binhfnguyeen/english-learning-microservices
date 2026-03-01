@@ -11,6 +11,15 @@ import { useContext, useEffect, useState } from "react";
 import { Button, Card, Container, ListGroup, Nav } from "react-bootstrap";
 import Swal from "sweetalert2";
 
+interface Vocabulary {
+    id: number;
+    word: string;
+    meaning: string;
+    partOfSpeech: string;
+    level: string | null;
+    picture: string | null;
+}
+
 interface TestFull {
     id: number;
     title: string;
@@ -26,9 +35,8 @@ interface Question {
 
 interface Choice {
     id: number;
-    isCorrect: boolean;
-    vocabularyId: number;
-    word: string;
+    isCorrect: boolean | null;
+    vocabulary: Vocabulary;
 }
 
 interface Answer {
@@ -102,22 +110,27 @@ export default function FullTest() {
             if (!user) return;
 
             const body = {
-                score: finalScore,
-                dateTaken: new Date().toISOString().split('T')[0],
                 testId: id,
                 userId: user.id,
-                answers: answers.map(a => ({ questionChoiceId: a.choiceId }))
+                answers: answers
+                    .filter(a => a.choiceId !== null)
+                    .map(a => ({
+                        questionChoiceId: a.choiceId
+                    }))
             };
+
             await authApis.post(endpoints["addTestResult"], body);
+
             router.push(`/tests/${id}`);
         } catch (err) {
-            console.error(err);
+            console.error("Lỗi khi lưu kết quả:", err);
+            Swal.fire("Lỗi", "Không thể lưu kết quả bài thi", "error");
         }
     };
 
     useEffect(() => {
         loadFullTest();
-    }, [id])
+    }, [id, user])
 
     useEffect(() => {
         const ans = answers.find(a => a.questionId === test?.questions[currentQuestionIndex].id);
@@ -161,7 +174,7 @@ export default function FullTest() {
                                             active={selectedChoice === c.id}
                                             onClick={() => handleSelectChoice(test.questions[currentQuestionIndex].id, c.id)}
                                         >
-                                            {c.word}
+                                            {c.vocabulary.word}
                                         </ListGroup.Item>
                                     ))}
                                 </ListGroup>

@@ -17,6 +17,7 @@ export default function UpdateProfile() {
     });
 
     const [avatar, setAvatar] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,6 +33,12 @@ export default function UpdateProfile() {
         e.preventDefault();
         if (!user?.id) return;
 
+        // ===== CONFIRM TRƯỚC KHI CẬP NHẬT =====
+        const confirmUpdate = window.confirm(
+            "Bạn có chắc muốn cập nhật thông tin cá nhân?"
+        );
+        if (!confirmUpdate) return;
+
         const data = new FormData();
         data.append("firstName", formData.firstName);
         data.append("lastName", formData.lastName);
@@ -40,30 +47,44 @@ export default function UpdateProfile() {
         if (avatar) data.append("avatar", avatar);
 
         try {
+            setLoading(true);
+
             await authApis.post(endpoints["updateProfile"](user.id), data, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
+
             alert("Cập nhật thành công!");
         } catch (err) {
             console.error(err);
             alert("Có lỗi xảy ra khi cập nhật.");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="container mt-5">
-            <div className="card shadow-lg border-0 rounded-3">
-                <div className="card-header bg-primary text-white text-center py-3 rounded-top">
-                    <h3 className="mb-0">Thông tin cá nhân</h3>
+        <div className="container mt-5" style={{ maxWidth: 600 }}>
+            <div
+                className="card border-0"
+                style={{
+                    borderRadius: 16,
+                    boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
+                    background: "linear-gradient(135deg,#ffffff,#f8fafc)"
+                }}
+            >
+                <div className="text-center pt-4">
+                    <h4 className="fw-bold">Cập nhật thông tin</h4>
+                    <div className="text-muted small">Quản lý hồ sơ cá nhân</div>
                 </div>
 
                 <div className="card-body p-4">
                     {!context ? (
                         <p className="text-center text-danger">
-                            Không tìm thấy context người dùng.
+                            Không tìm thấy thông tin người dùng.
                         </p>
                     ) : (
                         <>
+                            {/* Avatar */}
                             <div className="text-center mb-4">
                                 <img
                                     src={
@@ -72,27 +93,28 @@ export default function UpdateProfile() {
                                             : user?.avatar || "/default-avatar.png"
                                     }
                                     alt="Avatar"
-                                    className="rounded-circle border shadow-sm"
+                                    className="rounded-circle"
                                     style={{
-                                        width: "120px",
-                                        height: "120px",
+                                        width: 120,
+                                        height: 120,
                                         objectFit: "cover",
+                                        border: "4px solid #fff",
+                                        boxShadow: "0 6px 16px rgba(0,0,0,0.1)"
                                     }}
                                 />
-                                <div className="mt-3 d-flex justify-content-center">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="form-control w-50"
-                                        onChange={handleAvatarChange}
-                                    />
-                                </div>
+
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="form-control mt-3"
+                                    onChange={handleAvatarChange}
+                                />
                             </div>
 
                             <form onSubmit={handleSubmit}>
                                 <div className="row">
                                     <div className="col-md-6 mb-3">
-                                        <label className="form-label fw-bold">Họ</label>
+                                        <label className="form-label fw-semibold">Họ</label>
                                         <input
                                             type="text"
                                             name="firstName"
@@ -103,7 +125,7 @@ export default function UpdateProfile() {
                                     </div>
 
                                     <div className="col-md-6 mb-3">
-                                        <label className="form-label fw-bold">Tên</label>
+                                        <label className="form-label fw-semibold">Tên</label>
                                         <input
                                             type="text"
                                             name="lastName"
@@ -114,36 +136,38 @@ export default function UpdateProfile() {
                                     </div>
                                 </div>
 
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label fw-bold">Email</label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            className="form-control"
-                                        />
-                                    </div>
+                                <div className="mb-3">
+                                    <label className="form-label fw-semibold">Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        className="form-control"
+                                    />
+                                </div>
 
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label fw-bold">Số điện thoại</label>
-                                        <input
-                                            type="text"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            className="form-control"
-                                        />
-                                    </div>
+                                <div className="mb-3">
+                                    <label className="form-label fw-semibold">Số điện thoại</label>
+                                    <input
+                                        type="text"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        className="form-control"
+                                    />
                                 </div>
 
                                 <button
                                     type="submit"
-                                    className="btn btn-primary w-100 mt-3 py-2 fw-bold shadow-sm"
-                                    style={{ transition: "0.3s" }}
+                                    disabled={loading}
+                                    className="btn btn-primary w-100 py-2 fw-bold"
+                                    style={{
+                                        borderRadius: 10,
+                                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+                                    }}
                                 >
-                                    Cập nhật
+                                    {loading ? "Đang cập nhật..." : "Lưu thay đổi"}
                                 </button>
                             </form>
                         </>

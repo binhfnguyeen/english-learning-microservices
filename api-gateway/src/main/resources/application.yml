@@ -27,7 +27,7 @@ spring:
         - id: backend-service
           uri: lb://backend-service
           predicates:
-            - Path=/api/vocabularies/**, /api/topics/**, /api/tests/**, /api/questions/**, /api/exercises/**, /api/answers/**, /api/progress/**, /api/learned-words/**
+            - Path=/api/vocabularies/**, /api/topics/**, /api/tests/**, /api/questions/**, /api/test-results/**, /api/exercises/**, /api/answers/**, /api/progress/**, /api/learned-words/**
 
         # 3. Route cho AI Service
         - id: ai-service

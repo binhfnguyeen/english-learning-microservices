@@ -11,16 +11,9 @@ import java.util.List;
 @Repository
 public interface TestResultRepository extends JpaRepository<TestResult, Long>{
     List<TestResult> findByUserIdAndTestId(Long userId, Long testId);
-    @Query("""
-        SELECT AVG(t.maxScore)
-        FROM (
-        SELECT MAX(tr.score) AS maxScore
-        FROM TestResult tr
-        WHERE tr.userId = :userId
-        GROUP BY tr.test.id
-        ) t
-    """)
+    @Query(value = "SELECT AVG(maxScore) FROM (SELECT MAX(score) AS maxScore FROM test_results WHERE user_id = :userId GROUP BY test_id) AS t", nativeQuery = true)
     Double getAverageTestScore(@Param("userId") Long userId);
+
     @Query("""
         SELECT COUNT(DISTINCT tr.test.id)
         FROM TestResult tr

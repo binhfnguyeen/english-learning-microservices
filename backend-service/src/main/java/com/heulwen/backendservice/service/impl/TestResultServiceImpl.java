@@ -75,6 +75,7 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public TestResultDto getTestResultById(Long id) {
         TestResult testResult = testResultRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TEST_RESULTS_NOT_FOUND));
@@ -82,6 +83,7 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TestResultDto> getTestResultsByUserAndTest(Long userId, Long testId) {
         List<TestResult> results = testResultRepository.findByUserIdAndTestId(userId, testId);
         return results.stream()

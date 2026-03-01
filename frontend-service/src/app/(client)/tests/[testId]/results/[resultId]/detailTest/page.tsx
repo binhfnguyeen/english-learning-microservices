@@ -1,16 +1,27 @@
-"use client"
+"use client";
+
 import MySpinner from "@/components/MySpinner";
-import Apis from "@/configs/Apis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Badge, Card, Container, ListGroup, Nav } from "react-bootstrap";
+import { Badge, Card, Container, ListGroup, Nav, ProgressBar } from "react-bootstrap";
+import authApis from "@/configs/AuthApis";
+
+interface Vocabulary {
+    id: number;
+    word: string;
+    meaning: string;
+    partOfSpeech: string;
+    level: string | null;
+    picture: string | null;
+}
 
 interface TestFull {
     id: number;
     title: string;
     description: string;
+    difficultyLevel: string;
     questions: Question[];
 }
 
@@ -22,105 +33,67 @@ interface Question {
 
 interface Choice {
     id: number;
-    isCorrect: boolean;
-    vocabularyId: number;
-    word: string;
-}
-
-interface Explanation {
-    questionId: number;
-    explanation: string;
-    relatedWords: string[];
+    isCorrect: boolean | null;
+    vocabulary: Vocabulary;
 }
 
 interface Answer {
-    questionChoiceId: UserChoice;
-}
-
-interface UserChoice {
-    id: number;
-    isCorrect: boolean;
+    questionId: number;
+    questionChoiceId: number;
 }
 
 export default function DetailTest() {
-    const { testId } = useParams();
-    const { resultId } = useParams();
+    const { testId, resultId } = useParams();
     const id = Number(testId);
     const rsId = Number(resultId);
-    const [test, setTest] = useState<TestFull>();
+
+    const [test, setTest] = useState<TestFull | null>(null);
     const [answers, setAnswers] = useState<Answer[]>([]);
+    const [score, setScore] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
-    const [explanations, setExplanations] = useState<Explanation[]>([]);
-    const [loadingExplain, setLoadingExplain] = useState<boolean>(false);
 
-    const loadFullTest = async () => {
+    const loadData = async () => {
         try {
             setLoading(true);
-            const res = await Apis.get(endpoints["fullTests"](id));
-            setTest(res.data.result);
+
+            const resTest = await authApis.get(endpoints["Test"](id));
+            setTest(resTest.data.result);
+
+            const resResult = await authApis.get(`/test-results/${rsId}`);
+            setScore(resResult.data.result?.score || 0);
+
+            const resAnswers = await authApis.get(endpoints["answers"](id));
+            setAnswers(resAnswers.data.result || []);
+
         } catch (err) {
-            console.error(err);
+            console.error("Lỗi tải dữ liệu:", err);
         } finally {
             setLoading(false);
         }
-    }
-
-    const loadExplanations = async (questions: Question[]) => {
-        try {
-            setLoadingExplain(true);
-            const res = await fetch("/api/gemini", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ questions }),
-            });
-
-            if (!res.ok) throw new Error("Gemini API error");
-            const data: Explanation[] = await res.json();
-            setExplanations(data);
-        } catch (err) {
-            console.error("Load explanations error:", err);
-        } finally {
-            setLoadingExplain(false);
-        }
-    }
-
-    const loadAnswers = async () => {
-        try {
-            setLoading(true);
-            const res = await Apis.get(endpoints["answers"](rsId));
-            setAnswers(res.data.result);
-            console.info(res.data.result);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    }
+    };
 
     useEffect(() => {
-        loadFullTest();
-    }, [id])
+        if (id && rsId) loadData();
+    }, [id, rsId]);
 
-    useEffect(() => {
-        loadAnswers();
-    }, [rsId])
+    const getDifficultyVariant = (level?: string) => {
+        if (!level) return "secondary";
+        const text = level.toLowerCase();
+        if (text.includes("easy") || text.includes("dễ")) return "success";
+        if (text.includes("medium") || text.includes("trung")) return "info";
+        if (text.includes("hard") || text.includes("khó")) return "danger";
+        return "secondary";
+    };
 
-    useEffect(() => {
-        if (test?.questions?.length) {
-            loadExplanations(test.questions);
-        }
-    }, [test]);
-
-    const getExplanation = (qid: number) =>
-        explanations.find((e) => e.questionId === qid);
+    const percent = (score / 10) * 100;
 
     return (
         <Container className="my-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold">Chi tiết đề: {test?.title}</h2>
-                <Nav className="mb-3">
-                    <Link href="/tests" className="btn btn-outline-secondary btn-sm">
-                        Quay lại
+                <h2 className="fw-bold text-primary">Kết quả chi tiết</h2>
+                <Nav>
+                    <Link href={`/tests/${id}`} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        Quay lại bài thi
                     </Link>
                 </Nav>
             </div>
@@ -128,75 +101,101 @@ export default function DetailTest() {
             {loading ? (
                 <MySpinner />
             ) : test ? (
-                <Card className="shadow-sm">
-                    <Card.Body>
-                        <Card.Text className="text-muted">{test.description}</Card.Text>
+                <>
+                    <Card className="mb-4 border-0 shadow-sm overflow-hidden">
+                        <Card.Header className="bg-primary text-white fw-bold py-3">
+                            {test.title}
+                        </Card.Header>
+                        <Card.Body className="bg-light p-4">
+                            <div className="row g-3">
+                                <div className="col-md-4">
+                                    <div className="bg-white p-3 rounded shadow-sm text-center">
+                                        <div className="text-muted small mb-1">Độ khó</div>
+                                        <Badge bg={getDifficultyVariant(test.difficultyLevel)} className="px-3 py-2">
+                                            {test.difficultyLevel}
+                                        </Badge>
+                                    </div>
+                                </div>
 
-                        <ListGroup variant="flush">
-                            {test.questions.map((q, index) => {
-                                const explain = getExplanation(q.id);
-                                return (
-                                    <ListGroup.Item key={q.id}>
-                                        <strong>Câu {index + 1}:</strong> {q.content}
-                                        <ul
-                                            className="mt-2 mb-0"
-                                            style={{ listStyle: "none", paddingLeft: 0 }}
-                                        >
-                                            {q.choices.map((c, choiceIndex) => {
-                                                const label = String.fromCharCode(65 + choiceIndex);
-
-                                                const userAnswer = answers.find(a =>
-                                                    q.choices.some(ch => ch.id === a.questionChoiceId.id) &&
-                                                    a.questionChoiceId.id === c.id
-                                                );
-
-                                                const isUserChoice = !!userAnswer;
-                                                const isCorrect = c.isCorrect;
-
-                                                let badge = null;
-                                                if (isCorrect && (!isUserChoice || (isUserChoice && isCorrect))) {
-                                                    badge = <Badge bg="success" className="ms-2">Đáp án đúng</Badge>;
-                                                } else if (isUserChoice && !isCorrect) {
-                                                    badge = <Badge bg="danger" className="ms-2">Bạn chọn</Badge>;
-                                                }
-
-                                                return (
-                                                    <li key={c.id}>
-                                                        <strong>{label}.</strong> {c.word} {badge}
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-
-                                        <div className="mt-2 p-2 bg-light rounded">
-                                            {loadingExplain && !explain ? (
-                                                <small className="text-muted">
-                                                    Đang tải giải thích...
-                                                </small>
-                                            ) : explain ? (
-                                                <>
-                                                    <div>
-                                                        <strong>Giải thích:</strong> {explain.explanation}
-                                                    </div>
-                                                    <div>
-                                                        <strong>Từ liên quan:</strong>{" "}
-                                                        {explain.relatedWords.join(", ")}
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <small className="text-muted">
-                                                    Không có giải thích
-                                                </small>
-                                            )}
+                                <div className="col-md-4">
+                                    <div className="bg-white p-3 rounded shadow-sm text-center">
+                                        <div className="text-muted small mb-1">Điểm</div>
+                                        <div className="fw-bold fs-4 text-primary">
+                                            {score.toFixed(1)} / 10
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="col-md-4">
+                                    <div className="bg-white p-3 rounded shadow-sm text-center">
+                                        <div className="text-muted small mb-1">Tỷ lệ đúng</div>
+                                        <div className="fw-bold fs-4 text-success">
+                                            {percent.toFixed(0)}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-4">
+                                <ProgressBar
+                                    now={percent}
+                                    variant={percent >= 50 ? "success" : "danger"}
+                                    style={{ height: "10px" }}
+                                />
+                            </div>
+                        </Card.Body>
+                    </Card>
+
+                    <Card className="shadow-sm border-0">
+                        <Card.Body className="p-0">
+                            <ListGroup variant="flush">
+                                {test.questions.map((q, index) => (
+                                    <ListGroup.Item key={q.id} className="p-4 border-bottom">
+                                        <div className="fw-bold fs-5 mb-3">
+                                            Câu {index + 1}: {q.content}
+                                        </div>
+
+                                        {q.choices.map((c, choiceIndex) => {
+                                            const label = String.fromCharCode(65 + choiceIndex);
+
+                                            const userAnswer = answers.find(a => a.questionId === q.id);
+                                            const isUserChoice = userAnswer?.questionChoiceId === c.id;
+                                            const isCorrect = c.isCorrect;
+
+                                            let className = "p-3 rounded border mb-2 d-flex justify-content-between align-items-center ";
+                                            if (isCorrect) className += "bg-success-subtle border-success";
+                                            else if (isUserChoice && !isCorrect) className += "bg-danger-subtle border-danger";
+                                            else className += "bg-white";
+
+                                            return (
+                                                <div key={c.id} className={className}>
+                                                    <div>
+                                                        <span className="fw-bold me-2">{label}.</span>
+                                                        {c.vocabulary.word}
+                                                    </div>
+
+                                                    <div>
+                                                        {isCorrect && <Badge bg="success">Đúng</Badge>}
+                                                        {isUserChoice && !isCorrect && (
+                                                            <Badge bg="danger" className="ms-2">Bạn chọn</Badge>
+                                                        )}
+                                                        {isUserChoice && isCorrect && (
+                                                            <Badge bg="primary" className="ms-2">Bạn chọn</Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </ListGroup.Item>
-                                );
-                            })}
-                        </ListGroup>
-                    </Card.Body>
-                </Card>
+                                ))}
+                            </ListGroup>
+                        </Card.Body>
+                    </Card>
+                </>
             ) : (
-                <p className="text-muted">Không tìm thấy đề thi.</p>
+                <div className="text-center py-5">
+                    Không tìm thấy dữ liệu.
+                </div>
             )}
         </Container>
     );

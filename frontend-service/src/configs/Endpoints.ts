@@ -12,7 +12,7 @@ const endpoints = {
     Test: (id: number) => `/tests/${id}`,
     testResults: (id: number) => `/tests/${id}/results`,
     addTestResult: "/test-results",
-    answers: (trId: number) => `/test-results/${trId}/answer`,
+    answers: (trId: number) => `/test-results/${trId}/answers`,
     learnedWords: "/learned-words",
     learnedWord: (userId: number) => `/learned-words/${userId}`,
     progress: (userId: number) => `/progress/${userId}/overview`,

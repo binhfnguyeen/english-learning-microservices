@@ -1,30 +1,29 @@
 "use client";
+
 import MySpinner from "@/components/MySpinner";
-import Apis from "@/configs/Apis";
 import endpoints from "@/configs/Endpoints";
+import authApis from "@/configs/AuthApis";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card, Col, Image, Row, Badge } from "react-bootstrap";
+import { Card, Col, Image, Row, Badge, ProgressBar } from "react-bootstrap";
 import { Calendar3, Book, Trophy } from "react-bootstrap-icons";
 
 interface User {
     id: number;
+    username: string;
     firstName: string;
     lastName: string;
     email: string;
-    phone: string;
-    username: string;
-    password: string;
-    isActive: true;
     avatar: string;
-    role: string;
 }
 
 interface Progress {
-    userId: User;
+    user: User;
     daysStudied: number;
     wordsLearned: number;
-    level: string;
+    cefr: string;
+    proficiency: string;
+    xp: number;
 }
 
 interface Vocabulary {
@@ -37,8 +36,8 @@ interface Vocabulary {
 
 interface LearnedWord {
     id: number;
-    date: Date;
-    vocabularyId: Vocabulary;
+    learnedDate: string;
+    vocabulary: Vocabulary;
 }
 
 export default function Progress() {
@@ -49,33 +48,28 @@ export default function Progress() {
     const [learnedWords, setLearnedWords] = useState<LearnedWord[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const loadProgress = async () => {
-        try {
-            setLoading(true);
-            const res = await Apis.get(endpoints["progress"](id));
-            setProgress(res.data.result);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const loadLearnedWords = async () => {
-        try {
-            setLoading(true);
-            const res = await Apis.get(endpoints["learnedWord"](id));
-            setLearnedWords(res.data.result);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        loadProgress();
-        loadLearnedWords();
+        if (!id) return;
+
+        const loadData = async () => {
+            try {
+                setLoading(true);
+
+                const [pRes, wRes] = await Promise.all([
+                    authApis.get(endpoints["progress"](id)),
+                    authApis.get(endpoints["learnedWord"](id))
+                ]);
+
+                setProgress(pRes.data.result);
+                setLearnedWords(wRes.data.result || []);
+            } catch (err) {
+                console.error("Lỗi tải progress:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
     }, [id]);
 
     if (loading) {
@@ -90,103 +84,194 @@ export default function Progress() {
         return <p className="text-center mt-5">Không có dữ liệu tiến trình.</p>;
     }
 
-    return (
-        <div className="mt-4">
-            <Card className="shadow-sm border-0 p-3">
-                <Row className="align-items-center">
-                    <Col md={3} className="text-center">
-                        <Image
-                            src={progress.userId.avatar || "https://via.placeholder.com/150"}
-                            roundedCircle
-                            width={130}
-                            height={130}
-                            alt="Avatar"
-                            className="shadow-sm"
-                        />
-                        <h5 className="mt-3 fw-bold">{progress.userId.firstName} {progress.userId.lastName}</h5>
-                        <p className="text-muted">{progress.userId.email}</p>
-                    </Col>
+    const level = Math.floor(progress.xp / 100);
+    const currentXp = progress.xp % 100;
+    const xpPercent = (currentXp / 100) * 100;
+    const nextLevelXp = 100 - currentXp;
 
-                    <Col md={9}>
-                        <Row className="g-3">
-                            <Col sm={4}>
-                                <Card className="text-center border-primary shadow-sm p-3">
-                                    <Calendar3 size={28} className="text-primary mb-2" />
-                                    <h6 className="fw-bold">Ngày đã học</h6>
-                                    <h4 className="mb-0">{progress.daysStudied}</h4>
-                                </Card>
-                            </Col>
-                            <Col sm={4}>
-                                <Card className="text-center border-success shadow-sm p-3">
-                                    <Book size={28} className="text-success mb-2" />
-                                    <h6 className="fw-bold">Từ đã học</h6>
-                                    <h4 className="mb-0">{progress.wordsLearned}</h4>
-                                </Card>
-                            </Col>
-                            <Col sm={4}>
-                                <Card className="text-center border-warning shadow-sm p-3">
-                                    <Trophy size={28} className="text-warning mb-2" />
-                                    <h6 className="fw-bold">Trình độ</h6>
-                                    <h4 className="mb-0">{progress.level}</h4>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Col>
-                </Row>
+    return (
+        <div className="container mt-4" style={{ maxWidth: 1100 }}>
+
+            {/* ================= PROFILE ================= */}
+            <Card
+                className="border-0 mb-4"
+                style={{
+                    borderRadius: 18,
+                    boxShadow: "0 10px 28px rgba(0,0,0,0.06)",
+                    background: "linear-gradient(135deg, #ffffff, #f8fafc)"
+                }}
+            >
+                <Card.Body className="p-4">
+                    <Row className="align-items-center">
+                        <Col md={3} className="text-center">
+                            <Image
+                                src={progress.user.avatar || "https://via.placeholder.com/150"}
+                                roundedCircle
+                                width={120}
+                                height={120}
+                                alt="Avatar"
+                                style={{
+                                    border: "4px solid #fff",
+                                    boxShadow: "0 6px 16px rgba(0,0,0,0.1)",
+                                    objectFit: "cover"
+                                }}
+                            />
+                            <h5 className="mt-3 fw-bold">
+                                {progress.user.firstName} {progress.user.lastName}
+                            </h5>
+                            <div className="text-muted small">{progress.user.email}</div>
+                        </Col>
+
+                        <Col md={9}>
+                            <Row className="g-3">
+
+                                {/* Days */}
+                                <Col sm={4}>
+                                    <Card
+                                        className="text-white text-center border-0 h-100"
+                                        style={{
+                                            borderRadius: 14,
+                                            background: "linear-gradient(135deg,#3b82f6,#60a5fa)",
+                                            boxShadow: "0 8px 20px rgba(0,0,0,0.08)"
+                                        }}
+                                    >
+                                        <Card.Body>
+                                            <Calendar3 size={26} className="mb-2" />
+                                            <div className="fw-semibold">Ngày đã học</div>
+                                            <h3 className="mb-0">{progress.daysStudied}</h3>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+
+                                {/* Words */}
+                                <Col sm={4}>
+                                    <Card
+                                        className="text-white text-center border-0 h-100"
+                                        style={{
+                                            borderRadius: 14,
+                                            background: "linear-gradient(135deg,#10b981,#34d399)",
+                                            boxShadow: "0 8px 20px rgba(0,0,0,0.08)"
+                                        }}
+                                    >
+                                        <Card.Body>
+                                            <Book size={26} className="mb-2" />
+                                            <div className="fw-semibold">Từ đã học</div>
+                                            <h3 className="mb-0">{progress.wordsLearned}</h3>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+
+                                {/* Level */}
+                                <Col sm={4}>
+                                    <Card
+                                        className="text-white text-center border-0 h-100"
+                                        style={{
+                                            borderRadius: 14,
+                                            background: "linear-gradient(135deg,#f59e0b,#fbbf24)",
+                                            boxShadow: "0 8px 20px rgba(0,0,0,0.08)"
+                                        }}
+                                    >
+                                        <Card.Body>
+                                            <Trophy size={26} className="mb-2" />
+                                            <div className="fw-semibold">Trình độ</div>
+                                            <h4 className="mb-0">{progress.cefr}</h4>
+                                            <small>{progress.proficiency}</small>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+
+                            </Row>
+
+                            <div className="mt-4">
+
+                                {/* Level Header */}
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <div className="fw-semibold">
+                                        Level {level}
+                                    </div>
+                                    <div className="small text-muted">
+                                        {currentXp}/100 XP
+                                    </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <ProgressBar
+                                    now={xpPercent}
+                                    style={{
+                                        height: 12,
+                                        borderRadius: 20,
+                                        backgroundColor: "#e5e7eb"
+                                    }}
+                                />
+
+                                {/* Next level info */}
+                                <div className="text-end mt-1 small text-muted">
+                                    Còn {nextLevelXp} XP để lên Level {level + 1}
+                                </div>
+                            </div>
+                        </Col>
+                    </Row>
+                </Card.Body>
             </Card>
 
-            <Card className="mt-4 shadow-sm border-0 rounded-3">
-                <Card.Header className="bg-white fw-bold py-2 border-bottom">
+            {/* ================= LEARNED WORDS ================= */}
+            <Card
+                className="border-0"
+                style={{
+                    borderRadius: 16,
+                    boxShadow: "0 6px 18px rgba(0,0,0,0.05)"
+                }}
+            >
+                <Card.Header className="bg-white fw-bold">
                     Danh sách từ đã học
                 </Card.Header>
-                <Card.Body
-                    style={{
-                        maxHeight: "250px",
-                        overflowY: "auto",
-                        padding: "0.75rem",
-                    }}
-                >
+
+                <Card.Body style={{ maxHeight: 400, overflowY: "auto" }}>
                     {learnedWords.length === 0 ? (
-                        <p className="text-muted m-0 small">Chưa có từ nào được học.</p>
+                        <p className="text-muted text-center">Chưa có từ nào được học.</p>
                     ) : (
-                        <Row className="g-2">
+                        <Row className="g-3">
                             {learnedWords
-                                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                                .sort((a, b) =>
+                                    new Date(b.learnedDate).getTime() -
+                                    new Date(a.learnedDate).getTime()
+                                )
                                 .map((item) => (
                                     <Col xs={6} sm={4} md={3} key={item.id}>
-                                        <Card className="border-0 shadow-sm h-100 rounded-3">
+                                        <Card
+                                            className="border-0 h-100"
+                                            style={{
+                                                borderRadius: 12,
+                                                overflow: "hidden",
+                                                boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+                                                transition: "0.2s"
+                                            }}
+                                        >
                                             <Image
-                                                src={item.vocabularyId.picture}
-                                                alt={item.vocabularyId.word}
-                                                fluid
+                                                src={item.vocabulary.picture || "https://via.placeholder.com/150"}
+                                                alt={item.vocabulary.word}
                                                 style={{
-                                                    height: "90px",
-                                                    objectFit: "cover",
-                                                    borderTopLeftRadius: "0.5rem",
-                                                    borderTopRightRadius: "0.5rem",
+                                                    height: 100,
+                                                    width: "100%",
+                                                    objectFit: "cover"
                                                 }}
                                             />
+
                                             <Card.Body className="p-2">
-                                                <div
-                                                    className="fw-semibold text-truncate"
-                                                    style={{ fontSize: "0.85rem" }}
-                                                    title={item.vocabularyId.word}
-                                                >
-                                                    {item.vocabularyId.word}
+                                                <div className="fw-semibold small text-truncate">
+                                                    {item.vocabulary.word}
                                                 </div>
-                                                <Badge
-                                                    bg="light"
-                                                    text="dark"
-                                                    className="mb-1"
-                                                    style={{ fontSize: "0.65rem" }}
-                                                >
-                                                    {item.vocabularyId.partOfSpeech}
+
+                                                <Badge bg="info" className="mb-1">
+                                                    {item.vocabulary.partOfSpeech}
                                                 </Badge>
-                                                <div
-                                                    className="text-muted text-truncate small"
-                                                    title={item.vocabularyId.meaning}
-                                                >
-                                                    {item.vocabularyId.meaning}
+
+                                                <div className="text-muted small text-truncate">
+                                                    {item.vocabulary.meaning}
+                                                </div>
+
+                                                <div className="text-end mt-1" style={{ fontSize: 11, color: "#aaa" }}>
+                                                    {new Date(item.learnedDate).toLocaleDateString("vi-VN")}
                                                 </div>
                                             </Card.Body>
                                         </Card>
@@ -196,7 +281,6 @@ export default function Progress() {
                     )}
                 </Card.Body>
             </Card>
-
         </div>
     );
 }

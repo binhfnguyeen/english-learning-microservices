@@ -1,13 +1,10 @@
 "use client"
 import MySpinner from "@/components/MySpinner";
-import VocabularyBlindBox from "@/components/VocabularyBlindBox";
-import Apis from "@/configs/Apis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Alert, Button, Card, Col, Container, Form, Modal, Row } from "react-bootstrap";
 import { useWindowSize } from '@react-hook/window-size';
-import { GiftFill } from "react-bootstrap-icons";
 import authApis from "@/configs/AuthApis";
 interface Topic {
     id: number;
@@ -21,8 +18,6 @@ export default function Topics() {
     const [keyword, setKeyword] = useState<string>("");
     const [hasMore, setHasMore] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-    const [showBlindBox, setShowBlindBox] = useState<boolean>(false);
-    const [width, height] = useWindowSize();
 
     const loadTopics = async () => {
         let url = `${endpoints["topics"]}?page=${page}`;
@@ -121,18 +116,6 @@ export default function Topics() {
                     </Button>
                 </div>
             )}
-
-            <Modal
-                show={showBlindBox}
-                onHide={() => setShowBlindBox(false)}
-                size="lg"
-                centered
-                contentClassName="bg-transparent border-0 shadow-none"
-            >
-                <Modal.Body>
-                    <VocabularyBlindBox />
-                </Modal.Body>
-            </Modal>
         </Container>
     );
 }

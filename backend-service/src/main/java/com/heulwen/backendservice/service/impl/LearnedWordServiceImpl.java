@@ -41,13 +41,16 @@ public class LearnedWordServiceImpl implements LearnedWordService {
         Long userId = form.getUserId();
         Vocabulary vocab = vocabularyRepository.findById(form.getVocabularyId())
                 .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
+
         if (learnedWordRepository.existsByUserIdAndVocabulary(userId, vocab)) {
             throw new AppException(ErrorCode.WORD_ALREADY_LEARNED);
         }
+
         LearnedWord learnedWord = new LearnedWord();
         learnedWord.setUserId(userId);
         learnedWord.setVocabulary(vocab);
         learnedWord.setCreatedAt(LocalDateTime.now());
+        learnedWord = learnedWordRepository.save(learnedWord);
 
         return LearnedWordMapper.map(learnedWord);
     }
