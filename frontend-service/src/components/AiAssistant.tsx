@@ -1,12 +1,9 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Robot, Send, XLg } from "react-bootstrap-icons";
 import { Button, Card, Form } from "react-bootstrap";
-import { v4 as uuidv4 } from "uuid";
-import SockJS from "sockjs-client";
-import { Client } from "@stomp/stompjs";
-import cleanOutput from "./CleanOutput";
 import UserContext from "@/configs/UserContext";
 import styles from "@/components/AiAssistant.module.css";
+import Cookies from "js-cookie";
 
 interface Message {
     sender: "you" | "bot";
@@ -16,59 +13,62 @@ interface Message {
 export default function ChatAssistant() {
     const [isOpen, setIsOpen] = useState(false);
     const [connected, setConnected] = useState(false);
-    const [conversationId, setConversationId] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [showHint, setShowHint] = useState(false);
     const [input, setInput] = useState("");
-    const clientRef = useRef<Client | null>(null);
+
+    const wsRef = useRef<WebSocket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const context = useContext(UserContext);
     const user = context?.user;
 
     useEffect(() => {
-        setConversationId(uuidv4());
-    }, []);
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
 
     useEffect(() => {
-        if (!conversationId) return;
+        if (!user || !isOpen || wsRef.current) return;
 
-        setMessages([{ sender: "bot", text: "Hi! How can I help you?" }]);
+        const token = Cookies.get("accessToken");
 
-        const socket = new SockJS("https://englearn-backend.onrender.com/elearn/ws-chat");
-        const client = new Client({
-            webSocketFactory: () => socket,
-            reconnectDelay: 5000,
-            onConnect: () => {
-                setConnected(true);
-                client.subscribe(`/topic/conversation/assisstant/${conversationId}`, (message) => {
-                    const cleanText = cleanOutput(message.body);
-                    setMessages((prev) => [...prev, { sender: "bot", text: cleanText }]);
-                });
-            },
-            onDisconnect: () => {
-                setConnected(false);
+        if (!token) return;
+
+        const wsUrl = `ws://localhost:8080/api/ai/ws/chat/${user.id}?token=${token}`;
+
+        const socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+            setConnected(true);
+            console.log("Connected to AI Service WebSocket");
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === "history") {
+                setMessages(data.data);
+            } else if (data.type === "message") {
+                setMessages((prev) => [...prev, { sender: "bot", text: data.text }]);
             }
-        });
+        };
 
-        client.activate();
-        clientRef.current = client;
+        socket.onclose = () => {
+            setConnected(false);
+            wsRef.current = null;
+        };
+
+        wsRef.current = socket;
 
         return () => {
-            client.deactivate();
-            clientRef.current = null;
+            socket.close();
         };
-    }, [conversationId]);
+    }, [isOpen, user]);
 
     const sendMessage = () => {
-        if (!input.trim() || !clientRef.current || !connected) return;
+        if (!input.trim() || !wsRef.current || !connected) return;
 
-        setMessages((prev) => [...prev, { sender: "you", text: input.trim() }]);
-
-        clientRef.current.publish({
-            destination: `/app/assisstant/${conversationId}`,
-            body: JSON.stringify({ message: input.trim() }),
-        });
-
+        const userMsg = input.trim();
+        wsRef.current.send(JSON.stringify({ message: userMsg }));
+        setMessages((prev) => [...prev, { sender: "you", text: userMsg }]);
         setInput("");
     };
 

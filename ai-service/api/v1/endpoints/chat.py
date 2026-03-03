@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from api.deps import get_token
-from core.redis_chat import ChatStorage
+from core.redis_chat import RedisStorage as ChatStorage
 from schemas.chat_schema import ChatRequest
 from services.progress_service import get_user_progress
 from services.ollama_service import call_llm
-import json
 
 router = APIRouter()
 
@@ -65,8 +64,9 @@ async def chat_with_tutor(
         token: str = Depends(get_token)
 ):
     user_id = request.userId
+    namespace = "chat_history"
 
-    history = ChatStorage.get_history(user_id)
+    history = ChatStorage.get_history(namespace, user_id)
     progress = get_user_progress(user_id, token)
 
     prompt = build_prompt(
@@ -84,8 +84,8 @@ async def chat_with_tutor(
         .strip()
     )
 
-    ChatStorage.push_message(user_id, "user", request.message)
-    ChatStorage.push_message(user_id, "assistant", response)
+    ChatStorage.push_message(namespace, user_id, "user", request.message)
+    ChatStorage.push_message(namespace, user_id, "assistant", response)
 
     return {"reply": response}
 
@@ -97,38 +97,45 @@ async def websocket_chat(websocket: WebSocket, user_id: str):
         await websocket.close(code=1008)
         return
 
+    namespace = "chat_history"
     await websocket.accept()
 
     try:
-        # Gửi lịch sử cũ
-        history = ChatStorage.get_history(user_id)
+        history = ChatStorage.get_history(namespace, user_id)
         if history:
             await websocket.send_json({
                 "type": "history",
-                "data": [{"sender": "you" if m["role"] == "user" else "bot", "text": m["content"]} for m in history]
+                "data": [
+                    {
+                        "sender": "you" if m["role"] == "user" else "bot",
+                        "text": m["content"]
+                    }
+                    for m in history
+                ]
             })
 
         while True:
             data = await websocket.receive_json()
             user_message = data.get("message")
-            if not user_message: continue
+            if not user_message:
+                continue
 
-            # Lấy progress để AI biết trình độ học viên
             progress = get_user_progress(user_id, token)
+            current_history = ChatStorage.get_history(namespace, user_id)
 
-            # Lấy lịch sử TRƯỚC khi lưu tin nhắn mới để làm context cho prompt
-            current_history = ChatStorage.get_history(user_id)
+            prompt = build_prompt(user_message, current_history, progress)
 
-            prompt = build_prompt(user_id, user_message, current_history, progress)
             ai_response = call_llm(prompt).strip()
+            ai_response = (
+                ai_response
+                .replace("Tutor:", "")
+                .replace("Student:", "")
+                .strip()
+            )
 
-            # Clean và lưu vào Redis
-            ai_response = ai_response.replace("Tutor:", "").replace("Student:", "").strip()
+            ChatStorage.push_message(namespace, user_id, "user", user_message)
+            ChatStorage.push_message(namespace, user_id, "assistant", ai_response)
 
-            ChatStorage.push_message(user_id, "user", user_message)
-            ChatStorage.push_message(user_id, "assistant", ai_response)
-
-            # Gửi phản hồi về cho Frontend để cập nhật UI ngay lập tức
             await websocket.send_json({
                 "type": "message",
                 "sender": "bot",
@@ -137,3 +144,6 @@ async def websocket_chat(websocket: WebSocket, user_id: str):
 
     except WebSocketDisconnect:
         print(f"User {user_id} disconnected")
+    except Exception as e:
+        print(f"Error: {e}")
+        await websocket.close(code=1011)
