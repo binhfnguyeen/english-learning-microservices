@@ -26,6 +26,19 @@ services:
     networks:
       - microservice-network
 
+  redis:
+    image: redis:8.6
+    container_name: elearn_redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservice-network
+
   ollama:
     image: ollama/ollama:latest
     container_name: english_ollama
@@ -36,7 +49,6 @@ services:
       - ./docker/ollama/ollama-init.sh:/ollama-init.sh
     entrypoint: [ "/bin/sh", "-c" ]
     command: ["chmod +x /ollama-init.sh && /ollama-init.sh"]
-    restart: always
     networks:
       - microservice-network
 
@@ -106,12 +118,15 @@ services:
     environment:
       - OLLAMA_API_URL=http://ollama:11434/api/generate
       - BACKEND_API_URL=http://api-gateway:8080/api
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
     networks:
       - microservice-network
     depends_on:
       - backend-service
       - ollama
       - eureka-server
+      - redis
 
 networks:
   microservice-network:
@@ -119,3 +134,4 @@ networks:
 volumes:
   postgres_data:
   ollama_data:
+  redis_data:
