@@ -8,7 +8,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useContext, useState } from "react";
-import { Alert, Button, Container, Form, Spinner } from "react-bootstrap";
+import { Alert, Button, Form, Spinner } from "react-bootstrap";
 import { Database } from "react-bootstrap-icons";
 
 export default function AdminLogin() {
@@ -56,64 +56,121 @@ export default function AdminLogin() {
     }, [msg]);
 
     return (
-        <Container className="d-flex flex-column align-items-center mt-5">
-            <h1
-                className="fw-bold mb-4 text-primary d-flex align-items-center"
-                style={{
-                    fontSize: "2rem",
-                    letterSpacing: "1px",
-                    gap: "10px",
-                }}
-            >
-                <Database size={36} className="text-primary" />
-                <span
-                    style={{
-                        background: "linear-gradient(90deg, #2563eb, #06b6d4)",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                    }}
-                >
-                    ĐĂNG NHẬP ADMIN
-                </span>
-            </h1>
-
+        <div
+            style={{
+                minHeight: "100vh",
+                background: "linear-gradient(135deg, #1e3a8a, #0ea5e9)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "20px",
+            }}
+        >
             {msg && (
                 <Alert
                     variant={msg.includes("thất bại") ? "danger" : "success"}
-                    className="py-2 position-fixed top-0 end-0 m-3 shadow"
-                    style={{ zIndex: 9999, minWidth: "250px" }}
+                    className="position-fixed top-0 end-0 m-4 shadow"
+                    style={{ zIndex: 9999, minWidth: "280px", borderRadius: "12px" }}
                 >
                     {msg}
                 </Alert>
             )}
 
-            <Form onSubmit={login} style={{ maxWidth: "320px", width: "100%" }}>
-                {info.map((i) => (
-                    <Form.Group key={i.field} className="mb-3" controlId={i.field}>
-                        <Form.Label className="fw-semibold">{i.title}</Form.Label>
-                        <Form.Control
-                            required
-                            value={user[i.field] || ""}
-                            onChange={(e) =>
-                                setUser({ ...user, [i.field]: e.target.value })
-                            }
-                            type={i.type}
-                            placeholder={i.title}
-                            className="rounded-3 shadow-sm"
-                        />
-                    </Form.Group>
-                ))}
-                <div className="text-center">
+            <div
+                style={{
+                    width: "100%",
+                    maxWidth: "400px",
+                    background: "rgba(255,255,255,0.95)",
+                    backdropFilter: "blur(10px)",
+                    borderRadius: "20px",
+                    padding: "40px 30px",
+                    boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
+                    animation: "fadeIn 0.4s ease-in-out",
+                }}
+            >
+                <div className="text-center mb-4">
+                    <Database size={40} className="text-primary mb-2" />
+                    <h2
+                        className="fw-bold mb-0"
+                        style={{
+                            background: "linear-gradient(90deg, #2563eb, #06b6d4)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            letterSpacing: "1px",
+                        }}
+                    >
+                        ADMIN LOGIN
+                    </h2>
+                    <p className="text-muted small mt-2">
+                        Hệ thống quản trị EngLearn
+                    </p>
+                </div>
+
+                <Form onSubmit={login}>
+                    {info.map((i) => (
+                        <Form.Group key={i.field} className="mb-3">
+                            <Form.Label className="fw-semibold">
+                                {i.title}
+                            </Form.Label>
+                            <Form.Control
+                                required
+                                value={user[i.field] || ""}
+                                onChange={(e) =>
+                                    setUser({ ...user, [i.field]: e.target.value })
+                                }
+                                type={i.type}
+                                placeholder={i.title}
+                                style={{
+                                    borderRadius: "12px",
+                                    padding: "10px 14px",
+                                    border: "1px solid #ddd",
+                                    transition: "0.3s",
+                                }}
+                                onFocus={(e) =>
+                                    (e.currentTarget.style.boxShadow =
+                                        "0 0 0 3px rgba(37,99,235,0.2)")
+                                }
+                                onBlur={(e) =>
+                                    (e.currentTarget.style.boxShadow = "none")
+                                }
+                            />
+                        </Form.Group>
+                    ))}
+
                     <Button
                         type="submit"
-                        className="px-5 py-2 fw-semibold rounded-3"
                         disabled={loading}
-                        variant="primary"
+                        style={{
+                            width: "100%",
+                            padding: "10px",
+                            borderRadius: "12px",
+                            fontWeight: "600",
+                            background: "linear-gradient(90deg, #2563eb, #06b6d4)",
+                            border: "none",
+                            transition: "0.3s",
+                        }}
                     >
-                        {loading ? <Spinner size="sm" animation="border" /> : "Đăng nhập"}
+                        {loading ? (
+                            <Spinner size="sm" animation="border" />
+                        ) : (
+                            "Đăng nhập"
+                        )}
                     </Button>
-                </div>
-            </Form>
-        </Container>
+                </Form>
+            </div>
+
+            <style jsx>{`
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `}</style>
+        </div>
     );
 }

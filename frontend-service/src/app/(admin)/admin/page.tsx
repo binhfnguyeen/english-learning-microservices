@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Apis from "@/configs/Apis";
 import endpoints from "@/configs/Endpoints";
 
 import {

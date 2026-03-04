@@ -1,33 +1,36 @@
-"use client"
+"use client";
+
 import { Button, Col, Container, Nav, Row } from "react-bootstrap";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useContext, useEffect, useState } from "react";
 import UserContext from "@/configs/UserContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { List, X } from "react-bootstrap-icons";
-import styles from '@/components/Sidebar/SidebarGlobal.module.css';
+import styles from "@/components/Sidebar/SidebarGlobal.module.css";
 import Image from "next/image";
 
 export default function SidebarLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const context = useContext(UserContext);
+
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 992);
+        const handleResize = () => {
+            const mobile = window.innerWidth < 992;
+            setIsMobile(mobile);
+            if (!mobile) setSidebarOpen(true); // desktop auto open
+        };
+
         handleResize();
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     if (!context) {
-        return (
-            <div className="p-4 text-center">
-                <p>Không tìm thấy context người dùng.</p>
-            </div>
-        );
+        return <div className="p-4 text-center">Không tìm thấy context người dùng.</div>;
     }
 
     const { user, dispatch } = context;
@@ -39,104 +42,121 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
 
     return (
         <div className={styles.appWrapper}>
-            <Container fluid>
-                <Row>
+            <Container fluid className="p-0">
+                <Row className="g-0">
+
                     {isMobile && (
-                        <div className="d-flex justify-content-between align-items-center p-2 shadow-sm bg-white">
-                            <h1
-                                className="fw-bold text-primary mb-0"
-                                style={{ fontSize: "1.4rem", cursor: "pointer" }}
+                        <div className={styles.mobileHeader}>
+                            <Image
+                                src="/template/EngLearnLogo.png"
+                                alt="Logo"
+                                width={120}
+                                height={60}
+                                style={{ cursor: "pointer" }}
                                 onClick={() => router.push("/")}
-                            >
-                                <Image
-                                    src="/template/EngLearnLogo.png"
-                                    alt="ELearnWeb Logo"
-                                    width={120}
-                                    height={60}
-                                    style={{ objectFit: "contain" }}
-                                />
-                            </h1>
+                            />
+
                             <Button
                                 variant="light"
                                 size="sm"
                                 className="border-0"
-                                onClick={() => setSidebarOpen(!sidebarOpen)}
+                                onClick={() => setSidebarOpen(prev => !prev)}
                             >
                                 {sidebarOpen ? <X size={22} /> : <List size={22} />}
                             </Button>
                         </div>
                     )}
 
+                    {isMobile && sidebarOpen && (
+                        <div
+                            className={styles.overlay}
+                            onClick={() => setSidebarOpen(false)}
+                        />
+                    )}
+
                     <Col
-                        md="auto"
-                        className={`d-flex flex-column bg-white shadow-sm p-3 
-                            ${styles.sidebar} 
-                            ${isMobile ? (sidebarOpen ? styles.open : "") : (sidebarOpen ? "" : styles.closed)}
+                        xs="auto"
+                        className={`
+                            d-flex flex-column
+                            ${styles.sidebar}
+                            ${sidebarOpen ? styles.open : styles.closed}
                         `}
                     >
                         {!isMobile && (
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                {sidebarOpen && (
-                                    <h1
-                                        className="fw-bold text-primary mb-0"
-                                        style={{ fontSize: "1.8rem", cursor: "pointer" }}
+                            <div className={`${styles.sidebarHeader} p-3`}>
+                                <div className={!sidebarOpen ? styles.logoHidden : ""}>
+                                    <Image
+                                        src="/template/EngLearnLogo.png"
+                                        alt="Logo"
+                                        width={100}
+                                        height={80}
+                                        style={{ cursor: "pointer", objectFit: "contain" }}
                                         onClick={() => router.push("/")}
-                                    >
-                                        <Image
-                                            src="/template/EngLearnLogo.png"
-                                            alt="ELearnWeb Logo"
-                                            width={100}
-                                            height={100}
-                                            style={{ objectFit: "contain" }}
-                                        />
-                                    </h1>
-                                )}
+                                    />
+                                </div>
+
                                 <Button
                                     variant="light"
                                     size="sm"
                                     className="border-0"
-                                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                                    onClick={() => setSidebarOpen(prev => !prev)}
                                 >
                                     {sidebarOpen ? <X size={20} /> : <List size={20} />}
                                 </Button>
                             </div>
                         )}
 
-                        <div className={styles.sidebarContent}>
-                            <h6 className="text-muted mb-3">Chức năng</h6>
-                            <Nav defaultActiveKey="/home" className="flex-column">
-                                {user != null ? (
-                                    <>
-                                        <Nav.Link as={Link} href="/topics">Học từ vựng</Nav.Link>
-                                        <Nav.Link as={Link} href="/tests">Kiểm tra từ vựng</Nav.Link>
-                                        <Nav.Link as={Link} href="/conservation">Luyện nói với chatbot</Nav.Link>
-                                        <Nav.Link as={Link} href={`/progress/${user.id}`}>Theo dõi tiến độ</Nav.Link>
-                                        <Nav.Link as={Link} href={`/profile`}>Thông tin cá nhân</Nav.Link>
-                                        <Button
-                                            variant="outline-danger"
-                                            className="mt-4"
-                                            onClick={handleLogout}
+                        {sidebarOpen && (
+                            <div className="px-3 mt-3">
+                                <h6 className="text-muted mb-3">Chức năng</h6>
+
+                                <Nav className="flex-column">
+                                    {user ? (
+                                        <>
+                                            <Nav.Link as={Link} href="/topics">
+                                                Học từ vựng
+                                            </Nav.Link>
+
+                                            <Nav.Link as={Link} href="/tests">
+                                                Kiểm tra từ vựng
+                                            </Nav.Link>
+
+                                            <Nav.Link as={Link} href="/conservation">
+                                                Luyện nói với chatbot
+                                            </Nav.Link>
+
+                                            <Nav.Link as={Link} href={`/progress/${user.id}`}>
+                                                Theo dõi tiến độ
+                                            </Nav.Link>
+
+                                            <Nav.Link as={Link} href="/profile">
+                                                Thông tin cá nhân
+                                            </Nav.Link>
+
+                                            <Button
+                                                className={`mt-4 ${styles.logoutBtn}`}
+                                                onClick={handleLogout}
+                                            >
+                                                Đăng xuất
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Link
+                                            href="/login"
+                                            className="btn btn-outline-primary btn-sm"
                                         >
-                                            Đăng xuất
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Link href="/login" className="btn btn-outline-primary btn-sm flex-fill">
-                                        Đăng nhập
-                                    </Link>
-                                )}
-                            </Nav>
-                        </div>
+                                            Đăng nhập
+                                        </Link>
+                                    )}
+                                </Nav>
+                            </div>
+                        )}
                     </Col>
 
-                    <Col
-                        className={`bg-light 
-                            ${styles.mainContent} 
-                            ${!isMobile && !sidebarOpen ? styles.full : ""}
-                        `}
-                    >
+                    <Col className={styles.mainContent}>
                         {children}
                     </Col>
+
                 </Row>
             </Container>
         </div>

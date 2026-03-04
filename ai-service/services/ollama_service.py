@@ -1,7 +1,7 @@
 import requests
 from core.config import settings
 
-def call_llm(prompt: str, format: str = None):
+def call_llm(prompt: str, format: str = None, timeout: int = 120):
     payload = {
         "model": "phi3",
         "prompt": prompt,
@@ -17,7 +17,7 @@ def call_llm(prompt: str, format: str = None):
         res = requests.post(
             settings.OLLAMA_API_URL,
             json=payload,
-            timeout=120
+            timeout=timeout
         )
         res.raise_for_status()
         return res.json().get("response")

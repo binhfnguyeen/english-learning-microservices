@@ -2,10 +2,10 @@
 import MySpinner from "@/components/MySpinner";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Alert, Button, Card, Col, Container, Form, Modal, Row } from "react-bootstrap";
-import { useWindowSize } from '@react-hook/window-size';
+import {useEffect, useState} from "react";
+import {Alert, Button, Card, Col, Container, Form, Row} from "react-bootstrap";
 import authApis from "@/configs/AuthApis";
+import SuggestVocab from "@/app/(client)/topics/suggest-vocab";
 interface Topic {
     id: number;
     name: string;
@@ -18,6 +18,7 @@ export default function Topics() {
     const [keyword, setKeyword] = useState<string>("");
     const [hasMore, setHasMore] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [showModal, setShowModal] = useState(false);
 
     const loadTopics = async () => {
         let url = `${endpoints["topics"]}?page=${page}`;
@@ -78,6 +79,31 @@ export default function Topics() {
                             />
                         </div>
                     </Form>
+
+                    <Button
+                        onClick={() => setShowModal(true)}
+                        className="fw-semibold px-4 py-2 d-flex align-items-center gap-2"
+                        style={{
+                            borderRadius: "50px",
+                            background: "linear-gradient(135deg, #28a745, #20c997)",
+                            border: "none",
+                            color: "white",
+                            boxShadow: "0 4px 12px rgba(40, 167, 69, 0.3)",
+                            transition: "all 0.2s ease-in-out"
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                            e.currentTarget.style.boxShadow =
+                                "0 6px 16px rgba(40, 167, 69, 0.4)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow =
+                                "0 4px 12px rgba(40, 167, 69, 0.3)";
+                        }}
+                    >
+                        Học từ vựng theo trình độ cá nhân
+                    </Button>
                 </div>
             </div>
 
@@ -116,6 +142,8 @@ export default function Topics() {
                     </Button>
                 </div>
             )}
+
+            <SuggestVocab show={showModal} onHide={() => setShowModal(false)} />
         </Container>
     );
 }
