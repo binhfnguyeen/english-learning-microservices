@@ -1,10 +1,11 @@
 "use client";
-import { Button, Card, Form, Modal, Spinner } from "react-bootstrap";
+import { Button, Card, Form, Modal, Spinner, Row, Col } from "react-bootstrap";
 import { useContext, useState, useEffect } from "react";
 import UserContext from "@/configs/UserContext";
 import Cookies from "js-cookie";
 import { VolumeUp } from "react-bootstrap-icons";
 import useTTS from "@/utils/useTTS";
+import VocabQuizGame from "@/app/(client)/topics/vocab-quiz-game";
 
 interface Props {
     show: boolean;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function SuggestVocab({ show, onHide }: Props) {
+
     const context = useContext(UserContext);
     const user = context?.user;
 
@@ -30,6 +32,7 @@ export default function SuggestVocab({ show, onHide }: Props) {
     }, [show]);
 
     const generateVocab = () => {
+
         if (!topicInput || !user) return;
 
         setGeneratedVocabs([]);
@@ -47,6 +50,7 @@ export default function SuggestVocab({ show, onHide }: Props) {
         };
 
         ws.onmessage = (event) => {
+
             const data = JSON.parse(event.data);
 
             if (data.type === "vocab") {
@@ -72,7 +76,7 @@ export default function SuggestVocab({ show, onHide }: Props) {
     };
 
     return (
-        <Modal show={show} onHide={onHide} size="lg" centered>
+        <Modal show={show} onHide={onHide} size="xl" centered>
             <Modal.Header closeButton>
                 <Modal.Title className="fw-bold text-primary">
                     Gợi ý từ vựng theo chủ đề
@@ -85,7 +89,7 @@ export default function SuggestVocab({ show, onHide }: Props) {
                         type="text"
                         value={topicInput}
                         onChange={(e) => setTopicInput(e.target.value)}
-                        placeholder="VD: Travel, Technology..."
+                        placeholder="Topic: Travel, Technology..."
                         className="shadow-sm"
                     />
 
@@ -97,67 +101,71 @@ export default function SuggestVocab({ show, onHide }: Props) {
                             background: "linear-gradient(135deg, #28a745, #20c997)",
                             border: "none",
                             color: "white",
-                            boxShadow: "0 4px 12px rgba(40, 167, 69, 0.3)",
-                            transition: "all 0.2s ease-in-out"
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "translateY(-2px)";
-                            e.currentTarget.style.boxShadow =
-                                "0 6px 16px rgba(40, 167, 69, 0.4)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "translateY(0)";
-                            e.currentTarget.style.boxShadow =
-                                "0 4px 12px rgba(40, 167, 69, 0.3)";
+                            boxShadow: "0 4px 12px rgba(40, 167, 69, 0.3)"
                         }}
                     >
-                        {wsLoading ? (
-                            <Spinner size="sm" />
-                        ) : (
-                            "Nhận"
-                        )}
+                        {wsLoading ? <Spinner size="sm" /> : "Nhận"}
                     </Button>
                 </Form>
 
-                {generatedVocabs.map((item, index) => (
-                    <Card
-                        key={index}
-                        className="mb-3 shadow-sm border-0"
-                        style={{ borderRadius: "12px" }}
-                    >
-                        <Card.Body>
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                <h5 className="text-primary fw-bold mb-0">
-                                    {item.word}
-                                </h5>
+                <Row>
+                    <Col md={6} style={{ maxHeight: "500px", overflowY: "auto" }}>
+                        <h5 className="text-primary fw-bold mb-3">
+                            Vocabulary
+                        </h5>
+                        {generatedVocabs.map((item, index) => (
+                            <Card
+                                key={index}
+                                className="mb-3 shadow-sm border-0"
+                                style={{ borderRadius: "12px" }}
+                            >
+                                <Card.Body>
 
-                                <Button
-                                    variant="outline-primary"
-                                    size="sm"
-                                    onClick={() => speak(item.word)}
-                                    disabled={isSpeaking}
-                                    style={{ borderRadius: "50%" }}
-                                >
-                                    <VolumeUp />
-                                </Button>
-                            </div>
+                                    <div className="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 className="text-primary fw-bold mb-0">
+                                            {item.word}
+                                        </h5>
 
-                            <p className="mb-1">
-                                <b>Meaning:</b> {item.meaning}
+                                        <Button
+                                            variant="outline-primary"
+                                            size="sm"
+                                            onClick={() => speak(item.word)}
+                                            disabled={isSpeaking}
+                                            style={{ borderRadius: "50%" }}
+                                        >
+                                            <VolumeUp />
+                                        </Button>
+                                    </div>
+
+                                    <p className="mb-1">
+                                        <b>Meaning:</b> {item.meaning}
+                                    </p>
+
+                                    <p className="text-muted mb-0">
+                                        <b>Example:</b> {item.example}
+                                    </p>
+
+                                </Card.Body>
+                            </Card>
+                        ))}
+
+                        {generatedVocabs.length === 0 && !wsLoading && (
+                            <p className="text-center text-muted">
+                                Chưa có từ vựng nào
                             </p>
+                        )}
+                    </Col>
 
-                            <p className="text-muted mb-0">
-                                <b>Example:</b> {item.example}
-                            </p>
-                        </Card.Body>
-                    </Card>
-                ))}
+                    <Col md={6}>
+                        <h5 className="text-primary fw-bold mb-3">
+                            Quiz
+                        </h5>
 
-                {generatedVocabs.length === 0 && !wsLoading && (
-                    <p className="text-center text-muted">
-                        Chưa có từ vựng nào
-                    </p>
-                )}
+                        {generatedVocabs.length !== 0 && (
+                            <VocabQuizGame vocabs={generatedVocabs} />
+                        )}
+                    </Col>
+                </Row>
             </Modal.Body>
         </Modal>
     );
