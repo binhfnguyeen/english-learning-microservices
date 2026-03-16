@@ -73,7 +73,7 @@ async def websocket_vocab(websocket: WebSocket, user_id: str):
 
             prompt = build_vocab_prompt(
                 topic=topic,
-                cefr=progress["cefr"]
+                cefr=progress.cefr
             )
 
             # Gọi LLM (timeout 180s)

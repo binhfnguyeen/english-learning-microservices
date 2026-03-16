@@ -1,15 +1,16 @@
 import requests
 from fastapi import HTTPException
+
 from core.config import settings
-from schemas.progress_schema import ProgressResponse
+from schemas.test_schema import TestResponse
 
 
-def get_user_progress(user_id: int, token: str) -> ProgressResponse:
+def get_test(test_id: int, token: str) -> TestResponse:
     headers = {"Authorization": f"Bearer {token}"}
 
     try:
         res = requests.get(
-            f"{settings.BACKEND_API_URL}/progress/{user_id}/overview",
+            f"{settings.BACKEND_API_URL}/tests/{test_id}",
             headers=headers,
             timeout=10
         )
@@ -20,7 +21,8 @@ def get_user_progress(user_id: int, token: str) -> ProgressResponse:
                 detail="Failed to fetch user progress"
             )
 
-        return ProgressResponse(**res.json()["result"])
+        data = res.json()
+        return TestResponse(**data["result"])
 
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=str(e))

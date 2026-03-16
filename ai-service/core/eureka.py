@@ -2,7 +2,7 @@ import asyncio
 import py_eureka_client.eureka_client as eureka_client
 
 async def init_eureka(app):
-    retry_delay = 10
+    retry_delay = 30
     max_retries = 20
     attempt = 0
 

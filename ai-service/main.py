@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from api.v1.endpoints import chat, vocab, learning_path, health
+from api.v1.endpoints import chat, vocab, health, explanation
 from core.eureka import init_eureka
 
 
@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(health.router)
+app.include_router(health.router, prefix="/api/ai", tags=["AI"])
 app.include_router(chat.router, prefix="/api/ai", tags=["AI"])
 app.include_router(vocab.router, prefix="/api/ai", tags=["AI"])
-app.include_router(learning_path.router, prefix="/api/ai", tags=["AI"])
+app.include_router(explanation.router, prefix="/api/ai", tags=["AI"])
