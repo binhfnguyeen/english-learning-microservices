@@ -7,18 +7,38 @@ from services.ollama_service import call_llm
 
 router = APIRouter()
 
-def build_prompt(user_message, history, progress):
+def build_history_text(history):
     history_text = ""
-
     for msg in history:
         role = "Student" if msg["role"] == "user" else "Tutor"
         history_text += f"{role}: {msg['content']}\n"
+    return history_text
 
-    context = (
+
+def build_context(history):
+    history_text = build_history_text(history)
+    return (
         f"Conversation history:\n{history_text}"
         if history_text
         else "No previous conversation."
     )
+
+
+def build_prompt_base(user_message, context, system_instruction):
+    return f"""
+        {system_instruction}
+        
+        {context}
+        
+        Student message:
+        {user_message}
+        
+        Tutor reply:
+    """
+
+
+def build_prompt_chat(user_message, history, progress):
+    context = build_context(history)
 
     system_instruction = f"""
         You are an English AI Tutor.
@@ -32,8 +52,8 @@ def build_prompt(user_message, history, progress):
         - Only write the final Tutor answer.
         
         Student level:
-        - CEFR: {progress['cefr']}
-        - Proficiency: {progress['proficiency']}
+        - CEFR: {progress.cefr}
+        - Proficiency: {progress.proficiency}
         
         Conversation rules:
         - The conversation history below is real.
@@ -44,50 +64,75 @@ def build_prompt(user_message, history, progress):
         - Encourage speaking.
         - Correct grammar gently.
         - Never respond in Vietnamese.
-        """
-
-    return f"""
-        {system_instruction}
-        
-        {context}
-        
-        Student message:
-        {user_message}
-        
-        Tutor reply:
     """
 
+    return build_prompt_base(user_message, context, system_instruction)
 
-@router.post("/chat")
-async def chat_with_tutor(
-        request: ChatRequest,
-        token: str = Depends(get_token)
-):
-    user_id = request.userId
-    namespace = "chat_history"
 
-    history = ChatStorage.get_history(namespace, user_id)
-    progress = get_user_progress(user_id, token)
+def build_prompt_speaking(user_message, history, progress):
+    context = build_context(history)
 
-    prompt = build_prompt(
-        user_message=request.message,
-        history=history,
-        progress=progress
-    )
+    system_instruction = f"""
+        You are an expert English Speaking Coach.
+        
+        STUDENT INFO: CEFR {progress.cefr}, Proficiency {progress.proficiency}.
+        
+        RULES:
+        1. Keep responses under 3 sentences.
+        2. Gently correct grammar.
+        3. Provide IPA for difficult words.
+        4. End with an open-ended question.
+        5. Match CEFR level.
+    """
 
-    response = call_llm(prompt).strip()
+    return build_prompt_base(user_message, context, system_instruction)
 
-    response = (
-        response.replace("Student:", "")
+
+def clean_ai_response(response: str) -> str:
+    return (
+        response
         .replace("Tutor:", "")
-        .replace("Teacher:", "")
+        .replace("Student:", "")
         .strip()
     )
 
-    ChatStorage.push_message(namespace, user_id, "user", request.message)
-    ChatStorage.push_message(namespace, user_id, "assistant", response)
 
-    return {"reply": response}
+async def send_history(websocket, history):
+    if history:
+        await websocket.send_json({
+            "type": "history",
+            "data": [
+                {
+                    "sender": "you" if m["role"] == "user" else "bot",
+                    "text": m["content"]
+                }
+                for m in history
+            ]
+        })
+
+
+async def handle_chat_loop(websocket, user_id, token, namespace, build_prompt_fn):
+    while True:
+        data = await websocket.receive_json()
+        user_message = data.get("message")
+        if not user_message:
+            continue
+
+        progress = get_user_progress(user_id, token)
+        history = ChatStorage.get_history(namespace, user_id)
+
+        prompt = build_prompt_fn(user_message, history, progress)
+
+        ai_response = clean_ai_response(call_llm(prompt))
+
+        ChatStorage.push_message(namespace, user_id, "user", user_message)
+        ChatStorage.push_message(namespace, user_id, "assistant", ai_response)
+
+        await websocket.send_json({
+            "type": "message",
+            "sender": "bot",
+            "text": ai_response
+        })
 
 
 @router.websocket("/ws/chat/{user_id}")
@@ -102,45 +147,36 @@ async def websocket_chat(websocket: WebSocket, user_id: str):
 
     try:
         history = ChatStorage.get_history(namespace, user_id)
-        if history:
-            await websocket.send_json({
-                "type": "history",
-                "data": [
-                    {
-                        "sender": "you" if m["role"] == "user" else "bot",
-                        "text": m["content"]
-                    }
-                    for m in history
-                ]
-            })
+        await send_history(websocket, history)
 
-        while True:
-            data = await websocket.receive_json()
-            user_message = data.get("message")
-            if not user_message:
-                continue
+        await handle_chat_loop(
+            websocket, user_id, token, namespace, build_prompt_chat
+        )
 
-            progress = get_user_progress(user_id, token)
-            current_history = ChatStorage.get_history(namespace, user_id)
+    except WebSocketDisconnect:
+        print(f"User {user_id} disconnected")
+    except Exception as e:
+        print(f"Error: {e}")
+        await websocket.close(code=1011)
 
-            prompt = build_prompt(user_message, current_history, progress)
 
-            ai_response = call_llm(prompt).strip()
-            ai_response = (
-                ai_response
-                .replace("Tutor:", "")
-                .replace("Student:", "")
-                .strip()
-            )
+@router.websocket("/ws/speaking/{user_id}")
+async def websocket_speaking(websocket: WebSocket, user_id: str):
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=1008)
+        return
 
-            ChatStorage.push_message(namespace, user_id, "user", user_message)
-            ChatStorage.push_message(namespace, user_id, "assistant", ai_response)
+    namespace = "speaking_history"
+    await websocket.accept()
 
-            await websocket.send_json({
-                "type": "message",
-                "sender": "bot",
-                "text": ai_response
-            })
+    try:
+        history = ChatStorage.get_history(namespace, user_id)
+        await send_history(websocket, history)
+
+        await handle_chat_loop(
+            websocket, user_id, token, namespace, build_prompt_speaking
+        )
 
     except WebSocketDisconnect:
         print(f"User {user_id} disconnected")
