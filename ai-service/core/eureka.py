@@ -1,26 +1,37 @@
 import asyncio
+import logging
+import httpx
 import py_eureka_client.eureka_client as eureka_client
 
-async def init_eureka(app):
-    retry_delay = 30
-    max_retries = 20
+logger = logging.getLogger(__name__)
+
+async def connect_eureka_forever():
+    eureka_url = "http://eureka-server:8761/eureka"
+    retry_delay = 10
     attempt = 0
 
-    while attempt < max_retries:
-        try:
-            print(f"Attempt {attempt + 1} to connect Eureka...")
-            await eureka_client.init_async(
-                eureka_server="http://eureka-server:8761/eureka",
-                app_name="ai-service",
-                instance_host="ai-service",
-                instance_port=8083,
-            )
-            print("Connected to Eureka!")
-            return
-
-        except Exception as e:
-            print(f"Failed: {e}")
+    async with httpx.AsyncClient() as client:
+        while True:
             attempt += 1
-            await asyncio.sleep(retry_delay)
+            try:
+                logger.info(f"[EUREKA] Thử kết nối lần {attempt}...")
+                response = await client.get("http://eureka-server:8761/")
 
-    raise RuntimeError("Could not connect to Eureka after retries")
+                if response.status_code == 200:
+                    await eureka_client.init_async(
+                        eureka_server=eureka_url,
+                        app_name="ai-service",
+                        instance_host="ai-service",
+                        instance_port=8083,
+                        renewal_interval_in_secs=30,
+                        duration_in_secs=90
+                    )
+                    logger.info("[EUREKA] ✅ Đăng ký thành công!")
+                    return
+                else:
+                    logger.warning(f"[EUREKA] Server trả về code {response.status_code}, đợi thêm...")
+
+            except (httpx.ConnectError, Exception) as e:
+                logger.warning(f"[EUREKA] ❌ Chưa thể kết nối: {e}")
+
+            await asyncio.sleep(retry_delay)

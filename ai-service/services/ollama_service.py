@@ -7,7 +7,7 @@ def call_llm(prompt: str, format: str = None, timeout: int = 120):
         "prompt": prompt,
         "stream": False,
         "options": {
-            "num_predict": 200,
+            "num_predict": 600,
             "temperature": 0.7
         }
     }

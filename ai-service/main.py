@@ -1,15 +1,17 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from api.v1.endpoints import chat, vocab, health, explanation
-from core.eureka import init_eureka
+from api.v1.endpoints import chat, vocab, health
+from core.eureka import connect_eureka_forever
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_eureka(app)
+    task = asyncio.create_task(connect_eureka_forever())
     yield
+    task.cancel()
 
 app = FastAPI(
     title="AI Service",
@@ -29,4 +31,3 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api/ai", tags=["AI"])
 app.include_router(chat.router, prefix="/api/ai", tags=["AI"])
 app.include_router(vocab.router, prefix="/api/ai", tags=["AI"])
-app.include_router(explanation.router, prefix="/api/ai", tags=["AI"])
