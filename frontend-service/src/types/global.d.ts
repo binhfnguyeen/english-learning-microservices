@@ -1,3 +1,5 @@
+// src/types/global.d.ts
+
 interface SpeechRecognition extends EventTarget {
     lang: string;
     continuous: boolean;

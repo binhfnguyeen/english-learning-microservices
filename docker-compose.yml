@@ -128,6 +128,26 @@ services:
       - eureka-server
       - redis
 
+  frontend-service:
+    build:
+      context: ./frontend-service
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - JWT_SECRET=${JWT_SECRET}
+    container_name: frontend-service
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    env_file:
+      - .env
+    depends_on:
+      - api-gateway
+    networks:
+      - microservice-network
+
 networks:
   microservice-network:
     driver: bridge

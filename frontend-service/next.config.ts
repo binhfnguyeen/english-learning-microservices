@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     domains: ["res.cloudinary.com"],
     unoptimized: true,
   },
+    output: "standalone"
 };
 
 export default nextConfig;

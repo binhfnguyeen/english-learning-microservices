@@ -1,5 +1,4 @@
 "use client";
-import Apis from "@/configs/Apis";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";

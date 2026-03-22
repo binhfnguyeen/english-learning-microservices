@@ -12,11 +12,6 @@ interface Message {
     text: string;
 }
 
-type SpeechRecType = {
-    webkitSpeechRecognition?: typeof SpeechRecognition;
-    SpeechRecognition?: typeof SpeechRecognition;
-};
-
 export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [connected, setConnected] = useState(false);
@@ -28,6 +23,7 @@ export default function ChatPage() {
 
     const wsRef = useRef<WebSocket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
     const recognitionRef = useRef<SpeechRecognition | null>(null);
 
     const ttsSupportedRef = useRef(ttsSupported);
@@ -44,7 +40,7 @@ export default function ChatPage() {
     const handleSendTranscriptRef = useRef<((text: string) => void) | null>(null);
 
     useEffect(() => {
-        const SpeechRecog = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const SpeechRecog = window.SpeechRecognition || window.webkitSpeechRecognition;
         const hasSTT = typeof window !== "undefined" && !!SpeechRecog;
         const hasTTS = typeof window !== "undefined" && "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 
@@ -57,14 +53,14 @@ export default function ChatPage() {
             recognition.continuous = false;
             recognition.interimResults = false;
 
-            recognition.onresult = (event: any) => {
+            recognition.onresult = (event: SpeechRecognitionEvent) => {
                 const transcript = event.results[0][0].transcript;
                 if (handleSendTranscriptRef.current) {
                     handleSendTranscriptRef.current(transcript);
                 }
             };
 
-            recognition.onerror = (event: any) => {
+            recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
                 console.error("Speech recognition error: ", event.error);
                 setMicOn(false);
             };
@@ -93,8 +89,8 @@ export default function ChatPage() {
             console.log("Connected to AI Service WebSocket (Speaking)");
         };
 
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+        socket.onmessage = (event: MessageEvent) => {
+            const data = JSON.parse(event.data as string);
 
             if (data.type === "history") {
                 setMessages(data.data);
@@ -164,7 +160,6 @@ export default function ChatPage() {
     }, [connected, messages, isGenerating]);
 
     const startMic = () => {
-        // Chặn mở mic nếu AI đang trả lời
         if (recognitionRef.current && !isGenerating) {
             try {
                 recognitionRef.current.start();
@@ -210,16 +205,24 @@ export default function ChatPage() {
                     0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
                     40% { transform: scale(1); opacity: 1; }
                 }
+
+                .chat-container {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                .chat-container::-webkit-scrollbar {
+                    display: none;
+                }
             `}</style>
 
-            <div className="d-flex justify-content-between align-items-center p-3 shadow-sm" style={{ background: "#1976d2", color: "white", fontWeight: "600" }}>
+            <div className="d-flex justify-content-between align-items-center p-3 shadow-sm" style={{ background: "#1976d2", color: "white", fontWeight: "600", zIndex: 10 }}>
                 <span className="d-inline-flex align-items-center gap-2 px-2 py-2 rounded-pill bg-light shadow-sm border border-secondary-subtle">
                     <Robot size={10} className="text-primary" />
                     <span className="fw-semibold text-dark">AI Speaking Assistant</span>
                 </span>
             </div>
 
-            <div className="flex-grow-1 p-4 overflow-auto">
+            <div className="chat-container flex-grow-1 p-4 overflow-auto">
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`d-flex mb-3 ${msg.sender === "you" ? "justify-content-end" : "justify-content-start"}`}>
                         <div
@@ -249,7 +252,7 @@ export default function ChatPage() {
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 bg-white border-top">
+            <div className="p-3 bg-white border-top" style={{ zIndex: 10 }}>
                 <Form className="d-flex align-items-center justify-content-center">
                     {micOn ? (
                         <div className="d-flex flex-column align-items-center">

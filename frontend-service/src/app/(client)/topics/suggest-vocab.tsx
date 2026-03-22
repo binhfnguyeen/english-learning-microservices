@@ -12,13 +12,19 @@ interface Props {
     onHide: () => void;
 }
 
+interface VocabItem {
+    word: string;
+    meaning: string;
+    example: string;
+}
+
 export default function SuggestVocab({ show, onHide }: Props) {
 
     const context = useContext(UserContext);
     const user = context?.user;
 
     const [topicInput, setTopicInput] = useState("");
-    const [generatedVocabs, setGeneratedVocabs] = useState<any[]>([]);
+    const [generatedVocabs, setGeneratedVocabs] = useState<VocabItem[]>([]);
     const [wsLoading, setWsLoading] = useState(false);
 
     const { speak, isSpeaking } = useTTS();

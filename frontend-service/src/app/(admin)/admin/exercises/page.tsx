@@ -1,7 +1,6 @@
 "use client";
 
 import MySpinner from "@/components/MySpinner";
-import Apis from "@/configs/Apis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -11,7 +10,6 @@ import {
     Card,
     Container,
     Form,
-    Image,
     InputGroup,
     Table,
 } from "react-bootstrap";

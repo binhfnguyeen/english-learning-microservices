@@ -1,10 +1,9 @@
 "use client";
 
-import Apis from "@/configs/Apis";
 import endpoints from "@/configs/Endpoints";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Alert, Badge, Button, Card, Container, Modal, Nav, Table } from "react-bootstrap";
+import { Alert, Badge, Button, Card, Container, Modal, Table } from "react-bootstrap";
 import AddExercise from "./addExercises/AddExercises";
 import authApis from "@/configs/AuthApis";
 import Link from "next/link";

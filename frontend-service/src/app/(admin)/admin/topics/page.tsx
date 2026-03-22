@@ -1,12 +1,11 @@
 "use client"
 
 import MySpinner from "@/components/MySpinner";
-import Apis from "@/configs/Apis";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import React, { useEffect, useState } from "react"
-import { Alert, Button, Card, Col, Container, Form, Nav, Row } from "react-bootstrap";
+import { Alert, Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 
 interface Topic {
     id: number;
