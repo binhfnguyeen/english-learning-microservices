@@ -1,7 +1,7 @@
 import asyncio
 import json
 
-from fastapi import APIRouter, WebSocket, status, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from services.progress_service import get_user_progress
 from services.ollama_service import call_llm
 

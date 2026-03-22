@@ -17,6 +17,9 @@ export default function ChatAssistant() {
     const [showHint, setShowHint] = useState(false);
     const [input, setInput] = useState("");
 
+    // Thêm state isGenerating để khóa input khi AI đang trả lời
+    const [isGenerating, setIsGenerating] = useState(false);
+
     const wsRef = useRef<WebSocket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const context = useContext(UserContext);
@@ -27,49 +30,76 @@ export default function ChatAssistant() {
     }, [messages]);
 
     useEffect(() => {
-        if (!user || !isOpen || wsRef.current) return;
+        if (!user?.id || !isOpen) return;
 
         const token = Cookies.get("accessToken");
 
         if (!token) return;
 
         const wsUrl = `ws://localhost:8080/api/ai/ws/chat/${user.id}?token=${token}`;
-
         const socket = new WebSocket(wsUrl);
+
+        wsRef.current = socket;
 
         socket.onopen = () => {
             setConnected(true);
-            console.log("Connected to AI Service WebSocket");
+            console.log("Connected to AI Service WebSocket (Chat)");
         };
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
+
             if (data.type === "history") {
                 setMessages(data.data);
+
+            } else if (data.type === "stream_start") {
+                setMessages((prev) => [...prev, { sender: "bot", text: "" }]);
+                setIsGenerating(true); // Đảm bảo khóa input khi bắt đầu stream
+
+            } else if (data.type === "stream_chunk") {
+                setMessages((prev) => {
+                    const newMessages = [...prev];
+                    const lastIndex = newMessages.length - 1;
+                    if (lastIndex >= 0 && newMessages[lastIndex].sender === "bot") {
+                        newMessages[lastIndex] = {
+                            ...newMessages[lastIndex],
+                            text: newMessages[lastIndex].text + data.text
+                        };
+                    }
+                    return newMessages;
+                });
+
+            } else if (data.type === "stream_done") {
+                setIsGenerating(false); // Mở khóa input khi gen xong
+
             } else if (data.type === "message") {
                 setMessages((prev) => [...prev, { sender: "bot", text: data.text }]);
+                setIsGenerating(false); // Mở khóa input nếu dùng kiểu tin nhắn thường
             }
         };
 
         socket.onclose = () => {
-            setConnected(false);
-            wsRef.current = null;
+            if (wsRef.current === socket) {
+                setConnected(false);
+                setIsGenerating(false); // Reset lại nếu bị mất kết nối
+                wsRef.current = null;
+            }
         };
-
-        wsRef.current = socket;
 
         return () => {
             socket.close();
         };
-    }, [isOpen, user]);
+    }, [isOpen, user?.id]);
 
     const sendMessage = () => {
-        if (!input.trim() || !wsRef.current || !connected) return;
+        // Chặn gửi tin nhắn nếu AI đang gen
+        if (!input.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || isGenerating) return;
 
         const userMsg = input.trim();
         wsRef.current.send(JSON.stringify({ message: userMsg }));
         setMessages((prev) => [...prev, { sender: "you", text: userMsg }]);
         setInput("");
+        setIsGenerating(true); // Khóa input ngay lập tức sau khi bấm gửi
     };
 
     useEffect(() => {
@@ -79,13 +109,13 @@ export default function ChatAssistant() {
 
         const timer2 = setTimeout(() => {
             setShowHint(false);
-        }, 3000);
+        }, 11000);
 
         return () => {
             clearTimeout(timer1);
             clearTimeout(timer2);
         };
-    });
+    }, []);
 
     if (!user) {
         return null;
@@ -93,6 +123,24 @@ export default function ChatAssistant() {
 
     return (
         <>
+            <style>{`
+                .typing-dot {
+                    width: 5px;
+                    height: 5px;
+                    background-color: #6c757d;
+                    border-radius: 50%;
+                    margin: 0 2px;
+                    animation: typing-bounce 1.4s infinite ease-in-out both;
+                }
+                .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+                .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+                
+                @keyframes typing-bounce {
+                    0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+                    40% { transform: scale(1); opacity: 1; }
+                }
+            `}</style>
+
             {!isOpen && user && (
                 <div className="position-fixed m-4" style={{ bottom: 0, right: 0, zIndex: 1050, position: "fixed" }}>
                     {showHint && (
@@ -143,6 +191,7 @@ export default function ChatAssistant() {
                         display: "flex",
                         flexDirection: "column",
                         overflow: "hidden",
+                        zIndex: 1050,
                     }}
                 >
                     <Card.Header
@@ -175,7 +224,7 @@ export default function ChatAssistant() {
                             <div
                                 key={idx}
                                 className={`d-flex mb-2 ${msg.sender === "you" ? "justify-content-end" : "justify-content-start"
-                                    }`}
+                                }`}
                             >
                                 <div
                                     className={`px-3 py-2 shadow-sm`}
@@ -188,9 +237,20 @@ export default function ChatAssistant() {
                                         background: msg.sender === "you" ? "#4facfe" : "#e0e0e0",
                                         color: msg.sender === "you" ? "white" : "#333",
                                         fontSize: "0.9rem",
+                                        whiteSpace: "pre-wrap",
+                                        minHeight: "36px",
+                                        display: "flex",
+                                        alignItems: "center"
                                     }}
                                 >
                                     {msg.text}
+                                    {(msg.sender === "bot" && msg.text === "" && idx === messages.length - 1) && (
+                                        <div className="d-inline-flex align-items-center ms-1" style={{ height: '20px' }}>
+                                            <span className="typing-dot"></span>
+                                            <span className="typing-dot"></span>
+                                            <span className="typing-dot"></span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -209,23 +269,27 @@ export default function ChatAssistant() {
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="Nhập tin nhắn..."
+                                placeholder={isGenerating ? "AI đang trả lời..." : "Nhập tin nhắn..."} // Cập nhật placeholder
                                 size="sm"
                                 className="rounded-pill"
+                                disabled={!connected || isGenerating} // Khóa ô input
                             />
                             <Button
                                 variant="primary"
                                 size="sm"
-                                className="ms-2 rounded-circle d-flex align-items-center justify-content-center"
+                                className="ms-2 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
                                 style={{
                                     width: "36px",
                                     height: "36px",
-                                    background: "linear-gradient(135deg, #4facfe, #00f2fe)",
+                                    background: (connected && input.trim() !== "" && !isGenerating)
+                                        ? "linear-gradient(135deg, #4facfe, #00f2fe)"
+                                        : "#c0c0c0",
                                     border: "none",
                                 }}
                                 onClick={sendMessage}
+                                disabled={!connected || input.trim() === "" || isGenerating} // Khóa nút gửi
                             >
-                                <Send size={24} />
+                                <Send size={18} />
                             </Button>
                         </Form>
                     </Card.Footer>

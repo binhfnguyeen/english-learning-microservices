@@ -1,14 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
-import { v4 as uuidv4 } from "uuid";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Form, Button } from "react-bootstrap";
-import { MicFill, MicMuteFill, Robot, VolumeMute, VolumeUp } from "react-bootstrap-icons";
+import { MicFill, MicMuteFill, Robot } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import useTTS from "@/utils/useTTS";
-import authApis from "@/configs/AuthApis";
-import endpoints from "@/configs/Endpoints";
+import UserContext from "@/configs/UserContext";
+import Cookies from "js-cookie";
 
 interface Message {
     sender: "you" | "bot";
@@ -20,299 +17,206 @@ type SpeechRecType = {
     SpeechRecognition?: typeof SpeechRecognition;
 };
 
-interface ProvidedData {
-    audio_provided: string;
-    post_provided: string;
-}
-
-interface OverallResultData {
-    ai_reading: string;
-    length_of_recording_in_sec: number;
-    number_of_recognized_words: number;
-    number_of_words_in_post: number;
-    overall_points: number;
-    post_language_id: number;
-    post_language_name: string;
-    score_id: string;
-    user_recording_transcript: string;
-}
-
-interface WordResultData {
-    points: string;
-    speed: string;
-    word: string;
-}
-
-export interface ScoreResponse {
-    provided_data: ProvidedData[] | null;
-    overall_result_data: OverallResultData[] | null;
-    word_result_data: WordResultData[] | null;
-}
-
 export default function ChatPage() {
-    const [conversationId, setConversationId] = useState<string>("");
     const [messages, setMessages] = useState<Message[]>([]);
-    const [input, setInput] = useState("");
+    const [connected, setConnected] = useState(false);
     const [sttSupported, setSttSupported] = useState(false);
     const [ttsSupported, setTtsSupported] = useState(false);
     const [micOn, setMicOn] = useState(false);
-    const [mute, setMute] = useState(false);
-    const [loadingUpload, setLoadingUpload] = useState(false);
 
-    const clientRef = useRef<Client | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const wsRef = useRef<WebSocket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
-    const muteRef = useRef(mute);
+
     const ttsSupportedRef = useRef(ttsSupported);
     const { speak } = useTTS();
-    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-    const audioChunksRef = useRef<Blob[]>([]);
-    const [postId, setPostId] = useState<string>("");
+
+    const speakRef = useRef(speak);
+    useEffect(() => {
+        speakRef.current = speak;
+    }, [speak]);
+
+    const context = useContext(UserContext);
+    const user = context?.user;
+
+    const handleSendTranscriptRef = useRef<((text: string) => void) | null>(null);
 
     useEffect(() => {
-        setConversationId(uuidv4());
-    }, []);
-
-    useEffect(() => {
-        const hasSTT =
-            typeof window !== "undefined" &&
-            (!!(window as SpeechRecType).webkitSpeechRecognition ||
-                !!(window as SpeechRecType).SpeechRecognition);
-        const hasTTS =
-            typeof window !== "undefined" &&
-            "speechSynthesis" in window &&
-            "SpeechSynthesisUtterance" in window;
+        const SpeechRecog = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const hasSTT = typeof window !== "undefined" && !!SpeechRecog;
+        const hasTTS = typeof window !== "undefined" && "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
 
         setSttSupported(hasSTT);
         setTtsSupported(hasTTS);
+
+        if (hasSTT && !recognitionRef.current) {
+            const recognition = new SpeechRecog();
+            recognition.lang = "en-US";
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event: any) => {
+                const transcript = event.results[0][0].transcript;
+                if (handleSendTranscriptRef.current) {
+                    handleSendTranscriptRef.current(transcript);
+                }
+            };
+
+            recognition.onerror = (event: any) => {
+                console.error("Speech recognition error: ", event.error);
+                setMicOn(false);
+            };
+
+            recognition.onend = () => {
+                setMicOn(false);
+            };
+
+            recognitionRef.current = recognition;
+        }
     }, []);
 
     useEffect(() => {
-        if (!conversationId) return;
+        if (!user?.id) return;
 
-        setMessages([{ sender: "bot", text: "Bạn cần ghi âm và đọc theo câu có sẵn để được chấm điểm phát âm!" }]);
+        const token = Cookies.get("accessToken");
+        if (!token) return;
 
-        const socket = new SockJS("https://englearn-backend.onrender.com/elearn/ws-chat");
-        const client = new Client({
-            webSocketFactory: () => socket,
-            reconnectDelay: 5000,
-            onConnect: () => {
-                client.subscribe(`/topic/conversation/practice/${conversationId}`, (message) => {
-                    const payload = JSON.parse(message.body);
-                    const msg: Message = {
-                        sender: "bot",
-                        text: payload.content
-                    };
+        const wsUrl = `ws://localhost:8080/api/ai/ws/speaking/${user.id}?token=${token}`;
+        const socket = new WebSocket(wsUrl);
 
-                    setPostId(payload.postId);
+        wsRef.current = socket;
 
-                    setMessages((prev) => [...prev, msg]);
+        socket.onopen = () => {
+            setConnected(true);
+            console.log("Connected to AI Service WebSocket (Speaking)");
+        };
 
-                    if (!muteRef.current && ttsSupportedRef.current) {
-                        speak(payload.content);
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "history") {
+                setMessages(data.data);
+
+            } else if (data.type === "stream_start") {
+                setMessages((prev) => [...prev, { sender: "bot", text: "" }]);
+                setIsGenerating(true);
+
+            } else if (data.type === "stream_chunk") {
+                setMessages((prev) => {
+                    const newMessages = [...prev];
+                    const lastIndex = newMessages.length - 1;
+                    if (lastIndex >= 0 && newMessages[lastIndex].sender === "bot") {
+                        newMessages[lastIndex] = {
+                            ...newMessages[lastIndex],
+                            text: newMessages[lastIndex].text + data.text
+                        };
                     }
+                    return newMessages;
                 });
-            }
-        });
 
-        client.activate();
-        clientRef.current = client;
+            } else if (data.type === "stream_done") {
+                setIsGenerating(false);
+                if (ttsSupportedRef.current && speakRef.current) {
+                    speakRef.current(data.text);
+                }
+
+            } else if (data.type === "message") {
+                setMessages((prev) => [...prev, { sender: "bot", text: data.text }]);
+                setIsGenerating(false);
+                if (ttsSupportedRef.current && speakRef.current) {
+                    speakRef.current(data.text);
+                }
+            }
+        };
+
+        socket.onclose = () => {
+            if (wsRef.current === socket) {
+                setConnected(false);
+                setIsGenerating(false);
+                wsRef.current = null;
+            }
+        };
 
         return () => {
-            client.deactivate();
-            clientRef.current = null;
+            socket.close();
         };
-    }, [conversationId, speak]);
+    }, [user?.id]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    useEffect(() => { muteRef.current = mute; }, [mute]);
     useEffect(() => { ttsSupportedRef.current = ttsSupported; }, [ttsSupported]);
 
-    const startMic = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorderRef.current = new MediaRecorder(stream);
-
-            audioChunksRef.current = [];
-            mediaRecorderRef.current.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    audioChunksRef.current.push(event.data);
-                }
-            };
-
-            mediaRecorderRef.current.start();
-            setMicOn(true);
-
-            setTimeout(() => {
-                if (mediaRecorderRef.current && micOn) {
-                    stopMic(postId);
-                }
-            }, 59000);
-        } catch (err) {
-            console.error("Mic start error:", err);
-        }
-    };
-
-    function convertToWav(blob: Blob): Promise<Blob> {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const arrayBuffer = reader.result as ArrayBuffer;
-                const audioContext = new AudioContext();
-                audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-                    const wavBuffer = audioBufferToWav(audioBuffer);
-                    const wavBlob = new Blob([wavBuffer], { type: "audio/wav" });
-                    resolve(wavBlob);
-                });
-            };
-            reader.readAsArrayBuffer(blob);
-        });
-    }
-
-    function audioBufferToWav(buffer: AudioBuffer) {
-        const numOfChan = buffer.numberOfChannels,
-            length = buffer.length * numOfChan * 2 + 44,
-            result = new ArrayBuffer(length),
-            view = new DataView(result),
-            channels = [],
-            sampleRate = buffer.sampleRate;
-
-        let offset = 0;
-        function writeString(s: string) {
-            for (let i = 0; i < s.length; i++) {
-                view.setUint8(offset++, s.charCodeAt(i));
-            }
-        }
-
-        writeString("RIFF");
-        view.setUint32(offset, 36 + buffer.length * numOfChan * 2, true); offset += 4;
-        writeString("WAVE");
-        writeString("fmt ");
-        view.setUint32(offset, 16, true); offset += 4;
-        view.setUint16(offset, 1, true); offset += 2;
-        view.setUint16(offset, numOfChan, true); offset += 2;
-        view.setUint32(offset, sampleRate, true); offset += 4;
-        view.setUint32(offset, sampleRate * 2 * numOfChan, true); offset += 4;
-        view.setUint16(offset, numOfChan * 2, true); offset += 2;
-        view.setUint16(offset, 16, true); offset += 2;
-        writeString("data");
-        view.setUint32(offset, buffer.length * numOfChan * 2, true); offset += 4;
-
-        for (let i = 0; i < buffer.numberOfChannels; i++) {
-            channels.push(buffer.getChannelData(i));
-        }
-        const interleaved = new Float32Array(buffer.length * numOfChan);
-        for (let i = 0; i < buffer.length; i++) {
-            for (let j = 0; j < numOfChan; j++) {
-                interleaved[i * numOfChan + j] = channels[j][i];
-            }
-        }
-        let idx = offset;
-        for (let i = 0; i < interleaved.length; i++, idx += 2) {
-            const s = Math.max(-1, Math.min(1, interleaved[i]));
-            view.setInt16(idx, s < 0 ? s * 0x8000 : s * 0x7fff, true);
-        }
-        return result;
-    }
-
-    const stopMic = async (postId: string) => {
-        try {
-            mediaRecorderRef.current?.stop();
-
-            mediaRecorderRef.current!.onstop = async () => {
-                setLoadingUpload(true);
-
-                const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-                const wavBlob = await convertToWav(blob);
-
-                const formData = new FormData();
-                formData.append("audio", wavBlob, "recording.wav");
-
-                try {
-                    const res = await authApis.post<ScoreResponse[]>(
-                        endpoints["score"](postId),
-                        formData
-                    );
-
-                    const scoreData = res.data;
-
-                    if (scoreData[1]?.overall_result_data?.length) {
-                        const result = scoreData[1].overall_result_data[0];
-                        setMessages(prev => [
-                            ...prev,
-                            {
-                                sender: "bot",
-                                text: `Kết quả: ${result.overall_points.toFixed(2)} điểm. Bạn đọc: "${result.user_recording_transcript}"`
-                            }
-                        ]);
-                    }
-
-                    clientRef.current?.publish({
-                        destination: `/app/speak/${conversationId}`,
-                        body: JSON.stringify({ message: "generate_practice_sentence" }),
-                    });
-                } catch (err) {
-                    console.error("Upload/score error:", err);
-                } finally {
-                    setMicOn(false);
-                    setLoadingUpload(false);
-                }
-            };
-        } catch (err) {
-            console.error("Stop mic error:", err);
-            setMicOn(false);
-            setLoadingUpload(false);
-        }
-    };
-
-    const sendMessage = (textParam?: string) => {
-        const content = (textParam ?? input).trim();
-        if (!content || !clientRef.current) return;
-
-        setMessages((prev) => [...prev, { sender: "you", text: content }]);
-
-        clientRef.current.publish({
-            destination: `/app/speak/${conversationId}`,
-            body: JSON.stringify({ message: content }),
-        });
-
-        setInput("");
-    };
-
     useEffect(() => {
-        return () => {
-            if (clientRef.current) {
-                clientRef.current.deactivate();
-                clientRef.current = null;
+        handleSendTranscriptRef.current = (transcript: string) => {
+            if (!transcript.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || isGenerating) {
+                console.warn("WebSocket chưa sẵn sàng hoặc đang gen nội dung.");
+                return;
             }
-            if ("speechSynthesis" in window) {
-                window.speechSynthesis.cancel();
-            }
-            if (recognitionRef.current) {
-                recognitionRef.current.stop();
-                recognitionRef.current = null;
-            }
+
+            setMessages((prev) => [...prev, { sender: "you", text: transcript }]);
+            wsRef.current.send(JSON.stringify({ message: transcript }));
+            setIsGenerating(true);
         };
-    }, []);
+    }, [connected, messages, isGenerating]);
+
+    const startMic = () => {
+        // Chặn mở mic nếu AI đang trả lời
+        if (recognitionRef.current && !isGenerating) {
+            try {
+                recognitionRef.current.start();
+                setMicOn(true);
+            } catch (err) {
+                console.error("Mic start error:", err);
+            }
+        }
+    };
+
+    const stopMic = () => {
+        if (recognitionRef.current && micOn) {
+            recognitionRef.current.stop();
+            setMicOn(false);
+        }
+    };
+
+    if (!user) {
+        return (
+            <div className="d-flex align-items-center justify-content-center" style={{ height: "100vh" }}>
+                <div className="text-secondary fw-bold">Vui lòng đăng nhập để sử dụng tính năng này!</div>
+            </div>
+        );
+    }
+
+    const isMicDisabled = !sttSupported || !connected || isGenerating;
 
     return (
         <div className="d-flex flex-column" style={{ minHeight: "100vh", background: "linear-gradient(135deg, #e3f2fd, #f1f3f6)", fontFamily: "'Segoe UI', sans-serif" }}>
+            <style>{`
+                .typing-dot {
+                    width: 6px;
+                    height: 6px;
+                    background-color: #6c757d;
+                    border-radius: 50%;
+                    margin: 0 2px;
+                    animation: typing-bounce 1.4s infinite ease-in-out both;
+                }
+                .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+                .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+                
+                @keyframes typing-bounce {
+                    0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
+                    40% { transform: scale(1); opacity: 1; }
+                }
+            `}</style>
+
             <div className="d-flex justify-content-between align-items-center p-3 shadow-sm" style={{ background: "#1976d2", color: "white", fontWeight: "600" }}>
                 <span className="d-inline-flex align-items-center gap-2 px-2 py-2 rounded-pill bg-light shadow-sm border border-secondary-subtle">
                     <Robot size={10} className="text-primary" />
-                    <span className="fw-semibold text-dark">AI Assistant – {conversationId.slice(0, 6)}</span>
+                    <span className="fw-semibold text-dark">AI Speaking Assistant</span>
                 </span>
-                <Button
-                    variant={mute ? "outline-light" : "light"}
-                    onClick={() => setMute((m) => !m)}
-                    size="sm"
-                    className="d-flex align-items-center gap-1"
-                >
-                    {mute ? <VolumeMute /> : <VolumeUp />}
-                </Button>
             </div>
 
             <div className="flex-grow-1 p-4 overflow-auto">
@@ -325,9 +229,20 @@ export default function ChatPage() {
                                 background: msg.sender === "you" ? "#1976d2" : "white",
                                 color: msg.sender === "you" ? "white" : "#333",
                                 border: msg.sender === "bot" ? "1px solid #ddd" : "none",
+                                whiteSpace: "pre-wrap",
+                                minHeight: "38px",
+                                display: "flex",
+                                alignItems: "center"
                             }}
                         >
                             {msg.text}
+                            {(msg.sender === "bot" && msg.text === "" && idx === messages.length - 1) && (
+                                <div className="d-inline-flex align-items-center ms-1" style={{ height: '20px' }}>
+                                    <span className="typing-dot"></span>
+                                    <span className="typing-dot"></span>
+                                    <span className="typing-dot"></span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -335,64 +250,44 @@ export default function ChatPage() {
             </div>
 
             <div className="p-3 bg-white border-top">
-                <Form
-                    className="d-flex align-items-center justify-content-center"
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        sendMessage();
-                    }}
-                >
-                    {messages.length <= 1 ? (
-                        <div className="d-flex flex-column align-items-center">
-                            <Button
-                                variant="success"
-                                className="px-4 py-2 rounded-pill shadow-sm fw-semibold"
-                                onClick={() =>
-                                    clientRef.current?.publish({
-                                        destination: `/app/speak/${conversationId}`,
-                                        body: JSON.stringify({ message: "generate_practice_sentence" }),
-                                    })
-                                }
-                            >
-                                Bắt đầu luyện tập
-                            </Button>
-                        </div>
-                    ) : loadingUpload ? (
-                        <div className="d-flex flex-column align-items-center">
-                            <Button
-                                disabled
-                                variant="light"
-                                className="rounded-circle shadow-sm d-flex align-items-center justify-content-center"
-                                style={{ width: "70px", height: "70px", backgroundColor: "#1976d2" }}
-                            >
-                                <span className="spinner-border spinner-border-sm text-white" role="status" />
-                            </Button>
-                            <small className="text-secondary mt-2 fw-semibold">Đang chấm điểm...</small>
-                        </div>
-                    ) : micOn ? (
+                <Form className="d-flex align-items-center justify-content-center">
+                    {micOn ? (
                         <div className="d-flex flex-column align-items-center">
                             <Button
                                 variant="danger"
                                 className="rounded-circle shadow-lg d-flex align-items-center justify-content-center pulse"
                                 style={{ width: "80px", height: "80px", border: "none" }}
-                                onClick={() => stopMic(postId)}
+                                onClick={stopMic}
                             >
                                 <MicMuteFill size={30} color="#fff" />
                             </Button>
-                            <small className="text-danger mt-2 fw-semibold">Recording...</small>
+                            <small className="text-danger mt-2 fw-semibold">Đang nghe...</small>
                         </div>
                     ) : (
                         <div className="d-flex flex-column align-items-center">
                             <Button
-                                disabled={!postId}
-                                variant="light"
+                                disabled={isMicDisabled}
+                                variant={isMicDisabled ? "secondary" : "light"}
                                 className="rounded-circle shadow-sm d-flex align-items-center justify-content-center"
-                                style={{ width: "70px", height: "70px", backgroundColor: "#1976d2" }}
+                                style={{
+                                    width: "70px",
+                                    height: "70px",
+                                    backgroundColor: isMicDisabled ? "#c0c0c0" : "#1976d2",
+                                    transition: "all 0.3s ease"
+                                }}
                                 onClick={startMic}
                             >
                                 <MicFill size={28} color="#fff" />
                             </Button>
-                            <small className="text-primary mt-2 fw-semibold">Speak</small>
+                            <small className={`mt-2 fw-semibold ${isGenerating ? 'text-secondary' : 'text-primary'}`}>
+                                {!connected
+                                    ? "Đang kết nối..."
+                                    : !sttSupported
+                                        ? "Trình duyệt không hỗ trợ Mic"
+                                        : isGenerating
+                                            ? "AI đang trả lời..."
+                                            : "Nhấn để nói"}
+                            </small>
                         </div>
                     )}
                 </Form>
