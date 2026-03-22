@@ -193,7 +193,7 @@ export default function ChatPage() {
     const isMicDisabled = !sttSupported || !connected || isGenerating;
 
     return (
-        <div className="d-flex flex-column" style={{ minHeight: "100vh", background: "linear-gradient(135deg, #e3f2fd, #f1f3f6)", fontFamily: "'Segoe UI', sans-serif" }}>
+        <div className="d-flex flex-column" style={{ height: "100vh", overflow: "hidden", background: "linear-gradient(135deg, #e3f2fd, #f1f3f6)", fontFamily: "'Segoe UI', sans-serif" }}>
             <style>{`
                 .typing-dot {
                     width: 6px;
