@@ -71,7 +71,6 @@ services:
     build:
       context: ./user-service
     image: elearn-user-service
-    container_name: elearn-user-service
     env_file:
       - .env
     environment:
@@ -83,16 +82,17 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       EMAIL_USERNAME: ${EMAIL_USERNAME}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
-    ports:
-      - "8081:8081"
+    expose:
+      - "8081"
     networks:
       - microservice-network
+    deploy:
+      replicas: 2
 
   backend-service:
     build:
       context: ./backend-service
     image: elearn-backend-service
-    container_name: elearn-backend-service
     env_file:
       - .env
     environment:
@@ -104,10 +104,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       EMAIL_USERNAME: ${EMAIL_USERNAME}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
-    ports:
-      - "8082:8082"
+    expose:
+      - "8082"
     networks:
       - microservice-network
+    deploy:
+      replicas: 3
 
   ai-service:
     build:
