@@ -1,5 +1,6 @@
 package com.heulwen.backendservice.model;
 
+import com.heulwen.backendservice.model.enumType.QuestionType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -35,6 +36,13 @@ public class Question implements Serializable {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     List<QuestionChoice> choices;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "question_type", columnDefinition = "varchar(255) default 'MULTIPLE_CHOICE'")
+    QuestionType type;
+
+    @Column(name = "correct_answer_text", columnDefinition = "TEXT")
+    String correctAnswerText;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

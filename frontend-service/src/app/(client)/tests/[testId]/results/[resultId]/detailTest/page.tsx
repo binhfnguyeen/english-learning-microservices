@@ -28,18 +28,23 @@ interface TestFull {
 interface Question {
     id: number;
     content: string;
+    type: string;                 // Bổ sung type câu hỏi
+    correctAnswerText?: string;   // Bổ sung đáp án text chuẩn
     choices: Choice[];
 }
 
+// ĐÃ XÓA PHẦN INTERFACE BỊ TRÙNG LẶP, CHỈ GIỮ LẠI BẢN CHUẨN NÀY
 interface Choice {
     id: number;
     isCorrect: boolean | null;
-    vocabulary: Vocabulary;
+    textContent?: string;
+    vocabulary: Vocabulary | null;
 }
 
 interface Answer {
     questionId: number;
-    questionChoiceId: number;
+    questionChoiceId: number | null; // Cập nhật cho phép null
+    givenAnswerText?: string;        // Bổ sung chuỗi user đã nhập
 }
 
 export default function DetailTest() {
@@ -149,45 +154,67 @@ export default function DetailTest() {
                     <Card className="shadow-sm border-0">
                         <Card.Body className="p-0">
                             <ListGroup variant="flush">
-                                {test.questions.map((q, index) => (
-                                    <ListGroup.Item key={q.id} className="p-4 border-bottom">
-                                        <div className="fw-bold fs-5 mb-3">
-                                            Câu {index + 1}: {q.content}
-                                        </div>
+                                {test.questions.map((q, index) => {
+                                    // Tìm câu trả lời của user cho câu hỏi này
+                                    const userAnswer = answers.find(a => a.questionId === q.id);
 
-                                        {q.choices.map((c, choiceIndex) => {
-                                            const label = String.fromCharCode(65 + choiceIndex);
+                                    return (
+                                        <ListGroup.Item key={q.id} className="p-4 border-bottom">
+                                            <div className="fw-bold fs-5 mb-3">
+                                                Câu {index + 1}: {q.content}
+                                            </div>
 
-                                            const userAnswer = answers.find(a => a.questionId === q.id);
-                                            const isUserChoice = userAnswer?.questionChoiceId === c.id;
-                                            const isCorrect = c.isCorrect;
-
-                                            let className = "p-3 rounded border mb-2 d-flex justify-content-between align-items-center ";
-                                            if (isCorrect) className += "bg-success-subtle border-success";
-                                            else if (isUserChoice && !isCorrect) className += "bg-danger-subtle border-danger";
-                                            else className += "bg-white";
-
-                                            return (
-                                                <div key={c.id} className={className}>
-                                                    <div>
-                                                        <span className="fw-bold me-2">{label}.</span>
-                                                        {c.vocabulary.word}
+                                            {/* RẼ NHÁNH: Nếu là câu hỏi text (Viết lại câu, Sắp xếp) */}
+                                            {q.type && q.type !== 'MULTIPLE_CHOICE' ? (
+                                                <div className="p-3 bg-light rounded border">
+                                                    <div className="mb-2">
+                                                        <span className="fw-bold text-muted">Bạn đã trả lời: </span>
+                                                        <span className={userAnswer?.givenAnswerText?.trim().toLowerCase() === q.correctAnswerText?.trim().toLowerCase() ? "text-success fw-bold" : "text-danger fw-bold"}>
+                                                            {userAnswer?.givenAnswerText || "(Không có câu trả lời)"}
+                                                        </span>
                                                     </div>
-
                                                     <div>
-                                                        {isCorrect && <Badge bg="success">Đúng</Badge>}
-                                                        {isUserChoice && !isCorrect && (
-                                                            <Badge bg="danger" className="ms-2">Bạn chọn</Badge>
-                                                        )}
-                                                        {isUserChoice && isCorrect && (
-                                                            <Badge bg="primary" className="ms-2">Bạn chọn</Badge>
-                                                        )}
+                                                        <span className="fw-bold text-muted">Đáp án đúng: </span>
+                                                        <span className="text-success fw-bold">{q.correctAnswerText}</span>
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
-                                    </ListGroup.Item>
-                                ))}
+                                            ) : (
+                                                /* RẼ NHÁNH: Dạng câu hỏi trắc nghiệm bình thường */
+                                                <div className="d-flex flex-column gap-2">
+                                                    {q.choices.map((c, choiceIndex) => {
+                                                        const label = String.fromCharCode(65 + choiceIndex);
+                                                        const isUserChoice = userAnswer?.questionChoiceId === c.id;
+                                                        const isCorrect = c.isCorrect;
+
+                                                        let className = "p-3 rounded border d-flex justify-content-between align-items-center ";
+                                                        if (isCorrect) className += "bg-success-subtle border-success";
+                                                        else if (isUserChoice && !isCorrect) className += "bg-danger-subtle border-danger";
+                                                        else className += "bg-white";
+
+                                                        return (
+                                                            <div key={c.id} className={className}>
+                                                                <div>
+                                                                    <span className="fw-bold me-2">{label}.</span>
+                                                                    {c.textContent || c.vocabulary?.word}
+                                                                </div>
+
+                                                                <div>
+                                                                    {isCorrect && <Badge bg="success">Đúng</Badge>}
+                                                                    {isUserChoice && !isCorrect && (
+                                                                        <Badge bg="danger" className="ms-2">Bạn chọn</Badge>
+                                                                    )}
+                                                                    {isUserChoice && isCorrect && (
+                                                                        <Badge bg="primary" className="ms-2">Bạn chọn</Badge>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </ListGroup.Item>
+                                    );
+                                })}
                             </ListGroup>
                         </Card.Body>
                     </Card>

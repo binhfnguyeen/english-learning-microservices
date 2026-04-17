@@ -1,6 +1,6 @@
 package com.heulwen.backendservice.form;
 
-import com.heulwen.backendservice.model.ExerciseType;
+import com.heulwen.backendservice.model.enumType.ExerciseType;
 import lombok.Data;
 
 import java.util.List;

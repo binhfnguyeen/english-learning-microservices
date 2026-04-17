@@ -21,6 +21,7 @@ public class AnswerMapper {
         Answer answer = new Answer();
         answer.setTestResult(testResult);
         answer.setQuestionChoice(questionChoice);
+        answer.setGivenAnswerText(form.getGivenAnswerText());
 
         return answer;
     }
@@ -39,16 +40,17 @@ public class AnswerMapper {
                                 : null
                 )
                 .questionId(
-                        entity.getQuestionChoice() != null
-                                && entity.getQuestionChoice().getQuestion() != null
-                                ? entity.getQuestionChoice().getQuestion().getId()
-                                : null
+                        entity.getQuestion() != null ? entity.getQuestion().getId() :
+                                (entity.getQuestionChoice() != null && entity.getQuestionChoice().getQuestion() != null
+                                        ? entity.getQuestionChoice().getQuestion().getId()
+                                        : null)
                 )
                 .questionChoiceId(
                         entity.getQuestionChoice() != null
                                 ? entity.getQuestionChoice().getId()
                                 : null
                 )
+                .givenAnswerText(entity.getGivenAnswerText())
                 .build();
     }
 }

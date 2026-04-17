@@ -5,4 +5,5 @@ import lombok.Data;
 @Data
 public class AnswerCreateForm {
     private Long questionChoiceId;
+    private String givenAnswerText;
 }

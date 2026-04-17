@@ -6,4 +6,5 @@ import lombok.Data;
 public class QuestionChoiceForm {
     private Long vocabularyId;
     private Boolean isCorrect;
+    private String textContent;
 }

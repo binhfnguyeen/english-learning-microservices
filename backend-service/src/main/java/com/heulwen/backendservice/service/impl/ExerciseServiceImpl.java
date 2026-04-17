@@ -9,7 +9,7 @@ import com.heulwen.backendservice.mapper.ExerciseChoiceMapper;
 import com.heulwen.backendservice.mapper.ExerciseMapper;
 import com.heulwen.backendservice.model.Exercise;
 import com.heulwen.backendservice.model.ExerciseChoice;
-import com.heulwen.backendservice.model.ExerciseType;
+import com.heulwen.backendservice.model.enumType.ExerciseType;
 import com.heulwen.backendservice.model.Vocabulary;
 import com.heulwen.backendservice.repository.ExerciseRepository;
 import com.heulwen.backendservice.repository.VocabularyRepository;

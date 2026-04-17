@@ -1,4 +1,4 @@
-package com.heulwen.backendservice.model;
+package com.heulwen.backendservice.model.enumType;
 
 public enum ExerciseType {
     CHOOSE_MEANING,

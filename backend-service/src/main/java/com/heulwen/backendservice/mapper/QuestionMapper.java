@@ -24,6 +24,8 @@ public class QuestionMapper {
 
         Question question = new Question();
         question.setContent(form.getContent());
+        question.setType(form.getType());
+        question.setCorrectAnswerText(form.getCorrectAnswerText());
         return question;
     }
 
@@ -37,6 +39,8 @@ public class QuestionMapper {
         }
 
         question.setContent(form.getContent());
+        question.setType(form.getType());
+        question.setCorrectAnswerText(form.getCorrectAnswerText());
     }
 
     /**
@@ -51,6 +55,8 @@ public class QuestionMapper {
         return QuestionDto.builder()
                 .id(question.getId())
                 .content(question.getContent())
+                .type(question.getType())
+                .correctAnswerText(question.getCorrectAnswerText())
                 .choices(
                         question.getChoices() != null
                                 ? question.getChoices()
@@ -77,6 +83,7 @@ public class QuestionMapper {
 
         QuestionChoice choice = new QuestionChoice();
         choice.setIsCorrect(form.getIsCorrect());
+        choice.setTextContent(form.getTextContent());
         choice.setQuestion(question);
         choice.setVocabulary(vocabulary);
 
@@ -96,6 +103,7 @@ public class QuestionMapper {
                 .id(choice.getId())
                 .isCorrect(choice.getIsCorrect())
                 .vocabulary(VocabularyMapper.map(choice.getVocabulary()))
+                .vocabulary(choice.getVocabulary() != null ? VocabularyMapper.map(choice.getVocabulary()) : null)
                 .build();
     }
 }

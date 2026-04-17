@@ -29,6 +29,9 @@ public class QuestionChoice implements Serializable {
     @Column(name = "is_correct")
     Boolean isCorrect;
 
+    @Column(name = "text_content")
+    String textContent;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vocabulary_id")
     Vocabulary vocabulary;

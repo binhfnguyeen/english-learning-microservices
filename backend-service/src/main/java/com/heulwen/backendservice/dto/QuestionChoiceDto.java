@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class QuestionChoiceDto {
     private Long id;
     private Boolean isCorrect;
+    private String textContent;
     private VocabularyDto vocabulary;
 }

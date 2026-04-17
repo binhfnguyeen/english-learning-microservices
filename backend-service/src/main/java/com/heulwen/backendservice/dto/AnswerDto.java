@@ -14,4 +14,5 @@ public class AnswerDto {
     private Long testResultId;
     private Long questionId;
     private Long questionChoiceId;
+    private String givenAnswerText;
 }

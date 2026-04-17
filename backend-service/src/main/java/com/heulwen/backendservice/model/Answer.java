@@ -29,9 +29,16 @@ public class Answer implements Serializable {
     @JoinColumn(name = "test_result_id")
     TestResult testResult;
 
+    @ManyToOne
+    @JoinColumn(name = "question_id")
+    private Question question;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_choice_id")
     QuestionChoice questionChoice;
+
+    @Column(name = "given_answer_text", columnDefinition = "TEXT")
+    String givenAnswerText;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

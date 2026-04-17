@@ -14,6 +14,7 @@ public class QuestionChoiceMapper {
 
         QuestionChoice choice = new QuestionChoice();
         choice.setIsCorrect(form.getIsCorrect());
+        choice.setTextContent(form.getTextContent());
         return choice;
     }
 
@@ -26,6 +27,7 @@ public class QuestionChoiceMapper {
         return QuestionChoiceDto.builder()
                 .id(entity.getId())
                 .isCorrect(entity.getIsCorrect())
+                .textContent(entity.getTextContent()) // Bổ sung textContent
                 .vocabulary(
                         entity.getVocabulary() != null
                                 ? VocabularyMapper.map(entity.getVocabulary())

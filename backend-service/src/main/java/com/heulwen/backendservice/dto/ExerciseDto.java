@@ -1,6 +1,6 @@
 package com.heulwen.backendservice.dto;
 
-import com.heulwen.backendservice.model.ExerciseType;
+import com.heulwen.backendservice.model.enumType.ExerciseType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

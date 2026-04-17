@@ -1,5 +1,6 @@
 package com.heulwen.backendservice.model;
 
+import com.heulwen.backendservice.model.enumType.ExerciseType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
