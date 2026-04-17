@@ -2,8 +2,9 @@
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Alert, Button, Card, Container, Form, Nav, Spinner } from "react-bootstrap";
+import { Alert, Button, Card, Container, Form, Badge } from "react-bootstrap";
 import authApis from "@/configs/AuthApis";
+import MySpinner from "@/components/MySpinner";
 
 interface Test {
     id: number;
@@ -11,6 +12,28 @@ interface Test {
     description: string;
     difficultyLevel: string;
 }
+
+const IconSearch = ({ size = 20, className = "" }) => (
+    <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+);
+
+const IconFileText = ({ size = 24, className = "" }) => (
+    <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+    </svg>
+);
+
+const IconPlay = ({ size = 18, className = "" }) => (
+    <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+    </svg>
+);
 
 export default function Tests() {
     const [tests, setTests] = useState<Test[]>([]);
@@ -61,71 +84,111 @@ export default function Tests() {
         setPage(0);
     }, [keyword]);
 
+    const getDifficultyVariant = (level?: string) => {
+        if (!level) return "secondary";
+        const text = level.toLowerCase();
+        if (text.includes("easy") || text.includes("dễ")) return "success";
+        if (text.includes("medium") || text.includes("trung")) return "warning";
+        if (text.includes("hard") || text.includes("khó")) return "danger";
+        return "secondary";
+    };
+
     return (
-        <Container className="my-5">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold text-primary m-0">English Tests</h2>
-                <Form className="mb-4">
+        <Container className="my-5" style={{ maxWidth: 1000 }}>
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+                <div>
+                    <h2 className="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                        <IconFileText className="text-primary" size={28} /> Danh sách Đề thi
+                    </h2>
+                    <span className="text-muted small">Luyện tập thường xuyên để nâng cao trình độ</span>
+                </div>
+
+                <div className="position-relative" style={{ width: "100%", maxWidth: "350px" }}>
+                    <div className="position-absolute top-50 translate-middle-y ms-3 text-muted">
+                        <IconSearch size={18} />
+                    </div>
                     <Form.Control
                         value={keyword}
                         onChange={kw => setKeyword(kw.target.value)}
                         type="text"
                         placeholder="Tìm kiếm đề thi..."
-                        className="shadow-sm"
+                        className="shadow-sm border-0 bg-light py-2"
+                        style={{ paddingLeft: '40px', borderRadius: '12px' }}
                     />
-                </Form>
+                </div>
             </div>
 
-            {loading ? (
-                <div className="text-center py-5">
-                    <Spinner animation="border" variant="primary" />
+            {loading && page === 0 ? (
+                <div className="py-5">
+                    <MySpinner />
                 </div>
             ) : (
-                <div className="row g-4">
-                    {tests.map((test) => (
-                        <div key={test.id} className="col-md-6 col-lg-4">
-                            <Card className="shadow-sm border-0 h-100 hover-shadow transition">
-                                <Card.Body>
-                                    <Card.Title className="fw-bold text-dark">
-                                        {test.title}
-                                    </Card.Title>
+                <>
+                    <div className="row g-4">
+                        {tests.map((test) => {
+                            const variant = getDifficultyVariant(test.difficultyLevel);
 
-                                    <div className="mb-2">
-                                        <span className="badge bg-warning text-dark">
-                                            {test.difficultyLevel}
-                                        </span>
-                                    </div>
+                            return (
+                                <div key={test.id} className="col-md-6 col-lg-4">
+                                    <Card className="shadow-sm border-0 h-100 position-relative" style={{ borderRadius: '16px', transition: '0.2s' }}>
+                                        <Card.Body className="p-4 d-flex flex-column">
 
-                                    <Card.Text className="text-muted small">
-                                        {test.description}
-                                    </Card.Text>
-                                </Card.Body>
-                                <Card.Footer className="bg-white border-0 pt-0 pb-3 px-3">
-                                    <div className="d-flex gap-2">
-                                        <Link
-                                            href={`/tests/${test.id}`}
-                                            className="btn btn-outline-primary btn-sm flex-fill"
-                                        >
-                                            Làm đề {test.title}
-                                        </Link>
-                                    </div>
-                                </Card.Footer>
-                            </Card>
+                                            <Card.Title className="fw-bold text-dark mb-3 lh-base fs-5">
+                                                {test.title}
+                                            </Card.Title>
+
+                                            <div className="mb-3">
+                                                <Badge
+                                                    bg="white"
+                                                    className={`text-${variant} border border-${variant} bg-${variant} bg-opacity-10 px-3 py-2 rounded-pill shadow-sm`}
+                                                >
+                                                    Độ khó: {test.difficultyLevel}
+                                                </Badge>
+                                            </div>
+
+                                            <Card.Text className="text-muted small flex-grow-1">
+                                                {test.description || "Không có mô tả chi tiết cho đề thi này."}
+                                            </Card.Text>
+
+                                            <Link
+                                                href={`/tests/${test.id}`}
+                                                className="btn btn-primary w-100 fw-medium mt-2 d-flex align-items-center justify-content-center gap-2"
+                                                style={{ borderRadius: '10px', padding: '10px 0' }}
+                                            >
+                                                <IconPlay /> Làm bài ngay
+                                            </Link>
+                                        </Card.Body>
+                                    </Card>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {!loading && tests.length === 0 && (
+                        <div className="text-center py-5 bg-light rounded-4 border mt-2">
+                            <IconFileText size={48} className="text-muted mb-3 opacity-50" />
+                            <p className="text-muted m-0 fs-5">Không tìm thấy đề thi nào phù hợp.</p>
                         </div>
-                    ))}
-                </div>
-            )}
+                    )}
 
-            {!loading && tests.length === 0 && (
-                <Alert variant="info" className="mt-2">Không có đề thi nào.</Alert>
-            )}
+                    {!loading && hasMore && (
+                        <div className="text-center mt-5">
+                            <Button
+                                variant="outline-primary"
+                                className="px-5 fw-medium rounded-pill"
+                                onClick={() => setPage((p) => p + 1)}
+                            >
+                                Xem thêm
+                            </Button>
+                        </div>
+                    )}
 
-            {!loading && hasMore && (
-                <div className="text-center mt-4">
-                    <Button variant="outline-secondary" onClick={() => setPage((p) => p + 1)}>
-                        Tải thêm
-                    </Button>
-                </div>
+                    {loading && page > 0 && (
+                        <div className="text-center mt-4">
+                            <MySpinner />
+                        </div>
+                    )}
+                </>
             )}
         </Container>
     );

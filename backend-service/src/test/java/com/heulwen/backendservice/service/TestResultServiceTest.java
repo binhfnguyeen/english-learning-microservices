@@ -8,7 +8,6 @@ import com.heulwen.backendservice.model.QuestionChoice;
 import com.heulwen.backendservice.model.TestResult;
 import com.heulwen.backendservice.repository.*;
 import com.heulwen.backendservice.service.impl.TestResultServiceImpl;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +23,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -77,13 +75,18 @@ public class TestResultServiceTest {
         form.setUserId(USER_ID);
 
         AnswerSubmissionForm ansForm = new AnswerSubmissionForm();
+        ansForm.setQuestionId(10L); // BỔ SUNG: Truyền ID câu hỏi
         ansForm.setQuestionChoiceId(11L);
         form.setAnswers(List.of(ansForm));
 
         when(testRepository.findById(TEST_ID)).thenReturn(Optional.of(mockTest));
 
+        // BỔ SUNG: Mock hành vi của questionRepository
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(mockQuestions.get(0)));
+
         QuestionChoice mockChoice = new QuestionChoice();
         mockChoice.setId(11L);
+        mockChoice.setIsCorrect(true); // Nên set isCorrect để đảm bảo luồng chạy đúng
         when(questionChoiceRepository.findById(11L)).thenReturn(Optional.of(mockChoice));
 
         when(testResultRepository.save(any(TestResult.class))).thenAnswer(i -> {
@@ -102,6 +105,7 @@ public class TestResultServiceTest {
         assertEquals(999L, result.getId());
 
         verify(questionChoiceRepository, times(1)).findById(11L);
+        verify(questionRepository, times(1)).findById(10L); // Verify questionRepo đã được gọi
         verify(testResultRepository, times(1)).save(any(TestResult.class));
     }
 
@@ -127,14 +131,20 @@ public class TestResultServiceTest {
         when(questionChoiceRepository.findById(11L)).thenReturn(Optional.of(choice11));
         when(questionChoiceRepository.findById(22L)).thenReturn(Optional.of(choice22));
 
+        // BỔ SUNG: Mock hành vi của questionRepository cho 2 câu hỏi
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(mockQuestions.get(0)));
+        when(questionRepository.findById(20L)).thenReturn(Optional.of(mockQuestions.get(1)));
+
         TestSubmissionForm form = new TestSubmissionForm();
         form.setTestId(TEST_ID);
         form.setUserId(USER_ID);
 
         AnswerSubmissionForm ans1 = new AnswerSubmissionForm();
+        ans1.setQuestionId(10L); // BỔ SUNG: Truyền ID câu hỏi 1
         ans1.setQuestionChoiceId(11L);
 
         AnswerSubmissionForm ans2 = new AnswerSubmissionForm();
+        ans2.setQuestionId(20L); // BỔ SUNG: Truyền ID câu hỏi 2
         ans2.setQuestionChoiceId(22L);
 
         form.setAnswers(List.of(ans1, ans2));
@@ -147,5 +157,7 @@ public class TestResultServiceTest {
         assertEquals(5.0, result.getScore());
 
         verify(testResultRepository, times(1)).save(any(TestResult.class));
+        verify(questionRepository, times(1)).findById(10L);
+        verify(questionRepository, times(1)).findById(20L);
     }
 }

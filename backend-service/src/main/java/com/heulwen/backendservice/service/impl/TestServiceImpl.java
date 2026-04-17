@@ -3,10 +3,9 @@ package com.heulwen.backendservice.service.impl;
 import com.heulwen.backendservice.dto.TestDto;
 import com.heulwen.backendservice.exception.AppException;
 import com.heulwen.backendservice.exception.ErrorCode;
-import com.heulwen.backendservice.form.QuestionChoiceForm; // Cần tạo form này
-import com.heulwen.backendservice.form.QuestionCreateForm; // Cần tạo form này
+import com.heulwen.backendservice.form.QuestionChoiceForm;
+import com.heulwen.backendservice.form.QuestionCreateForm;
 import com.heulwen.backendservice.form.TestCreateForm;
-import com.heulwen.backendservice.mapper.QuestionChoiceMapper;
 import com.heulwen.backendservice.mapper.QuestionMapper;
 import com.heulwen.backendservice.mapper.TestMapper;
 import com.heulwen.backendservice.model.Question;
@@ -54,16 +53,16 @@ public class TestServiceImpl implements TestService {
                     List<QuestionChoice> choices = new ArrayList<>();
 
                     for (QuestionChoiceForm cForm : qForm.getChoices()) {
-                        QuestionChoice choice = QuestionChoiceMapper.map(cForm);
-                        choice.setQuestion(question); // Set relationship Parent
 
-
-                        // 4. Lookup Vocabulary (Logic cũ: check vocabularyId)
+                        // 4. Lookup Vocabulary (Logic mới: Cho phép null đối với các lựa chọn chỉ có chữ)
+                        Vocabulary vocab = null;
                         if (cForm.getVocabularyId() != null) {
-                            Vocabulary vocab = vocabularyRepository.findById(cForm.getVocabularyId())
+                            vocab = vocabularyRepository.findById(cForm.getVocabularyId())
                                     .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
-                            choice.setVocabulary(vocab);
                         }
+
+                        // 5. Dùng hàm map mới ở QuestionMapper để lấy được textContent và link đúng Reference
+                        QuestionChoice choice = QuestionMapper.map(cForm, question, vocab);
                         choices.add(choice);
                     }
                     question.setChoices(choices);
