@@ -102,7 +102,7 @@ public class QuestionMapper {
         return QuestionChoiceDto.builder()
                 .id(choice.getId())
                 .isCorrect(choice.getIsCorrect())
-                .vocabulary(VocabularyMapper.map(choice.getVocabulary()))
+                .textContent(choice.getTextContent())
                 .vocabulary(choice.getVocabulary() != null ? VocabularyMapper.map(choice.getVocabulary()) : null)
                 .build();
     }

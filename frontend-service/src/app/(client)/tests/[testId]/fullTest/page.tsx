@@ -4,10 +4,9 @@ import MySpinner from "@/components/MySpinner";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import UserContext from "@/configs/UserContext";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";
-import { Button, Card, Container, ListGroup, Nav } from "react-bootstrap";
+import { Badge, Button, Card, Container, ProgressBar } from "react-bootstrap";
 import Swal from "sweetalert2";
 
 interface Vocabulary {
@@ -71,55 +70,58 @@ export default function FullTest() {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
-        if (id && user) {
-            loadFullTest();
-        }
+        if (id && user) loadFullTest();
     }, [id, user]);
 
-    // ĐÃ SỬA: Loại bỏ 'answers' khỏi dependencies để không làm kẹt phím khi nhập văn bản
     useEffect(() => {
-        if (!test || !test.questions || test.questions.length === 0) return;
+        if (!test || !test.questions?.length) return;
+
         const currentQuestion = test.questions[currentQuestionIndex];
         if (!currentQuestion) return;
 
-        setAnswers(prevAnswers => {
-            const ans = prevAnswers.find(a => a.questionId === currentQuestion.id);
-            setSelectedChoice(ans?.choiceId || null);
-            setTextInput(ans?.givenAnswerText || "");
-            return prevAnswers;
+        setAnswers(prev => {
+            const ans = prev.find(a => a.questionId === currentQuestion.id);
+            setSelectedChoice(ans?.choiceId ?? null);
+            setTextInput(ans?.givenAnswerText ?? "");
+            return prev;
         });
     }, [currentQuestionIndex, test]);
 
-    const handleTextInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setTextInput(value);
+    const handleTextInputChange = (val: string) => {
+        setTextInput(val);
+        if (!test?.questions[currentQuestionIndex]) return;
 
-        if (!test || !test.questions[currentQuestionIndex]) return;
         const questionId = test.questions[currentQuestionIndex].id;
 
         setAnswers(prev => {
             const updated = prev.filter(a => a.questionId !== questionId);
-            return [...updated, { questionId, choiceId: null, givenAnswerText: value }];
+            return [...updated, { questionId, choiceId: null, givenAnswerText: val }];
         });
     };
 
-    const handleSelectChoice = (questionId: number, choiceId: number) => {
-        setAnswers(prev => {
-            const updated = prev.filter(a => a.questionId !== questionId);
-            return [...updated, { questionId, choiceId }];
-        });
-        setSelectedChoice(choiceId);
+    const handleSelectChoice = (questionId: number, choiceId: number, isTextBased = false, textVal = "") => {
+        if (isTextBased) {
+            handleTextInputChange(textVal);
+            setSelectedChoice(choiceId);
+        } else {
+            setAnswers(prev => {
+                const updated = prev.filter(a => a.questionId !== questionId);
+                return [...updated, { questionId, choiceId }];
+            });
+            setSelectedChoice(choiceId);
+        }
     };
 
     const canMoveToNext = () => {
-        if (!test || !test.questions || !test.questions[currentQuestionIndex]) return false;
+        if (!test?.questions[currentQuestionIndex]) return false;
+
         const currentQ = test.questions[currentQuestionIndex];
 
-        if (currentQ.type === 'REWRITE_SENTENCE' || currentQ.type === 'WORD_ORDER') {
-            return textInput !== null && textInput.trim() !== "";
+        if (["REWRITE_SENTENCE", "WORD_ORDER", "FILL_IN_BLANK"].includes(currentQ.type)) {
+            return textInput.trim() !== "";
         }
         return selectedChoice !== null;
     };
@@ -130,174 +132,119 @@ export default function FullTest() {
         } else {
             handleFinishTest();
         }
-    }
+    };
 
     const handleFinishTest = async () => {
         try {
             if (!user) return;
 
             const payloadAnswers = answers
-                .filter(a => a.choiceId !== null || (a.givenAnswerText && a.givenAnswerText.trim() !== ""))
+                .filter(a => a.choiceId !== null || a.givenAnswerText?.trim())
                 .map(a => ({
                     questionId: a.questionId,
-                    questionChoiceId: a.choiceId || null,
-                    givenAnswerText: a.givenAnswerText || null
+                    questionChoiceId: a.choiceId,
+                    givenAnswerText: a.givenAnswerText ?? null
                 }));
 
-            const body = {
+            await authApis.post(endpoints["addTestResult"], {
                 testId: id,
                 userId: user.id,
                 answers: payloadAnswers
-            };
-
-            await authApis.post(endpoints["addTestResult"], body);
+            });
 
             Swal.fire({
                 icon: "success",
-                title: "Đã nộp bài!",
-                text: "Hệ thống đã lưu kết quả của bạn.",
-                showConfirmButton: false,
-                timer: 1500
+                title: "Tuyệt vời!",
+                text: "Bạn đã hoàn thành bài kiểm tra.",
+                confirmButtonColor: "#0d6efd"
+            }).then(() => {
+                router.push(`/tests/${id}/results`);
             });
-
-            router.push(`/tests/${id}/results`);
         } catch (err) {
-            console.error("Lỗi khi lưu kết quả:", err);
+            console.error(err);
             Swal.fire("Lỗi", "Không thể lưu kết quả bài thi", "error");
         }
     };
 
     if (!user) {
-        return <Container className="my-5"><p className="text-muted">Bạn cần đăng nhập để làm bài kiểm tra.</p></Container>;
+        return <Container className="my-5 text-center">Bạn cần đăng nhập.</Container>;
     }
 
     return (
-        <Container className="my-5">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold">Bài kiểm tra: {test?.title}</h2>
-                <Nav>
-                    <Link href={`/tests/${id}`} className="btn btn-outline-secondary btn-sm">
-                        Quay lại
-                    </Link>
-                </Nav>
-            </div>
-
+        <Container className="my-5" style={{ maxWidth: '800px' }}>
             {loading ? (
                 <MySpinner />
-            ) : test ? (
-                <Card className="shadow-sm">
-                    <Card.Body>
-                        <p className="text-muted">{test.description}</p>
+            ) : test?.questions?.length ? (
+                <>
+                    <ProgressBar
+                        now={((currentQuestionIndex + 1) / test.questions.length) * 100}
+                    />
 
-                        {test.questions && test.questions.length > 0 && (
-                            <div>
-                                <h5>
-                                    Câu {currentQuestionIndex + 1}/{test.questions.length}:{" "}
-                                    {test.questions[currentQuestionIndex].content}
-                                </h5>
+                    <Card className="mt-4">
+                        <Card.Body>
+                            {(() => {
+                                const currentQ = test.questions[currentQuestionIndex];
 
-                                <div className="mt-3">
-                                    {(() => {
-                                        const currentQ = test.questions[currentQuestionIndex];
+                                return (
+                                    <div>
+                                        <h4>{currentQ.content}</h4>
 
-                                        if (currentQ.type === 'REWRITE_SENTENCE') {
-                                            return (
-                                                <div className="p-3 bg-light rounded border">
-                                                    <p className="fw-bold mb-2">Viết lại câu sau:</p>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        placeholder="Nhập câu trả lời của bạn..."
-                                                        value={textInput}
-                                                        onChange={handleTextInputChange}
-                                                    />
-                                                </div>
-                                            );
-                                        }
+                                        <div className="mt-3">
+                                            {currentQ.choices?.map((c, idx) => {
+                                                const content = c.textContent || c.vocabulary?.word || "";
+                                                const picture = c.vocabulary?.picture;
 
-                                        if (currentQ.type === 'WORD_ORDER') {
-                                            return (
-                                                <div className="p-3 bg-light rounded border">
-                                                    <p className="fw-bold mb-2">Sắp xếp các từ thành câu hoàn chỉnh:</p>
-                                                    <div className="d-flex gap-2 mb-3 flex-wrap">
-                                                        {currentQ.choices?.map(c => {
-                                                            // Đảm bảo lấy text hoặc cảnh báo nếu backend gửi thiếu
-                                                            const word = c.textContent || c.vocabulary?.word;
-                                                            return (
-                                                                <Button
-                                                                    variant="outline-primary"
-                                                                    size="sm"
-                                                                    key={c.id}
-                                                                    onClick={() => {
-                                                                        if (!word) return;
-                                                                        const newValue = textInput ? textInput + " " + word : word;
-                                                                        handleTextInputChange({ target: { value: newValue } } as React.ChangeEvent<HTMLInputElement>);
-                                                                    }}
-                                                                >
-                                                                    {word || "Lỗi (Thiếu textContent)"}
-                                                                </Button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                    <input
-                                                        type="text"
-                                                        className="form-control mt-2"
-                                                        value={textInput}
-                                                        onChange={handleTextInputChange}
-                                                    />
-                                                    <Button
-                                                        variant="link"
-                                                        className="text-danger p-0 mt-2"
-                                                        onClick={() => handleTextInputChange({ target: { value: "" } } as any)}
-                                                    >
-                                                        Xóa làm lại
-                                                    </Button>
-                                                </div>
-                                            );
-                                        }
-
-                                        // Mặc định: MULTIPLE_CHOICE
-                                        return (
-                                            <ListGroup>
-                                                {currentQ.choices?.map((c) => (
-                                                    <ListGroup.Item
+                                                return (
+                                                    <div
                                                         key={c.id}
-                                                        action
-                                                        active={selectedChoice === c.id}
                                                         onClick={() => handleSelectChoice(currentQ.id, c.id)}
+                                                        style={{
+                                                            border: "1px solid #ddd",
+                                                            padding: 10,
+                                                            marginBottom: 10,
+                                                            cursor: "pointer",
+                                                            background: selectedChoice === c.id ? "#e7f1ff" : "#fff"
+                                                        }}
                                                     >
-                                                        {c.textContent || c.vocabulary?.word || "Lỗi DTO"}
-                                                    </ListGroup.Item>
-                                                ))}
-                                            </ListGroup>
-                                        );
-                                    })()}
-                                </div>
+                                                        {picture ? (
+                                                            <div style={{ display: "flex", gap: 10 }}>
+                                                                {/* ✅ FIX LỖI Ở ĐÂY */}
+                                                                <img
+                                                                    src={picture}
+                                                                    alt={content}
+                                                                    width={60}
+                                                                    height={60}
+                                                                    style={{ objectFit: "cover" }}
+                                                                />
+                                                                <span>{content}</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span>{content}</span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
-                                <div className="mt-4 d-flex justify-content-between">
-                                    <Button
-                                        variant="secondary"
-                                        onClick={() => setCurrentQuestionIndex(prev => Math.max(prev - 1, 0))}
-                                        disabled={currentQuestionIndex === 0}
-                                    >
-                                        Câu trước
-                                    </Button>
+                            <div className="d-flex justify-content-between mt-4">
+                                <Button
+                                    onClick={() => setCurrentQuestionIndex(prev => Math.max(prev - 1, 0))}
+                                >
+                                    Back
+                                </Button>
 
-                                    <Button
-                                        onClick={handleNextQuestion}
-                                        disabled={!canMoveToNext()}
-                                    >
-                                        {currentQuestionIndex === test.questions.length - 1
-                                            ? "Hoàn thành"
-                                            : "Câu tiếp theo"}
-                                    </Button>
-                                </div>
+                                <Button onClick={handleNextQuestion} disabled={!canMoveToNext()}>
+                                    Next
+                                </Button>
                             </div>
-                        )}
-                    </Card.Body>
-                </Card>
+                        </Card.Body>
+                    </Card>
+                </>
             ) : (
-                <p className="text-muted">Không tìm thấy đề thi.</p>
+                <p>Không có dữ liệu</p>
             )}
         </Container>
     );

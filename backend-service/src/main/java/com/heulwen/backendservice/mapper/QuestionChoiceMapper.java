@@ -21,18 +21,16 @@ public class QuestionChoiceMapper {
     /**
      * ENTITY -> DTO
      */
-    public static QuestionChoiceDto map(QuestionChoice entity) {
-        if (entity == null) return null;
+    public static QuestionChoiceDto map(QuestionChoice choice) {
+        if (choice == null) {
+            return null;
+        }
 
         return QuestionChoiceDto.builder()
-                .id(entity.getId())
-                .isCorrect(entity.getIsCorrect())
-                .textContent(entity.getTextContent()) // Bổ sung textContent
-                .vocabulary(
-                        entity.getVocabulary() != null
-                                ? VocabularyMapper.map(entity.getVocabulary())
-                                : null
-                )
+                .id(choice.getId())
+                .isCorrect(choice.getIsCorrect())
+                .textContent(choice.getTextContent())
+                .vocabulary(choice.getVocabulary() != null ? VocabularyMapper.map(choice.getVocabulary()) : null)
                 .build();
     }
 }

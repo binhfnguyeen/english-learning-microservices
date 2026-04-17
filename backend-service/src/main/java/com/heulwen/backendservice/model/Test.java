@@ -29,7 +29,6 @@ public class Test implements Serializable {
     @Column(name = "title")
     String title;
 
-    @Lob
     @Column(name = "description")
     String description;
 

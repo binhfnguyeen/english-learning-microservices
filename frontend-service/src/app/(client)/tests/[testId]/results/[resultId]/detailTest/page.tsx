@@ -4,7 +4,7 @@ import MySpinner from "@/components/MySpinner";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Badge, Card, Container, ListGroup, Nav, ProgressBar } from "react-bootstrap";
 import authApis from "@/configs/AuthApis";
 
@@ -28,12 +28,11 @@ interface TestFull {
 interface Question {
     id: number;
     content: string;
-    type: string;                 // Bổ sung type câu hỏi
-    correctAnswerText?: string;   // Bổ sung đáp án text chuẩn
+    type: string;
+    correctAnswerText?: string;
     choices: Choice[];
 }
 
-// ĐÃ XÓA PHẦN INTERFACE BỊ TRÙNG LẶP, CHỈ GIỮ LẠI BẢN CHUẨN NÀY
 interface Choice {
     id: number;
     isCorrect: boolean | null;
@@ -43,8 +42,8 @@ interface Choice {
 
 interface Answer {
     questionId: number;
-    questionChoiceId: number | null; // Cập nhật cho phép null
-    givenAnswerText?: string;        // Bổ sung chuỗi user đã nhập
+    questionChoiceId: number | null;
+    givenAnswerText?: string;
 }
 
 export default function DetailTest() {
@@ -57,29 +56,30 @@ export default function DetailTest() {
     const [score, setScore] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const loadData = async () => {
+    // ✅ FIX: dùng useCallback để tránh warning useEffect
+    const loadData = useCallback(async () => {
         try {
             setLoading(true);
 
-            const resTest = await authApis.get(endpoints["Test"](id));
+            const [resTest, resResult, resAnswers] = await Promise.all([
+                authApis.get(endpoints["Test"](id)),
+                authApis.get(`/test-results/${rsId}`),
+                authApis.get(endpoints["answers"](id))
+            ]);
+
             setTest(resTest.data.result);
-
-            const resResult = await authApis.get(`/test-results/${rsId}`);
-            setScore(resResult.data.result?.score || 0);
-
-            const resAnswers = await authApis.get(endpoints["answers"](id));
-            setAnswers(resAnswers.data.result || []);
-
+            setScore(resResult.data.result?.score ?? 0);
+            setAnswers(resAnswers.data.result ?? []);
         } catch (err) {
             console.error("Lỗi tải dữ liệu:", err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, rsId]);
 
     useEffect(() => {
         if (id && rsId) loadData();
-    }, [id, rsId]);
+    }, [id, rsId, loadData]);
 
     const getDifficultyVariant = (level?: string) => {
         if (!level) return "secondary";
@@ -111,12 +111,13 @@ export default function DetailTest() {
                         <Card.Header className="bg-primary text-white fw-bold py-3">
                             {test.title}
                         </Card.Header>
+
                         <Card.Body className="bg-light p-4">
                             <div className="row g-3">
                                 <div className="col-md-4">
                                     <div className="bg-white p-3 rounded shadow-sm text-center">
                                         <div className="text-muted small mb-1">Độ khó</div>
-                                        <Badge bg={getDifficultyVariant(test.difficultyLevel)} className="px-3 py-2">
+                                        <Badge bg={getDifficultyVariant(test.difficultyLevel)}>
                                             {test.difficultyLevel}
                                         </Badge>
                                     </div>
@@ -145,84 +146,77 @@ export default function DetailTest() {
                                 <ProgressBar
                                     now={percent}
                                     variant={percent >= 50 ? "success" : "danger"}
-                                    style={{ height: "10px" }}
                                 />
                             </div>
                         </Card.Body>
                     </Card>
 
                     <Card className="shadow-sm border-0">
-                        <Card.Body className="p-0">
-                            <ListGroup variant="flush">
-                                {test.questions.map((q, index) => {
-                                    // Tìm câu trả lời của user cho câu hỏi này
-                                    const userAnswer = answers.find(a => a.questionId === q.id);
+                        <ListGroup variant="flush">
+                            {test.questions.map((q, index) => {
+                                const userAnswer = answers.find(a => a.questionId === q.id);
 
-                                    return (
-                                        <ListGroup.Item key={q.id} className="p-4 border-bottom">
-                                            <div className="fw-bold fs-5 mb-3">
-                                                Câu {index + 1}: {q.content}
+                                // ✅ FIX an toàn null
+                                const userText = userAnswer?.givenAnswerText?.trim().toLowerCase() ?? "";
+                                const correctText = q.correctAnswerText?.trim().toLowerCase() ?? "";
+
+                                return (
+                                    <ListGroup.Item key={q.id} className="p-4">
+                                        <div className="fw-bold fs-5 mb-3">
+                                            Câu {index + 1}: {q.content}
+                                        </div>
+
+                                        {q.type !== "MULTIPLE_CHOICE" ? (
+                                            <div className="p-3 bg-light rounded border">
+                                                <div className="mb-2">
+                                                    <span className="fw-bold text-muted">Bạn trả lời: </span>
+                                                    <span className={userText === correctText ? "text-success fw-bold" : "text-danger fw-bold"}>
+                                                        {userAnswer?.givenAnswerText || "(Không có)"}
+                                                    </span>
+                                                </div>
+
+                                                <div>
+                                                    <span className="fw-bold text-muted">Đáp án đúng: </span>
+                                                    <span className="text-success fw-bold">
+                                                        {q.correctAnswerText}
+                                                    </span>
+                                                </div>
                                             </div>
+                                        ) : (
+                                            <div className="d-flex flex-column gap-2">
+                                                {q.choices.map((c, i) => {
+                                                    const label = String.fromCharCode(65 + i);
+                                                    const isUserChoice = userAnswer?.questionChoiceId === c.id;
+                                                    const isCorrect = c.isCorrect;
 
-                                            {/* RẼ NHÁNH: Nếu là câu hỏi text (Viết lại câu, Sắp xếp) */}
-                                            {q.type && q.type !== 'MULTIPLE_CHOICE' ? (
-                                                <div className="p-3 bg-light rounded border">
-                                                    <div className="mb-2">
-                                                        <span className="fw-bold text-muted">Bạn đã trả lời: </span>
-                                                        <span className={userAnswer?.givenAnswerText?.trim().toLowerCase() === q.correctAnswerText?.trim().toLowerCase() ? "text-success fw-bold" : "text-danger fw-bold"}>
-                                                            {userAnswer?.givenAnswerText || "(Không có câu trả lời)"}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="fw-bold text-muted">Đáp án đúng: </span>
-                                                        <span className="text-success fw-bold">{q.correctAnswerText}</span>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                /* RẼ NHÁNH: Dạng câu hỏi trắc nghiệm bình thường */
-                                                <div className="d-flex flex-column gap-2">
-                                                    {q.choices.map((c, choiceIndex) => {
-                                                        const label = String.fromCharCode(65 + choiceIndex);
-                                                        const isUserChoice = userAnswer?.questionChoiceId === c.id;
-                                                        const isCorrect = c.isCorrect;
+                                                    let className = "p-3 rounded border d-flex justify-content-between ";
+                                                    if (isCorrect) className += "bg-success-subtle border-success";
+                                                    else if (isUserChoice) className += "bg-danger-subtle border-danger";
 
-                                                        let className = "p-3 rounded border d-flex justify-content-between align-items-center ";
-                                                        if (isCorrect) className += "bg-success-subtle border-success";
-                                                        else if (isUserChoice && !isCorrect) className += "bg-danger-subtle border-danger";
-                                                        else className += "bg-white";
-
-                                                        return (
-                                                            <div key={c.id} className={className}>
-                                                                <div>
-                                                                    <span className="fw-bold me-2">{label}.</span>
-                                                                    {c.textContent || c.vocabulary?.word}
-                                                                </div>
-
-                                                                <div>
-                                                                    {isCorrect && <Badge bg="success">Đúng</Badge>}
-                                                                    {isUserChoice && !isCorrect && (
-                                                                        <Badge bg="danger" className="ms-2">Bạn chọn</Badge>
-                                                                    )}
-                                                                    {isUserChoice && isCorrect && (
-                                                                        <Badge bg="primary" className="ms-2">Bạn chọn</Badge>
-                                                                    )}
-                                                                </div>
+                                                    return (
+                                                        <div key={c.id} className={className}>
+                                                            <div>
+                                                                <span className="fw-bold me-2">{label}.</span>
+                                                                {c.textContent || c.vocabulary?.word}
                                                             </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </ListGroup.Item>
-                                    );
-                                })}
-                            </ListGroup>
-                        </Card.Body>
+
+                                                            <div>
+                                                                {isCorrect && <Badge bg="success">Đúng</Badge>}
+                                                                {isUserChoice && <Badge bg="primary">Bạn chọn</Badge>}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </ListGroup.Item>
+                                );
+                            })}
+                        </ListGroup>
                     </Card>
                 </>
             ) : (
-                <div className="text-center py-5">
-                    Không tìm thấy dữ liệu.
-                </div>
+                <div className="text-center py-5">Không có dữ liệu</div>
             )}
         </Container>
     );
