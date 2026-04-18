@@ -63,7 +63,7 @@ export interface TestDetail {
 
 export interface Answer {
     questionId: number;
-    choiceId: number | null;
+    questionChoiceId: number | null;
     givenAnswerText?: string;
 }
 
@@ -117,6 +117,7 @@ function WordOrderQuestion({ q, value, onChange, sensors }: WordOrderQuestionPro
         if (!value) {
             onChange(items.join(" "));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -255,14 +256,16 @@ export default function FullTest() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, user]);
 
-    const saveAnswer = (choiceId: number | null, text: string = "") => {
+    // SỬA: Đổi tên biến tham số từ choiceId thành questionChoiceId cho rõ nghĩa
+    const saveAnswer = (questionChoiceId: number | null, text: string = "") => {
         if (!test || !test.questions[currentQuestionIndex]) return;
 
         const questionId = test.questions[currentQuestionIndex].id;
 
         setAnswers(prev => {
             const updated = prev.filter(a => a.questionId !== questionId);
-            return [...updated, { questionId, choiceId, givenAnswerText: text }];
+            // Lỗi cũ ở đây: gọi biến questionChoiceId nhưng ở trên truyền vào là choiceId
+            return [...updated, { questionId, questionChoiceId, givenAnswerText: text }];
         });
     };
 
@@ -277,7 +280,8 @@ export default function FullTest() {
             return currentAns.givenAnswerText && currentAns.givenAnswerText.trim() !== "";
         }
 
-        return currentAns.choiceId !== null && currentAns.choiceId !== undefined;
+        // SỬA LỖI INTERFACE: Gọi đúng currentAns.questionChoiceId
+        return currentAns.questionChoiceId !== null && currentAns.questionChoiceId !== undefined;
     };
 
     const handleNext = () => {
@@ -346,7 +350,8 @@ export default function FullTest() {
                     <MultipleChoiceQuestion
                         key={currentQ.id}
                         q={currentQ}
-                        selectedId={currentAns.choiceId}
+                        // SỬA: Phải truyền questionChoiceId xuống cho component trắc nghiệm
+                        selectedId={currentAns.questionChoiceId}
                         onChange={(id: number) => saveAnswer(id)}
                     />
                 );

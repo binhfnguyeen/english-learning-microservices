@@ -290,7 +290,7 @@ export default function StartTest() {
                                                         style={{ height: "8px" }}
                                                     />
                                                     <small className={`fw-bold text-${variant}`} style={{ width: '35px' }}>
-                                                        {percent}%
+                                                        {parseInt(percent)}%
                                                     </small>
                                                 </div>
                                             </td>
@@ -301,7 +301,7 @@ export default function StartTest() {
                                                     bg="white"
                                                     className={`text-${variant} border border-${variant} bg-${variant} bg-opacity-10 px-3 py-2 rounded-pill`}
                                                 >
-                                                    {result.score} / 10
+                                                    {result.score.toFixed(1)} / 10
                                                 </Badge>
                                             </td>
 

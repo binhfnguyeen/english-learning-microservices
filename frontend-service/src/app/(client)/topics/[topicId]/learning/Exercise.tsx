@@ -1,9 +1,8 @@
 "use client";
-import Apis from "@/configs/Apis";
 import endpoints from "@/configs/Endpoints";
 import useTTS from "@/utils/useTTS";
 import React, { useEffect, useState } from "react";
-import { Card, Button, Form, Spinner } from "react-bootstrap";
+import { Card, Button, Form, Spinner, Badge } from "react-bootstrap";
 import { VolumeUp } from "react-bootstrap-icons";
 import authApis from "@/configs/AuthApis";
 
@@ -18,16 +17,16 @@ interface Choice {
     isCorrect: boolean;
 }
 
-interface Exercise {
+interface ExerciseData {
     id: number;
     question: string;
-    exerciseType: "CHOOSE_MEANING" | "LISTEN_AND_TYPE";
+    exerciseType: "CHOOSE_MEANING" | "LISTEN_AND_TYPE" | "MULTIPLE_CHOICE";
     vocabularyId: number;
     choices: Choice[];
 }
 
 export default function Exercise({ vocabId, onDone }: Props) {
-    const [exercises, setExercises] = useState<Exercise[]>([]);
+    const [exercises, setExercises] = useState<ExerciseData[]>([]);
     const [current, setCurrent] = useState<number>(0);
     const [selected, setSelected] = useState<string>("");
     const [submitted, setSubmitted] = useState<boolean>(false);
@@ -40,7 +39,7 @@ export default function Exercise({ vocabId, onDone }: Props) {
             try {
                 setLoading(true);
                 const res = await authApis.get(endpoints["VocabExercises"](vocabId));
-                const data: Exercise[] = res.data.result || [];
+                const data: ExerciseData[] = res.data.result || [];
                 if (data.length === 0) {
                     onDone();
                 } else {
@@ -54,13 +53,22 @@ export default function Exercise({ vocabId, onDone }: Props) {
             }
         };
 
-        loadExercises();
-    }, [vocabId]);
+        void loadExercises();
+
+        return () => {
+            if (typeof window !== "undefined" && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        };
+    }, [vocabId, onDone]);
 
     useEffect(() => {
         if (exercise && exercise.exerciseType === "LISTEN_AND_TYPE") {
             const word = exercise.choices[0]?.content || "";
             if (word) {
+                if (typeof window !== "undefined" && window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
                 speak(word);
             }
         }
@@ -68,8 +76,8 @@ export default function Exercise({ vocabId, onDone }: Props) {
 
     if (loading) {
         return (
-            <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "200px" }}>
-                <Spinner animation="border" />
+            <div className="d-flex justify-content-center align-items-center bg-white rounded-4 shadow-sm" style={{ minHeight: "300px" }}>
+                <Spinner animation="border" variant="primary" />
             </div>
         );
     }
@@ -83,6 +91,10 @@ export default function Exercise({ vocabId, onDone }: Props) {
     };
 
     const handleNext = (): void => {
+        if (typeof window !== "undefined" && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+
         setSubmitted(false);
         setSelected("");
         if (current < exercises.length - 1) {
@@ -92,41 +104,49 @@ export default function Exercise({ vocabId, onDone }: Props) {
         }
     };
 
-    const isCorrect: boolean =
-        exercise.exerciseType === "CHOOSE_MEANING"
-            ? exercise.choices.find(c => c.isCorrect)?.content === selected
-            : exercise.choices[0]?.content.toLowerCase() === selected.toLowerCase();
+    const isMultipleChoiceType = exercise.exerciseType === "CHOOSE_MEANING" || exercise.exerciseType === "MULTIPLE_CHOICE";
+
+    const isCorrect: boolean = isMultipleChoiceType
+        ? exercise.choices.find(c => c.isCorrect)?.content === selected
+        : exercise.choices[0]?.content.toLowerCase() === selected.toLowerCase();
 
     return (
         <Card
-            className="shadow-sm text-center p-4"
+            className="shadow-sm text-center p-4 border-0 mx-auto"
             style={{
-                maxWidth: "500px",
-                width: "100%",
-                borderRadius: "16px",
-                border: "1px solid #eee",
+                borderRadius: "24px",
             }}
         >
-            <Card.Title
-                className="fw-bold"
-                style={{ fontSize: "1.25rem", marginBottom: "1.5rem" }}
-            >
-                {exercise.question}
-            </Card.Title>
+            <div className="mb-4">
+                <Badge bg="warning" text="dark" className="px-3 py-2 rounded-pill fw-bold border border-warning border-opacity-25 mb-3">
+                    Bài tập vận dụng {current + 1}/{exercises.length}
+                </Badge>
+                <Card.Title className="fw-bold m-0" style={{ fontSize: "1.3rem", lineHeight: "1.5" }}>
+                    {exercise.question}
+                </Card.Title>
+            </div>
 
-            {exercise.exerciseType === "CHOOSE_MEANING" ? (
-                <div className="d-grid gap-2">
+            {isMultipleChoiceType ? (
+                <div className="d-flex flex-column gap-2 mt-2">
                     {exercise.choices.map((choice: Choice) => {
-                        let variant: string = "outline-secondary";
+                        let btnClass = "border text-start p-3 fw-medium transition d-flex justify-content-between align-items-center";
+                        let variant = "light";
 
                         if (submitted) {
                             if (choice.isCorrect) {
-                                variant = "success"; // tô xanh đáp án đúng
+                                variant = "success";
+                                btnClass += " bg-success text-white border-success";
                             } else if (choice.content === selected && !choice.isCorrect) {
-                                variant = "danger"; // tô đỏ đáp án sai đã chọn
+                                variant = "danger";
+                                btnClass += " bg-danger text-white border-danger";
+                            } else {
+                                btnClass += " opacity-50";
                             }
                         } else if (selected === choice.content) {
-                            variant = "primary"; // đang chọn
+                            variant = "primary";
+                            btnClass += " bg-primary bg-opacity-10 text-primary border-primary";
+                        } else {
+                            btnClass += " bg-white hover-bg-light";
                         }
 
                         return (
@@ -135,90 +155,91 @@ export default function Exercise({ vocabId, onDone }: Props) {
                                 variant={variant}
                                 disabled={submitted}
                                 onClick={() => setSelected(choice.content)}
-                                style={{ padding: "10px", fontSize: "1rem" }}
+                                className={btnClass}
+                                style={{ borderRadius: "12px", fontSize: "1.05rem" }}
                             >
-                                {choice.content}
+                                <span>{choice.content}</span>
+                                {submitted && choice.isCorrect && <span>✓</span>}
+                                {submitted && choice.content === selected && !choice.isCorrect && <span>✗</span>}
                             </Button>
                         );
                     })}
                 </div>
             ) : (
                 <>
-                    <div className="d-flex justify-content-center mb-3">
+                    <div className="d-flex justify-content-center mb-4 mt-2">
                         <Button
                             variant="outline-primary"
-                            className="d-flex justify-content-center align-items-center"
-                            onClick={() => speak(exercise.choices[0]?.content || "")}
+                            className="d-flex justify-content-center align-items-center shadow-sm bg-primary bg-opacity-10 border-primary"
+                            onClick={() => {
+                                if (typeof window !== "undefined" && window.speechSynthesis) {
+                                    window.speechSynthesis.cancel();
+                                }
+                                speak(exercise.choices[0]?.content || "")
+                            }}
                             disabled={isSpeaking}
                             style={{
-                                width: "60px",
-                                height: "60px",
+                                width: "65px",
+                                height: "65px",
                                 borderRadius: "50%",
-                                fontSize: "1.5rem",
-                                position: "relative",
                             }}
                         >
                             {isSpeaking ? (
-                                <span
-                                    className="spinner-border"
-                                    role="status"
-                                    aria-hidden="true"
-                                    style={{ width: "2rem", height: "2rem", borderWidth: "0.2em" }}
-                                ></span>
+                                <Spinner animation="border" size="sm" />
                             ) : (
-                                <VolumeUp />
+                                <VolumeUp size={24} />
                             )}
                         </Button>
                     </div>
 
                     <Form.Control
                         type="text"
-                        placeholder="Nhập đáp án..."
+                        placeholder="Nhập đáp án bạn nghe được..."
                         value={selected}
                         onChange={(e) => setSelected(e.target.value)}
                         disabled={submitted}
-                        style={{ fontSize: "1rem", padding: "10px" }}
+                        className="text-center shadow-sm"
+                        style={{ fontSize: "1.1rem", padding: "12px", borderRadius: "12px" }}
                     />
 
                     {submitted && !isCorrect && (
-                        <p className="mt-3 text-muted" style={{ fontSize: "1rem" }}>
-                            Đáp án đúng:{" "}
-                            <span className="fw-bold text-success">
+                        <div className="mt-3 p-3 bg-light rounded-3 border">
+                            <span className="text-muted d-block mb-1 small text-uppercase fw-bold">Đáp án chuẩn</span>
+                            <span className="fw-bold text-success fs-5">
                                 {exercise.choices[0]?.content}
                             </span>
-                        </p>
+                        </div>
                     )}
                 </>
             )}
 
-
-            {!submitted ? (
-                <Button
-                    className="mt-4 px-4"
-                    onClick={handleSubmit}
-                    disabled={!selected}
-                    style={{ fontSize: "1rem", borderRadius: "8px" }}
-                >
-                    Nộp bài
-                </Button>
-            ) : (
-                <>
-                    <p
-                        className="mt-3 fw-bold"
-                        style={{ color: isCorrect ? "green" : "red", fontSize: "1rem" }}
-                    >
-                        {isCorrect ? "Chính xác!" : "Sai rồi!"}
-                    </p>
+            <div className="mt-4 pt-3 border-top">
+                {!submitted ? (
                     <Button
-                        variant="success"
-                        className="mt-2 px-4"
-                        onClick={handleNext}
-                        style={{ fontSize: "1rem", borderRadius: "8px" }}
+                        variant="primary"
+                        className="w-100 fw-bold py-3 shadow-sm"
+                        onClick={handleSubmit}
+                        disabled={!selected}
+                        style={{ fontSize: "1.1rem", borderRadius: "16px" }}
                     >
-                        {current < exercises.length - 1 ? "Bài tiếp theo" : "Tiếp tục học"}
+                        Kiểm tra đáp án
                     </Button>
-                </>
-            )}
+                ) : (
+                    <div className="d-flex flex-column align-items-center gap-3">
+                        <div className={`fw-bold fs-5 d-flex align-items-center gap-2 ${isCorrect ? "text-success" : "text-danger"}`}>
+                            {isCorrect ? "Chính xác tuyệt đối!" : "Sai mất rồi, cố lên nhé!"}
+                        </div>
+                        <Button
+                            variant={isCorrect ? "success" : "primary"}
+                            className="w-100 fw-bold py-3 shadow-sm"
+                            onClick={handleNext}
+                            style={{ fontSize: "1.1rem", borderRadius: "16px" }}
+                        >
+                            {current < exercises.length - 1 ? "Câu tiếp theo →" : "Tiếp tục bài học"}
+                        </Button>
+                    </div>
+                )}
+            </div>
         </Card>
     );
 }

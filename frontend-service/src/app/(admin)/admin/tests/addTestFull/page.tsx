@@ -88,6 +88,15 @@ export default function AddTestFull() {
     const [difficultyLevel, setDifficultyLevel] = useState<string>("Easy");
     const [questions, setQuestions] = useState<QuestionForm[]>([]);
 
+    const shuffleArray = <T,>(array: T[]): T[] => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    };
+
     useEffect(() => {
         (async () => {
             try {
@@ -177,14 +186,16 @@ export default function AddTestFull() {
 
         const words = q.correctAnswerText.trim().split(/\s+/);
 
-        const newChoices: ChoiceForm[] = words.map(w => ({
+        const generatedChoices: ChoiceForm[] = words.map(w => ({
             vocabularyId: "",
             textContent: w,
             isCorrect: false
         }));
 
+        const shuffledChoices = shuffleArray(generatedChoices);
+
         const updated = [...questions];
-        updated[qIndex].choices = newChoices;
+        updated[qIndex].choices = shuffledChoices;
         setQuestions(updated);
     };
 

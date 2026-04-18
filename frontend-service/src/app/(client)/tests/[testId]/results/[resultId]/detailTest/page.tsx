@@ -126,7 +126,9 @@ export default function DetailTest() {
             const [resTest, resResult, resAnswers] = await Promise.all([
                 authApis.get(endpoints["Test"](id)),
                 authApis.get(`/test-results/${rsId}`),
-                authApis.get(endpoints["answers"](id))
+
+                // ĐÃ FIX: Chỗ này trước đây truyền nhầm 'id' (testId), bây giờ đổi thành 'rsId' (resultId)
+                authApis.get(endpoints["answers"](rsId))
             ]);
 
             setTest(resTest.data.result);
@@ -154,7 +156,6 @@ export default function DetailTest() {
 
     const percent = (score / 10) * 100;
 
-    // Đánh giá xếp loại kèm icon SVG tương ứng
     const getEvaluation = (p: number) => {
         if (p >= 80) return { text: "Xuất sắc!", icon: <IconFire className="text-danger" />, color: "text-success" };
         if (p >= 65) return { text: "Khá tốt!", icon: <IconThumbsUp className="text-primary" />, color: "text-primary" };
@@ -261,6 +262,8 @@ export default function DetailTest() {
                             const userAnswer = answers.find(a => a.questionId === q.id);
                             const userText = userAnswer?.givenAnswerText?.trim().toLowerCase() ?? "";
                             const correctText = q.correctAnswerText?.trim().toLowerCase() ?? "";
+
+                            // Check đúng sai cho câu điền chữ
                             const isTextCorrect = userText === correctText && userText !== "";
 
                             return (
@@ -320,7 +323,7 @@ export default function DetailTest() {
                                                         cardClass += "bg-danger bg-opacity-10 border-danger";
                                                         textClass = "text-danger fw-bold";
                                                     } else {
-                                                        cardClass += "bg-white border-light-subtle opacity-75"; // Mờ nhẹ các lựa chọn sai mà ko chọn
+                                                        cardClass += "bg-white border-light-subtle opacity-75";
                                                     }
 
                                                     return (
