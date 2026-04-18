@@ -35,6 +35,10 @@ public class Test implements Serializable {
     @Column(name = "difficulty_level")
     String difficultyLevel;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "topic_id")
+    Topic topic;
+
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Question> questions;
 

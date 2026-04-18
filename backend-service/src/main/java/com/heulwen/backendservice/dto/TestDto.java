@@ -16,5 +16,6 @@ public class TestDto {
     private String title;
     private String description;
     private String difficultyLevel;
+    private TopicDto topic;
     private List<QuestionDto> questions;
 }

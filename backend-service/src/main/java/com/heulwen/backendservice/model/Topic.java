@@ -33,6 +33,9 @@ public class Topic {
     @Column(name = "description")
     String description;
 
+    @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Test> tests;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "topic_vocabularies",

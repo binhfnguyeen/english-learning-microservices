@@ -8,11 +8,9 @@ import com.heulwen.backendservice.form.QuestionCreateForm;
 import com.heulwen.backendservice.form.TestCreateForm;
 import com.heulwen.backendservice.mapper.QuestionMapper;
 import com.heulwen.backendservice.mapper.TestMapper;
-import com.heulwen.backendservice.model.Question;
-import com.heulwen.backendservice.model.QuestionChoice;
-import com.heulwen.backendservice.model.Test;
-import com.heulwen.backendservice.model.Vocabulary;
+import com.heulwen.backendservice.model.*;
 import com.heulwen.backendservice.repository.TestRepository;
+import com.heulwen.backendservice.repository.TopicRepository;
 import com.heulwen.backendservice.repository.VocabularyRepository;
 import com.heulwen.backendservice.service.TestService;
 import lombok.AccessLevel;
@@ -33,44 +31,46 @@ public class TestServiceImpl implements TestService {
 
     TestRepository testRepository;
     VocabularyRepository vocabularyRepository;
+    TopicRepository topicRepository;
 
     @Override
     @Transactional
     public TestDto createTest(TestCreateForm form) {
-        // 1. Map Test cơ bản
         Test test = TestMapper.map(form);
 
-        // 2. Xử lý danh sách câu hỏi (Questions) nếu có trong form
+        if (form.getTopicId() != null) {
+            Topic topic = topicRepository.findById(form.getTopicId())
+                    .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
+            test.setTopic(topic);
+        }
         if (form.getQuestions() != null && !form.getQuestions().isEmpty()) {
             List<Question> questions = new ArrayList<>();
 
             for (QuestionCreateForm qForm : form.getQuestions()) {
                 Question question = QuestionMapper.map(qForm);
-                question.setTest(test); // Set relationship Parent
+                question.setTest(test);
+                List<QuestionChoice> choices = new ArrayList<>();
 
-                // 3. Xử lý các lựa chọn (Choices) của câu hỏi
                 if (qForm.getChoices() != null && !qForm.getChoices().isEmpty()) {
-                    List<QuestionChoice> choices = new ArrayList<>();
-
                     for (QuestionChoiceForm cForm : qForm.getChoices()) {
 
-                        // 4. Lookup Vocabulary (Logic mới: Cho phép null đối với các lựa chọn chỉ có chữ)
                         Vocabulary vocab = null;
                         if (cForm.getVocabularyId() != null) {
                             vocab = vocabularyRepository.findById(cForm.getVocabularyId())
                                     .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
                         }
 
-                        // 5. Dùng hàm map mới ở QuestionMapper để lấy được textContent và link đúng Reference
                         QuestionChoice choice = QuestionMapper.map(cForm, question, vocab);
                         choices.add(choice);
                     }
-                    question.setChoices(choices);
                 }
+
+                question.setChoices(choices);
                 questions.add(question);
             }
             test.setQuestions(questions);
         }
+
         return TestMapper.map(testRepository.save(test));
     }
 
@@ -85,6 +85,7 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<TestDto> getTests(String keyword, Pageable pageable) {
         Page<Test> testResult;
         if (keyword != null && !keyword.isEmpty()) {
@@ -96,6 +97,7 @@ public class TestServiceImpl implements TestService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public TestDto getTestById(Long id) {
         Test test = testRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));

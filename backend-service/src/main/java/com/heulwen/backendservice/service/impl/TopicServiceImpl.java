@@ -27,12 +27,14 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TopicServiceImpl implements TopicService {
 
-    TopicRepository topicRepository;      // JpaRepository<Topic, Long>
-    VocabularyRepository vocabularyRepository; // JpaRepository<Vocabulary, Long>
+    TopicRepository topicRepository;
+    VocabularyRepository vocabularyRepository;
 
+    // CREATE / UPDATE
     @Override
     public TopicDto addOrUpdateTopic(Long id, TopicCreateForm form) {
         Topic topic;
+
         if (id != null) {
             topic = topicRepository.findById(id)
                     .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
@@ -40,38 +42,56 @@ public class TopicServiceImpl implements TopicService {
         } else {
             topic = TopicMapper.map(form);
         }
-        return TopicMapper.map(topicRepository.save(topic));
+
+        Topic saved = topicRepository.save(topic);
+
+        int count = topicRepository.countVocabByTopicId(saved.getId());
+
+        return TopicMapper.map(saved, count);
     }
 
+    // GET LIST
     @Override
     public Page<TopicDto> getTopics(String keyword, Pageable pageable) {
         Page<Topic> topicResult;
+
         if (keyword != null && !keyword.isEmpty()) {
             topicResult = topicRepository.findByNameContainingIgnoreCase(keyword, pageable);
         } else {
             topicResult = topicRepository.findAll(pageable);
         }
-        return topicResult.map(TopicMapper::map);
+
+        return topicResult.map(topic -> {
+            int count = topicRepository.countVocabByTopicId(topic.getId());
+            return TopicMapper.map(topic, count);
+        });
     }
 
+    // GET DETAIL
     @Override
     public TopicDto getTopicById(Long id) {
         Topic topic = topicRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
-        return TopicMapper.map(topic);
+
+        int count = topicRepository.countVocabByTopicId(id);
+
+        return TopicMapper.map(topic, count);
     }
 
+    // DELETE
     @Override
     public void deleteTopic(Long id) {
         topicRepository.deleteById(id);
     }
 
+    // ADD VOCAB
     @Override
     public void addVocabToTopic(Long topicId, Long vocabId) {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
+
         Vocabulary vocab = vocabularyRepository.findById(vocabId)
-                .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
 
         if (topic.getVocabularies() == null) {
             topic.setVocabularies(new ArrayList<>());
@@ -83,24 +103,34 @@ public class TopicServiceImpl implements TopicService {
         }
     }
 
+    // GET VOCAB IN TOPIC
     @Override
     public Page<VocabularyDto> getVocabulariesWithTopic(Long topicId, String keyword, Pageable pageable) {
         String searchKeyword = (keyword == null) ? "" : keyword;
-        Page<Vocabulary> vocabPage = vocabularyRepository.findByTopicAndKeyword(topicId, searchKeyword, pageable);
+
+        Page<Vocabulary> vocabPage =
+                vocabularyRepository.findByTopicAndKeyword(topicId, searchKeyword, pageable);
+
         return vocabPage.map(VocabularyMapper::map);
     }
 
+    // GET VOCAB NOT IN TOPIC
     @Override
     public List<VocabularyDto> getVocabNotInTopic(Long topicId, String keyword) {
         String searchKeyword = (keyword == null) ? "" : keyword;
-        List<Vocabulary> vocab = vocabularyRepository.findVocabNotInTopic(topicId, searchKeyword);
+
+        List<Vocabulary> vocab =
+                vocabularyRepository.findVocabNotInTopic(topicId, searchKeyword);
+
         return vocab.stream().map(VocabularyMapper::map).toList();
     }
 
+    // REMOVE VOCAB
     @Override
     public void removeVocabFromTopic(Long topicId, Long vocabId) {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
+
         Vocabulary vocabulary = vocabularyRepository.findById(vocabId)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
 

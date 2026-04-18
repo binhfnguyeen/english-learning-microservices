@@ -260,7 +260,7 @@ export default function StartTest() {
                                 </thead>
                                 <tbody className="border-top-0">
                                 {sortedResults.map((result) => {
-                                    const percent = Math.min(result.score * 10, 100);
+                                    const percent = Number(Math.min(result.score * 10, 100).toFixed(1));
                                     let variant = "danger";
                                     if (percent >= 80) variant = "success";
                                     else if (percent >= 50) variant = "info";
@@ -290,7 +290,7 @@ export default function StartTest() {
                                                         style={{ height: "8px" }}
                                                     />
                                                     <small className={`fw-bold text-${variant}`} style={{ width: '35px' }}>
-                                                        {parseInt(percent)}%
+                                                        {percent}%
                                                     </small>
                                                 </div>
                                             </td>

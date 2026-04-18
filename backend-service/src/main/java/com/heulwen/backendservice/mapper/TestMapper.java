@@ -1,6 +1,7 @@
 package com.heulwen.backendservice.mapper;
 
 import com.heulwen.backendservice.dto.TestDto;
+import com.heulwen.backendservice.dto.TopicDto;
 import com.heulwen.backendservice.form.TestCreateForm;
 import com.heulwen.backendservice.model.Test;
 
@@ -9,11 +10,6 @@ import java.util.stream.Collectors;
 
 public class TestMapper {
 
-    /**
-     * CREATE
-     * TestCreateForm -> Test
-     * Tương đương toTest(TestRequest)
-     */
     public static Test map(TestCreateForm form) {
         if (form == null) {
             return null;
@@ -26,10 +22,6 @@ public class TestMapper {
         return test;
     }
 
-    /**
-     * UPDATE
-     * TestCreateForm -> existing Test
-     */
     public static void map(TestCreateForm form, Test test) {
         if (form == null || test == null) {
             return;
@@ -40,14 +32,18 @@ public class TestMapper {
         test.setDifficultyLevel(form.getDifficultyLevel());
     }
 
-    /**
-     * READ
-     * Test -> TestDto
-     * Tương đương toTestResponse()
-     */
     public static TestDto map(Test test) {
         if (test == null) {
             return null;
+        }
+
+        TopicDto mappedTopic = null;
+        if (test.getTopic() != null) {
+            int vocabCount = (test.getTopic().getVocabularies() != null)
+                    ? test.getTopic().getVocabularies().size()
+                    : 0;
+
+            mappedTopic = TopicMapper.map(test.getTopic(), vocabCount);
         }
 
         return TestDto.builder()
@@ -63,13 +59,10 @@ public class TestMapper {
                                 .collect(Collectors.toList())
                                 : List.of()
                 )
+                .topic(mappedTopic)
                 .build();
     }
 
-    /**
-     * READ LIST
-     * List<Test> -> List<TestDto>
-     */
     public static List<TestDto> map(List<Test> tests) {
         if (tests == null) {
             return List.of();

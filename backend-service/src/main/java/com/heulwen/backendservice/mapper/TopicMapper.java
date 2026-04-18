@@ -3,6 +3,7 @@ package com.heulwen.backendservice.mapper;
 import com.heulwen.backendservice.dto.TopicDto;
 import com.heulwen.backendservice.form.TopicCreateForm;
 import com.heulwen.backendservice.model.Topic;
+import com.heulwen.backendservice.repository.TopicRepository;
 
 public class TopicMapper {
 
@@ -28,7 +29,7 @@ public class TopicMapper {
      * Topic -> TopicDto
      * Tương đương toTopicResponse()
      */
-    public static TopicDto map(Topic topic) {
+    public static TopicDto map(Topic topic, int totalVocabs) {
         if (topic == null) {
             return null;
         }
@@ -37,6 +38,7 @@ public class TopicMapper {
                 .id(topic.getId())
                 .name(topic.getName())
                 .description(topic.getDescription())
+                .totalVocabs(totalVocabs)
                 .build();
     }
 
