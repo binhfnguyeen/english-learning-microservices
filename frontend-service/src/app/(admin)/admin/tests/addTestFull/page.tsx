@@ -4,7 +4,7 @@ import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button, Container, Form, Nav, Card, Row, Col, Badge } from "react-bootstrap";
+import { Button, Container, Form, Card, Row, Col, Badge } from "react-bootstrap";
 import Swal from "sweetalert2";
 
 interface Vocabulary {
@@ -78,26 +78,25 @@ const IconLightbulb = ({ size = 16, className = "" }) => (
     </svg>
 );
 
-
 export default function AddTestFull() {
     const [topics, setTopics] = useState<Topic[]>([]);
     const [selectedTopicId, setSelectedTopicId] = useState<number | "">("");
     const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
+
     const [title, setTitle] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [difficultyLevel, setDifficultyLevel] = useState<string>("Easy");
     const [questions, setQuestions] = useState<QuestionForm[]>([]);
 
     useEffect(() => {
-        const loadTopics = async () => {
+        (async () => {
             try {
                 const res = await authApis.get(`${endpoints["topics"]}?page=0&size=9999`);
                 setTopics(res.data.result.content || []);
             } catch (err) {
                 console.error("Lỗi tải danh sách chủ đề:", err);
             }
-        };
-        loadTopics();
+        })();
     }, []);
 
     const handleSelectTopic = async (id: number | "") => {
@@ -115,7 +114,6 @@ export default function AddTestFull() {
         }
     };
 
-    // --- XỬ LÝ CÂU HỎI ---
     const addQuestion = () => {
         setQuestions([
             ...questions,
@@ -127,19 +125,27 @@ export default function AddTestFull() {
         setQuestions(questions.filter((_, i) => i !== index));
     };
 
-    const updateQuestion = (index: number, field: keyof QuestionForm, value: any) => {
+    const updateQuestion = <K extends keyof QuestionForm>(
+        index: number,
+        field: K,
+        value: QuestionForm[K]
+    ) => {
         const updated = [...questions];
-        updated[index] = { ...updated[index], [field]: value };
+        updated[index][field] = value;
 
         if (field === "type") {
-            if (value === "FILL_IN_BLANK" || value === "REWRITE_SENTENCE") {
+            const typeValue = value as QuestionType;
+
+            if (typeValue === "FILL_IN_BLANK" || typeValue === "REWRITE_SENTENCE") {
                 updated[index].choices = [];
             }
-            if (value === "MULTIPLE_CHOICE") {
+
+            if (typeValue === "MULTIPLE_CHOICE") {
                 updated[index].correctAnswerText = "";
             }
 
             const currentContent = updated[index].content || "";
+
             if (
                 currentContent.trim() === "" ||
                 currentContent.startsWith("Sắp xếp") ||
@@ -147,13 +153,13 @@ export default function AddTestFull() {
                 currentContent.startsWith("Điền từ") ||
                 currentContent.startsWith("Chọn đáp")
             ) {
-                if (value === "WORD_ORDER") {
+                if (typeValue === "WORD_ORDER") {
                     updated[index].content = "Sắp xếp các khối từ sau thành câu hoàn chỉnh:";
-                } else if (value === "REWRITE_SENTENCE") {
+                } else if (typeValue === "REWRITE_SENTENCE") {
                     updated[index].content = "Viết lại câu sau với nghĩa tương đương: \"[Nhập câu gốc vào đây]\"";
-                } else if (value === "FILL_IN_BLANK") {
+                } else if (typeValue === "FILL_IN_BLANK") {
                     updated[index].content = "Điền từ/cụm từ thích hợp vào chỗ trống: [Nhập phần đầu] ___ [Nhập phần cuối]";
-                } else if (value === "MULTIPLE_CHOICE") {
+                } else if (typeValue === "MULTIPLE_CHOICE") {
                     updated[index].content = "Chọn đáp án đúng nhất:";
                 }
             }
@@ -165,7 +171,7 @@ export default function AddTestFull() {
     const autoGenerateWordBlocks = (qIndex: number) => {
         const q = questions[qIndex];
         if (!q.correctAnswerText || q.correctAnswerText.trim() === "") {
-            Swal.fire("Chú ý", "Vui lòng nhập 'Đáp án chính xác' trước khi tự động cắt chữ!", "warning");
+            void Swal.fire("Chú ý", "Vui lòng nhập 'Đáp án chính xác' trước khi tự động cắt chữ!", "warning");
             return;
         }
 
@@ -194,24 +200,25 @@ export default function AddTestFull() {
         setQuestions(updated);
     };
 
-    const updateChoice = (qIndex: number, cIndex: number, field: keyof ChoiceForm, value: any) => {
+    const updateChoice = <K extends keyof ChoiceForm>(
+        qIndex: number,
+        cIndex: number,
+        field: K,
+        value: ChoiceForm[K]
+    ) => {
         const updated = [...questions];
-        updated[qIndex].choices[cIndex] = {
-            ...updated[qIndex].choices[cIndex],
-            [field]: value,
-        };
+        updated[qIndex].choices[cIndex][field] = value;
         setQuestions(updated);
     };
 
-    // --- SUBMIT ---
     const handleSubmit = async () => {
         if (!title || !difficultyLevel) {
-            Swal.fire("Lỗi", "Vui lòng nhập đủ Tiêu đề và Độ khó", "error");
+            await Swal.fire("Lỗi", "Vui lòng nhập đủ Tiêu đề và Độ khó", "error");
             return;
         }
 
         if (questions.length === 0) {
-            Swal.fire("Lỗi", "Vui lòng thêm ít nhất 1 câu hỏi", "error");
+            await Swal.fire("Lỗi", "Vui lòng thêm ít nhất 1 câu hỏi", "error");
             return;
         }
 
@@ -231,11 +238,10 @@ export default function AddTestFull() {
 
         try {
             await authApis.post(endpoints["Tests"], payload);
-            Swal.fire("Thành công!", "Đã thêm đề kiểm tra mới", "success").then(() => {
-            });
+            await Swal.fire("Thành công!", "Đã thêm đề kiểm tra mới", "success");
         } catch (err) {
             console.error(err);
-            Swal.fire("Thất bại!", "Đã có lỗi xảy ra khi lưu đề thi", "error");
+            await Swal.fire("Thất bại!", "Đã có lỗi xảy ra khi lưu đề thi", "error");
         }
     };
 
@@ -328,7 +334,7 @@ export default function AddTestFull() {
                 const showVocabSelect = selectedTopicId !== "" && q.type === "MULTIPLE_CHOICE";
 
                 return (
-                    <Card key={qIndex} className="shadow-sm border-0 mb-4 rounded-4 border-start border-primary border-4">
+                    <Card key={qIndex} className="shadow-sm mb-4 rounded-4 border-start border-primary border-4">
                         <Card.Body className="p-4">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <Badge bg="primary" className="fs-6 px-3 py-2 rounded-pill">Câu {qIndex + 1}</Badge>
@@ -349,7 +355,7 @@ export default function AddTestFull() {
                                         <Form.Label className="fw-medium text-muted small">Loại câu hỏi</Form.Label>
                                         <Form.Select
                                             value={q.type}
-                                            onChange={(e) => updateQuestion(qIndex, "type", e.target.value)}
+                                            onChange={(e) => updateQuestion(qIndex, "type", e.target.value as QuestionType)}
                                         >
                                             <option value="MULTIPLE_CHOICE">Trắc nghiệm</option>
                                             <option value="FILL_IN_BLANK">Điền vào chỗ trống</option>
