@@ -2,7 +2,11 @@ package com.heulwen.backendservice.mapper;
 
 import com.heulwen.backendservice.dto.VocabularyDto;
 import com.heulwen.backendservice.form.VocabularyCreateForm;
+import com.heulwen.backendservice.model.Topic;
 import com.heulwen.backendservice.model.Vocabulary;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class VocabularyMapper {
 
@@ -20,11 +24,8 @@ public class VocabularyMapper {
         vocab.setMeaning(form.getMeaning());
         vocab.setPartOfSpeech(form.getPartOfSpeech());
         vocab.setLevel(form.getLevel());
-
-        // MultipartFile không persist → gán vào field transient
         vocab.setPicFile(form.getImageFile());
 
-        // topics KHÔNG map ở đây (xử lý ở Service)
         return vocab;
     }
 
@@ -57,6 +58,10 @@ public class VocabularyMapper {
             return null;
         }
 
+        List<Long> topicIds = vocab.getTopics() != null
+                ? vocab.getTopics().stream().map(Topic::getId).collect(Collectors.toList())
+                : List.of();
+
         return VocabularyDto.builder()
                 .id(vocab.getId())
                 .word(vocab.getWord())
@@ -64,6 +69,7 @@ public class VocabularyMapper {
                 .partOfSpeech(vocab.getPartOfSpeech())
                 .level(vocab.getLevel())
                 .picture(vocab.getPicture())
+                .topicIds(topicIds)
                 .build();
     }
 }

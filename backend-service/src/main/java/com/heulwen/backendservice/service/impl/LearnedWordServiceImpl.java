@@ -56,6 +56,7 @@ public class LearnedWordServiceImpl implements LearnedWordService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<LearnedWordDto> getLearnedWordsByUser(Long userId) {
         List<LearnedWord> learnedWords = learnedWordRepository.getLearnedWordByUserId(userId);
 
@@ -65,6 +66,7 @@ public class LearnedWordServiceImpl implements LearnedWordService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserStatsDto> getUserLearnedWordsStats() {
         List<Object[]> stats = learnedWordRepository.countLearnedWordsByUser();
         List<UserStatsDto> result = new ArrayList<>();

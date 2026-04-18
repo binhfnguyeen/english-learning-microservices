@@ -32,7 +32,7 @@ public class LearnedWordController {
 
     // --- GET LEARNED WORDS BY USER ---
     @GetMapping("/learned-words/{userId}")
-    public ApiDto<List<LearnedWordDto>> getLearnedWordsByUser(@PathVariable("userId") Long userId) { // Đổi int -> Long
+    public ApiDto<List<LearnedWordDto>> getLearnedWordsByUser(@PathVariable("userId") Long userId) {
         return ApiDto.<List<LearnedWordDto>>builder()
                 .code(1000)
                 .result(learnedWordService.getLearnedWordsByUser(userId))

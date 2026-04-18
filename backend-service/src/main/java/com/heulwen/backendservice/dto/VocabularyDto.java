@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,4 +18,5 @@ public class VocabularyDto {
     private String partOfSpeech;
     private String level;
     private String picture;
+    private List<Long> topicIds;
 }
