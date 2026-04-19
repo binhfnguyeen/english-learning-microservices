@@ -27,6 +27,7 @@ public class ApplicationInitConfig {
                         .email("admin@elearnweb.com")
                         .username("admin")
                         .password(passwordEncoder.encode("admin"))
+                        .phone("0945167654")
                         .isActive(Boolean.TRUE)
                         .role(Role.ADMIN.name())
                         .build();

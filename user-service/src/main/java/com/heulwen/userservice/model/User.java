@@ -32,13 +32,13 @@ public class User {
     @Column(name = "last_name")
     String lastName;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false, unique = true)
     String email;
 
-    @Column(name = "phone")
+    @Column(name = "phone", nullable = false)
     String phone;
 
-    @Column(name = "username")
+    @Column(name = "username", nullable = false, unique = true)
     String username;
 
     @Column(name = "password")
