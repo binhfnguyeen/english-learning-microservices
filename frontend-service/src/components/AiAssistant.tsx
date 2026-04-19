@@ -1,5 +1,6 @@
+"use client";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Robot, Send, XLg } from "react-bootstrap-icons";
+import { Robot, Send, XLg, ArrowsAngleExpand, ArrowsAngleContract } from "react-bootstrap-icons";
 import { Button, Card, Form } from "react-bootstrap";
 import UserContext from "@/configs/UserContext";
 import styles from "@/components/AiAssistant.module.css";
@@ -12,12 +13,11 @@ interface Message {
 
 export default function ChatAssistant() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false); // State quản lý kích thước
     const [connected, setConnected] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [showHint, setShowHint] = useState(false);
     const [input, setInput] = useState("");
-
-    // Thêm state isGenerating để khóa input khi AI đang trả lời
     const [isGenerating, setIsGenerating] = useState(false);
 
     const wsRef = useRef<WebSocket | null>(null);
@@ -33,12 +33,10 @@ export default function ChatAssistant() {
         if (!user?.id || !isOpen) return;
 
         const token = Cookies.get("accessToken");
-
         if (!token) return;
 
         const wsUrl = `ws://localhost:8080/api/ai/ws/chat/${user.id}?token=${token}`;
         const socket = new WebSocket(wsUrl);
-
         wsRef.current = socket;
 
         socket.onopen = () => {
@@ -51,11 +49,9 @@ export default function ChatAssistant() {
 
             if (data.type === "history") {
                 setMessages(data.data);
-
             } else if (data.type === "stream_start") {
                 setMessages((prev) => [...prev, { sender: "bot", text: "" }]);
-                setIsGenerating(true); // Đảm bảo khóa input khi bắt đầu stream
-
+                setIsGenerating(true);
             } else if (data.type === "stream_chunk") {
                 setMessages((prev) => {
                     const newMessages = [...prev];
@@ -68,20 +64,18 @@ export default function ChatAssistant() {
                     }
                     return newMessages;
                 });
-
             } else if (data.type === "stream_done") {
-                setIsGenerating(false); // Mở khóa input khi gen xong
-
+                setIsGenerating(false);
             } else if (data.type === "message") {
                 setMessages((prev) => [...prev, { sender: "bot", text: data.text }]);
-                setIsGenerating(false); // Mở khóa input nếu dùng kiểu tin nhắn thường
+                setIsGenerating(false);
             }
         };
 
         socket.onclose = () => {
             if (wsRef.current === socket) {
                 setConnected(false);
-                setIsGenerating(false); // Reset lại nếu bị mất kết nối
+                setIsGenerating(false);
                 wsRef.current = null;
             }
         };
@@ -92,14 +86,13 @@ export default function ChatAssistant() {
     }, [isOpen, user?.id]);
 
     const sendMessage = () => {
-        // Chặn gửi tin nhắn nếu AI đang gen
         if (!input.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || isGenerating) return;
 
         const userMsg = input.trim();
         wsRef.current.send(JSON.stringify({ message: userMsg }));
         setMessages((prev) => [...prev, { sender: "you", text: userMsg }]);
         setInput("");
-        setIsGenerating(true); // Khóa input ngay lập tức sau khi bấm gửi
+        setIsGenerating(true);
     };
 
     useEffect(() => {
@@ -139,21 +132,36 @@ export default function ChatAssistant() {
                     0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
                     40% { transform: scale(1); opacity: 1; }
                 }
+                
+                /* Ẩn scrollbar nhưng vẫn cho cuộn */
+                .chat-scroll-container::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .chat-scroll-container::-webkit-scrollbar-thumb {
+                    background-color: rgba(0,0,0,0.1);
+                    border-radius: 10px;
+                }
+                .chat-scroll-container::-webkit-scrollbar-track {
+                    background: transparent;
+                }
             `}</style>
 
-            {!isOpen && user && (
-                <div className="position-fixed m-4" style={{ bottom: 0, right: 0, zIndex: 1050, position: "fixed" }}>
+            {/* Nút Floating Action Button */}
+            {!isOpen && (
+                <div className="position-fixed m-4" style={{ bottom: 0, right: 0, zIndex: 1050 }}>
                     {showHint && (
                         <div
                             style={{
                                 position: "absolute",
-                                bottom: "70px",
+                                bottom: "75px",
                                 right: "0",
-                                background: "#fff",
-                                borderRadius: "8px",
-                                padding: "6px 10px",
-                                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                                fontSize: "0.85rem",
+                                background: "#ffffff",
+                                color: "#333",
+                                borderRadius: "12px",
+                                padding: "8px 14px",
+                                boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+                                fontSize: "0.9rem",
+                                fontWeight: "500",
                                 animation: "fadeIn 0.5s ease-out",
                                 whiteSpace: "nowrap"
                             }}
@@ -163,89 +171,123 @@ export default function ChatAssistant() {
                         </div>
                     )}
                     <Button
-                        variant="primary"
-                        className="rounded-circle shadow position-relative"
+                        className="rounded-circle shadow-lg d-flex align-items-center justify-content-center transition-transform"
                         style={{
-                            background: "linear-gradient(135deg, #4facfe, #00f2fe)",
-                            width: "60px",
-                            height: "60px",
-                            border: "none"
+                            background: "linear-gradient(135deg, #007bff, #00c6ff)",
+                            width: "65px",
+                            height: "65px",
+                            border: "none",
+                            transition: "transform 0.2s"
                         }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
                         onClick={() => {
                             setIsOpen(true);
                             setShowHint(false);
                         }}
                     >
-                        <Robot size={24} />
+                        <Robot size={28} color="white" />
                     </Button>
                 </div>
             )}
 
-            {isOpen && user && (
+            {/* Khung Chat */}
+            {isOpen && (
                 <Card
-                    className="position-fixed bottom-0 end-0 m-4 shadow-lg border-0"
+                    className="position-fixed bottom-0 end-0 m-4 border-0"
                     style={{
-                        width: "340px",
-                        height: "460px",
-                        borderRadius: "16px",
+                        width: isExpanded ? "550px" : "360px",
+                        height: isExpanded ? "75vh" : "520px",
+                        maxWidth: "92vw",
+                        maxHeight: "85vh",
+                        borderRadius: "20px",
                         display: "flex",
                         flexDirection: "column",
                         overflow: "hidden",
                         zIndex: 1050,
+                        boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+                        transition: "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)"
                     }}
                 >
                     <Card.Header
-                        className="d-flex justify-content-between align-items-center text-white"
+                        className="d-flex justify-content-between align-items-center text-white px-4 py-3"
                         style={{
-                            background: "linear-gradient(135deg, #4facfe, #00f2fe)",
-                            border: "none",
-                            fontWeight: "600",
+                            background: "linear-gradient(135deg, #007bff, #00c6ff)",
+                            borderBottom: "none",
                         }}
                     >
-                        <span className="d-flex align-items-center">
-                            <Robot size={20} className="me-2" /> AI Assistant
-                        </span>
-                        <XLg
-                            role="button"
-                            onClick={() => setIsOpen(false)}
-                            style={{ cursor: "pointer" }}
-                        />
+                        <div className="d-flex align-items-center gap-2 fw-bold fs-5">
+                            <Robot size={24} /> AI Assistant
+                        </div>
+                        <div className="d-flex align-items-center gap-3">
+                            {isExpanded ? (
+                                <ArrowsAngleContract
+                                    size={18}
+                                    role="button"
+                                    onClick={() => setIsExpanded(false)}
+                                    style={{ cursor: "pointer", opacity: 0.8 }}
+                                    onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = "0.8"}
+                                />
+                            ) : (
+                                <ArrowsAngleExpand
+                                    size={18}
+                                    role="button"
+                                    onClick={() => setIsExpanded(true)}
+                                    style={{ cursor: "pointer", opacity: 0.8 }}
+                                    onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = "0.8"}
+                                />
+                            )}
+                            <XLg
+                                size={20}
+                                role="button"
+                                onClick={() => setIsOpen(false)}
+                                style={{ cursor: "pointer", opacity: 0.8 }}
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = "0.8"}
+                            />
+                        </div>
                     </Card.Header>
 
                     <Card.Body
+                        className="chat-scroll-container"
                         style={{
                             flex: 1,
                             overflowY: "auto",
-                            padding: "0.75rem",
-                            background: "#f1f3f6",
+                            padding: "1.25rem",
+                            background: "#f8f9fa",
                         }}
                     >
+                        {messages.length === 0 && (
+                            <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted opacity-50">
+                                <Robot size={48} className="mb-2" />
+                                <p>Bắt đầu cuộc trò chuyện...</p>
+                            </div>
+                        )}
+
                         {messages.map((msg, idx) => (
                             <div
                                 key={idx}
-                                className={`d-flex mb-2 ${msg.sender === "you" ? "justify-content-end" : "justify-content-start"
-                                }`}
+                                className={`d-flex mb-3 ${msg.sender === "you" ? "justify-content-end" : "justify-content-start"}`}
                             >
                                 <div
-                                    className={`px-3 py-2 shadow-sm`}
+                                    className="px-3 py-2 shadow-sm position-relative"
                                     style={{
-                                        maxWidth: "75%",
-                                        borderRadius:
-                                            msg.sender === "you"
-                                                ? "16px 16px 4px 16px"
-                                                : "16px 16px 16px 4px",
-                                        background: msg.sender === "you" ? "#4facfe" : "#e0e0e0",
-                                        color: msg.sender === "you" ? "white" : "#333",
-                                        fontSize: "0.9rem",
+                                        maxWidth: isExpanded ? "80%" : "85%",
+                                        borderRadius: msg.sender === "you" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                                        background: msg.sender === "you" ? "linear-gradient(135deg, #007bff, #0056b3)" : "#ffffff",
+                                        color: msg.sender === "you" ? "#ffffff" : "#212529",
+                                        fontSize: "0.95rem",
+                                        lineHeight: "1.5",
                                         whiteSpace: "pre-wrap",
-                                        minHeight: "36px",
-                                        display: "flex",
-                                        alignItems: "center"
+                                        minHeight: "40px",
+                                        border: msg.sender === "bot" ? "1px solid #e9ecef" : "none"
                                     }}
                                 >
                                     {msg.text}
                                     {(msg.sender === "bot" && msg.text === "" && idx === messages.length - 1) && (
-                                        <div className="d-inline-flex align-items-center ms-1" style={{ height: '20px' }}>
+                                        <div className="d-flex align-items-center justify-content-center" style={{ height: '24px', width: '30px' }}>
                                             <span className="typing-dot"></span>
                                             <span className="typing-dot"></span>
                                             <span className="typing-dot"></span>
@@ -257,37 +299,40 @@ export default function ChatAssistant() {
                         <div ref={messagesEndRef} />
                     </Card.Body>
 
-                    <Card.Footer className="p-2 bg-white border-0">
+                    <Card.Footer className="p-3 bg-white border-top">
                         <Form
                             onSubmit={(e) => {
                                 e.preventDefault();
                                 sendMessage();
                             }}
-                            className="d-flex align-items-center"
+                            className="d-flex align-items-center gap-2"
                         >
                             <Form.Control
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder={isGenerating ? "AI đang trả lời..." : "Nhập tin nhắn..."} // Cập nhật placeholder
-                                size="sm"
-                                className="rounded-pill"
-                                disabled={!connected || isGenerating} // Khóa ô input
+                                placeholder={isGenerating ? "AI đang suy nghĩ..." : "Hỏi AI bất cứ điều gì..."}
+                                className="border-0 shadow-none px-3"
+                                style={{
+                                    background: "#f1f3f5",
+                                    borderRadius: "20px",
+                                    height: "44px"
+                                }}
+                                disabled={!connected || isGenerating}
                             />
                             <Button
-                                variant="primary"
-                                size="sm"
-                                className="ms-2 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 transition-transform"
                                 style={{
-                                    width: "36px",
-                                    height: "36px",
+                                    width: "44px",
+                                    height: "44px",
                                     background: (connected && input.trim() !== "" && !isGenerating)
-                                        ? "linear-gradient(135deg, #4facfe, #00f2fe)"
-                                        : "#c0c0c0",
+                                        ? "linear-gradient(135deg, #007bff, #00c6ff)"
+                                        : "#e9ecef",
                                     border: "none",
+                                    color: (connected && input.trim() !== "" && !isGenerating) ? "white" : "#adb5bd"
                                 }}
                                 onClick={sendMessage}
-                                disabled={!connected || input.trim() === "" || isGenerating} // Khóa nút gửi
+                                disabled={!connected || input.trim() === "" || isGenerating}
                             >
                                 <Send size={18} />
                             </Button>
