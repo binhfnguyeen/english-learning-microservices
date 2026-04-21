@@ -1,3 +1,12 @@
-# Intelij
+# IntelliJ
 *.iml
 .idea/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# FAISS vector store (auto-generated at runtime, do not commit)
+faiss_store/*.faiss
+faiss_store/*.json

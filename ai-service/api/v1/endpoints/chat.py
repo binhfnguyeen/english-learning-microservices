@@ -2,10 +2,13 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from core.redis_chat import RedisStorage as ChatStorage
 from services.progress_service import get_user_progress
 from services.ollama_service import stream_llm_async
+from services.rag_service import rag_service
 
 router = APIRouter()
 
-def build_chat_messages(user_message, history, progress, is_speaking=False):
+def build_chat_messages(user_message, history, progress, is_speaking=False, context=""):
+    context_instruction = f"\n\nRELIABLE CONTEXT TO USE:\n{context}" if context else ""
+
     if is_speaking:
         system_instruction = f"""
             You are a calm, real human practicing English in a voice call.
@@ -18,6 +21,7 @@ def build_chat_messages(user_message, history, progress, is_speaking=False):
             4. Gently correct grammar by naturally reusing the corrected phrase in your reply without pointing it out.
             5. Match CEFR level and Proficiency.
             6. Never respond in Vietnamese.
+            7. Base your knowledge ONLY on the provided context if relevant.{context_instruction}
         """
     else:
         system_instruction = f"""
@@ -32,6 +36,7 @@ def build_chat_messages(user_message, history, progress, is_speaking=False):
             - Encourage speaking.
             - Correct grammar gently.
             - Never respond in Vietnamese.
+            - Base your explanations on the following trusted context if relevant.{context_instruction}
         """
 
     messages = [{"role": "system", "content": system_instruction.strip()}]
@@ -80,8 +85,10 @@ async def handle_chat_loop(websocket, user_id, token, namespace, is_speaking=Fal
         progress = get_user_progress(user_id, token)
         history = ChatStorage.get_history(namespace, user_id)
 
+        retrieved_context = rag_service.retrieve_context(user_message, top_k=2)
+
         # 1. Khởi tạo mảng hội thoại
-        messages = build_chat_messages(user_message, history, progress, is_speaking)
+        messages = build_chat_messages(user_message, history, progress, is_speaking, retrieved_context)
 
         # 2. Báo hiệu cho Frontend bắt đầu stream (tạo bóng chat rỗng)
         await websocket.send_json({

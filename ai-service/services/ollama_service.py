@@ -4,13 +4,13 @@ import httpx
 import requests
 from core.config import settings
 
-def call_llm(prompt: str, format: str = None, timeout: int = 120):
+def call_llm(prompt: str, format: str = None, timeout: int = 120, num_predict: int = 300):
     payload = {
         "model": "phi3",
         "prompt": prompt,
         "stream": False,
         "options": {
-            "num_predict": 600,
+            "num_predict": num_predict,
             "temperature": 0.7
         }
     }
@@ -29,15 +29,16 @@ def call_llm(prompt: str, format: str = None, timeout: int = 120):
         return "Sorry, the system is busy."
 
 
-async def stream_llm_async(messages: list, format: str = None, timeout: int = 120):
+async def stream_llm_async(messages: list, format: str = None, timeout: int = 120, num_predict: int = 300):
     api_url = settings.OLLAMA_API_URL.replace("/api/generate", "/api/chat")
     payload = {
         "model": "phi3",
         "messages": messages,
         "stream": True,
         "options": {
-            "num_predict": 600,
-            "temperature": 0.7
+            "num_predict": num_predict,
+            "temperature": 0.7,
+            "num_ctx": 2048        # Giới hạn context window để giảm VRAM/RAM
         }
     }
     if format:

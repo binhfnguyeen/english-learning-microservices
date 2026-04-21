@@ -1,0 +1,3 @@
+# This directory stores the persisted FAISS vector index.
+# Contents are auto-generated at runtime and excluded from version control.
+# See .gitignore for exclusion rules.

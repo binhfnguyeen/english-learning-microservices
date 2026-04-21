@@ -1,0 +1,81 @@
+## Present Simple Tense
+The present simple is used to describe habits, facts, and routines.
+Structure: Subject + base verb (add -s/-es for he/she/it)
+Examples:
+- I study English every day.
+- She works at a school.
+- Water boils at 100 degrees Celsius.
+Signal words: always, usually, often, sometimes, rarely, never, every day/week/month.
+
+## Present Continuous Tense
+The present continuous describes actions happening right now or temporary situations.
+Structure: Subject + am/is/are + verb-ing
+Examples:
+- I am learning English now.
+- They are playing football at the moment.
+- She is staying in Hanoi this week (temporary).
+Signal words: now, at the moment, currently, right now, today, this week.
+
+## Past Simple Tense
+The past simple is used for completed actions in the past at a specific time.
+Structure: Subject + past verb (verb + -ed for regular; irregular verbs change form)
+Examples:
+- I visited London last year.
+- She went to school yesterday.
+- He didn't finish his homework.
+Signal words: yesterday, last year/week, ago, in 2010, when.
+
+## Past Continuous Tense
+The past continuous describes an action that was in progress at a specific time in the past.
+Structure: Subject + was/were + verb-ing
+Examples:
+- I was watching TV at 8pm last night.
+- They were playing when it started raining.
+Signal words: while, when, at that time, at 8pm yesterday.
+
+## Present Perfect Tense
+The present perfect connects the past to the present. It expresses life experience, recent news, or actions with present results.
+Structure: Subject + have/has + past participle
+Examples:
+- I have visited Japan three times.
+- She has just finished her homework.
+- They haven't eaten yet.
+Signal words: just, already, yet, ever, never, since, for, recently.
+
+## Future Simple Tense
+Used for decisions made at the moment of speaking, predictions, and promises.
+Structure: Subject + will + base verb
+Examples:
+- I will call you tomorrow.
+- It will rain tonight (prediction).
+- I'll help you with that (offer).
+Signal words: tomorrow, next week/year, soon, in the future.
+
+## Conditional Sentences
+Type 0: General truths. If + present simple, present simple. (If water reaches 100°C, it boils.)
+Type 1: Real/possible future. If + present simple, will + base verb. (If it rains, I will stay home.)
+Type 2: Unreal present/future. If + past simple, would + base verb. (If I had money, I would travel.)
+Type 3: Unreal past. If + past perfect, would have + past participle. (If I had studied, I would have passed.)
+
+## Articles: a, an, the
+- Use "a" before consonant sounds: a cat, a university (yu-sound).
+- Use "an" before vowel sounds: an apple, an hour (silent h).
+- Use "the" for specific nouns already known to both speaker and listener.
+- No article for general plurals and uncountable nouns: Dogs are loyal. Water is essential.
+
+## Passive Voice
+The passive voice focuses on the object receiving the action rather than the subject.
+Structure: Object + to be + past participle (+ by + agent, optional)
+Examples:
+- The book was written by Hemingway.
+- English is spoken worldwide.
+- The meeting has been cancelled.
+Use passive when: the agent is unknown, unimportant, or when we want to emphasize the action/receiver.
+
+## Modal Verbs
+Can: ability/permission. "I can swim." / "Can I open the window?"
+Could: past ability/polite request. "She could read at age 4." / "Could you help me?"
+May/Might: possibility. "It may rain." / "She might be late."
+Must: strong obligation/deduction. "You must wear a seatbelt." / "He must be tired."
+Should: advice/recommendation. "You should exercise more."
+Would: polite request/conditional. "Would you like tea?" / "I would travel if I could."

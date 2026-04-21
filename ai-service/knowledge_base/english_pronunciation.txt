@@ -1,0 +1,62 @@
+## IPA Pronunciation Guide
+The International Phonetic Alphabet (IPA) represents the sounds of English.
+Vowel sounds:
+/iː/ as in "see", "tea", "feel"
+/ɪ/ as in "sit", "bit", "him"
+/e/ as in "bed", "red", "ten"
+/æ/ as in "cat", "hat", "man"
+/ɑː/ as in "car", "far", "hard"
+/ɒ/ as in "hot", "dot", "stop"
+/ɔː/ as in "saw", "four", "door"
+/ʊ/ as in "book", "look", "good"
+/uː/ as in "food", "moon", "blue"
+/ʌ/ as in "cup", "sun", "love"
+/ɜː/ as in "bird", "word", "learn"
+/ə/ (schwa) as in "about", "butter", "teacher" — the most common English sound.
+
+Consonant sounds:
+/p/ pin, /b/ bin, /t/ tin, /d/ din, /k/ kin, /g/ give
+/f/ fan, /v/ van, /θ/ thin, /ð/ this, /s/ sun, /z/ zoo
+/ʃ/ shoe, /ʒ/ measure, /tʃ/ church, /dʒ/ judge
+/m/ man, /n/ now, /ŋ/ sing, /l/ lip, /r/ red, /j/ yes, /w/ wet
+
+## Word Stress Rules
+1. Most two-syllable nouns and adjectives: stress on the FIRST syllable. (TAble, HAPpy, CAMera)
+2. Most two-syllable verbs: stress on the SECOND syllable. (reLAX, beGIN, deCIDE)
+3. Words ending in -tion, -sion, -ic, -ical: stress on the syllable BEFORE the suffix.
+   (inforMAtion, diVISion, ecoNOMic, biOLogical)
+4. Words ending in -ity, -ive, -ism: stress on the syllable BEFORE the suffix.
+   (acTIVity, CREative, OPtimism)
+5. Compound nouns: stress on the FIRST element. (BLACKbird, AIRport, SUNflower)
+6. Phrasal verbs: stress on the PARTICLE (preposition). (stand UP, turn ON, give IN)
+
+## Common Pronunciation Mistakes for Vietnamese Learners
+1. Final consonants: English final consonants must be fully pronounced.
+   - "dog" not "do", "night" not "nigh", "work" not "wor"
+2. Consonant clusters: English allows many consonants together.
+   - "string" /strɪŋ/, "strengths" /streŋkθs/
+3. The /æ/ sound: Vietnamese speakers often say /e/ instead.
+   - "cat" /kæt/ not /ket/
+4. /l/ vs /n/ at end of words: "feel" /fiːl/ not /fiːn/
+5. /v/ sound: must use teeth on lower lip, not like /b/.
+   - "very" /ˈveri/ not /ˈberi/
+6. /θ/ and /ð/ sounds: tongue between teeth.
+   - "think" /θɪŋk/, "this" /ðɪs/
+7. Word stress: Vietnamese is a tonal language; English uses stress not tone.
+
+## Linking and Connected Speech
+In natural English speech, words are connected together:
+1. Consonant + Vowel linking: "an apple" sounds like "a-napple". "Turn it off" = "tur-ni-toff".
+2. Consonant + Consonant: one sound may be dropped. "last time" = "las-time".
+3. Vowel + Vowel: a /j/ or /w/ sound is inserted. "go on" = "go-won", "see it" = "see-yit".
+4. Weak forms: function words are often reduced in speech.
+   - "and" = /ənd/ or /ən/, "to" = /tə/, "for" = /fə/, "can" = /kən/
+5. Elision: some sounds are dropped. "next day" = "nex-day", "government" = "goverment"
+
+## Intonation Patterns
+Rising intonation ↗: Yes/No questions, lists (non-final items), showing uncertainty.
+- "Are you coming?" ↗ / "I need milk ↗, eggs ↗, and butter ↘."
+Falling intonation ↘: Statements, wh-questions, commands, final items in a list.
+- "I'm going home." ↘ / "Where are you going?" ↘
+Fall-Rise intonation ↘↗: Showing contrast, reservation, or implying more.
+- "I like her ↘↗ (but there's something I don't like)."
