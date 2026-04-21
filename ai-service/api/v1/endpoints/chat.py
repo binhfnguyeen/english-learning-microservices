@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from core.redis_chat import RedisStorage as ChatStorage
 from services.progress_service import get_user_progress
@@ -6,47 +7,34 @@ from services.rag_service import rag_service
 
 router = APIRouter()
 
+MAX_CONTEXT_CHARS = 400
+
 def build_chat_messages(user_message, history, progress, is_speaking=False, context=""):
-    context_instruction = f"\n\nRELIABLE CONTEXT TO USE:\n{context}" if context else ""
+    if context and len(context) > MAX_CONTEXT_CHARS:
+        context = context[:MAX_CONTEXT_CHARS].rsplit(" ", 1)[0] + "..."
+
+    context_block = f"\nContext: {context}" if context else ""
 
     if is_speaking:
-        system_instruction = f"""
-            You are a calm, real human practicing English in a voice call.
-            STUDENT INFO: CEFR {progress.cefr}, Proficiency {progress.proficiency}.
-            
-            STRICT VOICE CHAT RULES:
-            1. Keep responses extremely short (1-2 sentences maximum).
-            2. Act normal and calm. DO NOT use emojis, exclamation marks, or excessive enthusiasm (e.g., NEVER say "Hey there!", "Wow!", or "😊").
-            3. Ask exactly ONE natural follow-up question to keep the conversation going. Do not ask multiple questions.
-            4. Gently correct grammar by naturally reusing the corrected phrase in your reply without pointing it out.
-            5. Match CEFR level and Proficiency.
-            6. Never respond in Vietnamese.
-            7. Base your knowledge ONLY on the provided context if relevant.{context_instruction}
-        """
+        system_instruction = (
+            f"You are a calm human in a voice call. "
+            f"CEFR {progress.cefr}, Proficiency {progress.proficiency}. "
+            f"Rules: 1-2 sentences max. No emojis. One follow-up question. "
+            f"Correct grammar gently. English only.{context_block}"
+        )
     else:
-        system_instruction = f"""
-            You are an English AI Tutor.
-            
-            Student level:
-            - CEFR: {progress.cefr}
-            - Proficiency: {progress.proficiency}
-            
-            Conversation rules:
-            - Keep answers short and natural.
-            - Encourage speaking.
-            - Correct grammar gently.
-            - Never respond in Vietnamese.
-            - Base your explanations on the following trusted context if relevant.{context_instruction}
-        """
+        system_instruction = (
+            f"You are an English AI Tutor. "
+            f"Student: CEFR {progress.cefr}, Proficiency {progress.proficiency}. "
+            f"Rules: Short natural answers. Encourage speaking. Correct grammar gently. English only.{context_block}"
+        )
 
-    messages = [{"role": "system", "content": system_instruction.strip()}]
+    messages = [{"role": "system", "content": system_instruction}]
 
-    # Thêm lịch sử chat vào ngữ cảnh
     if history:
-        for msg in history:
+        for msg in history[-6:]:
             messages.append({"role": msg["role"], "content": msg["content"]})
 
-    # Thêm tin nhắn mới nhất của user
     messages.append({"role": "user", "content": user_message})
 
     return messages
@@ -76,41 +64,42 @@ async def send_history(websocket, history):
 
 
 async def handle_chat_loop(websocket, user_id, token, namespace, is_speaking=False):
+    num_predict = 80 if is_speaking else 250
+
     while True:
         data = await websocket.receive_json()
         user_message = data.get("message")
         if not user_message:
             continue
 
-        progress = get_user_progress(user_id, token)
-        history = ChatStorage.get_history(namespace, user_id)
+        progress_task = asyncio.to_thread(get_user_progress, user_id, token)
+        history_task = asyncio.to_thread(ChatStorage.get_history, namespace, user_id)
+        rag_task = asyncio.to_thread(rag_service.retrieve_context, user_message, top_k=2)
 
-        retrieved_context = rag_service.retrieve_context(user_message, top_k=2)
+        progress, history, retrieved_context = await asyncio.gather(
+            progress_task, 
+            history_task, 
+            rag_task
+        )
 
-        # 1. Khởi tạo mảng hội thoại
         messages = build_chat_messages(user_message, history, progress, is_speaking, retrieved_context)
 
-        # 2. Báo hiệu cho Frontend bắt đầu stream (tạo bóng chat rỗng)
         await websocket.send_json({
             "type": "stream_start",
             "sender": "bot"
         })
 
-        # 3. Stream từng chunk chữ về Frontend
         full_ai_response = ""
-        async for chunk in stream_llm_async(messages):
+        async for chunk in stream_llm_async(messages, num_predict=num_predict):
             full_ai_response += chunk
             await websocket.send_json({
                 "type": "stream_chunk",
                 "text": chunk
             })
 
-        # 4. Khi hoàn tất, clean data và lưu vào Redis
         ai_response = clean_ai_response(full_ai_response)
         ChatStorage.push_message(namespace, user_id, "user", user_message)
         ChatStorage.push_message(namespace, user_id, "assistant", ai_response)
-
-        # 5. Báo Frontend đã hoàn thành để trigger TTS đọc giọng nói
         await websocket.send_json({
             "type": "stream_done",
             "text": ai_response
@@ -130,8 +119,6 @@ async def websocket_chat(websocket: WebSocket, user_id: str):
     try:
         history = ChatStorage.get_history(namespace, user_id)
         await send_history(websocket, history)
-
-        # Trạng thái is_speaking = False cho trợ lý gõ text thông thường
         await handle_chat_loop(websocket, user_id, token, namespace, is_speaking=False)
 
     except WebSocketDisconnect:
@@ -155,7 +142,6 @@ async def websocket_speaking(websocket: WebSocket, user_id: str):
         history = ChatStorage.get_history(namespace, user_id)
         await send_history(websocket, history)
 
-        # Trạng thái is_speaking = True cho trợ lý luyện nói
         await handle_chat_loop(websocket, user_id, token, namespace, is_speaking=True)
 
     except WebSocketDisconnect:

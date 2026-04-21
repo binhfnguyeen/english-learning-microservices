@@ -76,19 +76,17 @@ async def websocket_vocab(websocket: WebSocket, user_id: str):
                 cefr=progress.cefr
             )
 
-            # Gọi LLM (timeout 180s)
             raw_response = await asyncio.to_thread(
                 call_llm,
                 prompt,
                 "json",
-                180
+                180,
+                200
             )
 
             try:
                 cleaned = extract_json(raw_response)
                 data_json = json.loads(cleaned)
-
-                # Handle format chắc chắn
                 if "vocabulary_list" in data_json:
                     vocab_list = data_json["vocabulary_list"]
                 else:
@@ -104,7 +102,6 @@ async def websocket_vocab(websocket: WebSocket, user_id: str):
                 })
                 continue
 
-            # Gửi từng từ
             for item in vocab_list:
                 await websocket.send_json({
                     "type": "vocab",

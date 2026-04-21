@@ -64,8 +64,7 @@ class RAGService:
         res = requests.post(url, json=payload, timeout=30)
         res.raise_for_status()
         embedding = res.json().get("embedding")
-        if not embedding:
-            raise ValueError("Ollama returned empty embedding.")
+            
         return np.array([embedding], dtype=np.float32)
 
     # ─────────────────────── Chunking ────────────────────────
@@ -74,8 +73,6 @@ class RAGService:
     def chunk_text(text: str, chunk_size: int = 300, overlap: int = 50) -> list[str]:
         """
         Chia text dài thành các chunk nhỏ hơn để embedding chính xác hơn.
-        - chunk_size: số từ mỗi chunk
-        - overlap: số từ overlap giữa 2 chunk liền kề (để giữ ngữ cảnh)
         """
         words = text.split()
         chunks = []
@@ -92,7 +89,6 @@ class RAGService:
     def add_documents(self, docs: list[str], auto_chunk: bool = True):
         """
         Học tài liệu mới: chunk → tạo embedding → lưu vào FAISS.
-        - auto_chunk=True: tự động chia tài liệu dài thành các chunk nhỏ.
         """
         new_vectors = []
         new_docs = []
@@ -120,14 +116,12 @@ class RAGService:
     def add_document_from_file(self, file_path: str):
         """
         Đọc file text và index toàn bộ nội dung vào FAISS.
-        Hỗ trợ: .txt, .md (UTF-8)
         """
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Tách theo section (##) nếu có, giúp chunk theo chủ đề
         if "##" in content:
             sections = [s.strip() for s in content.split("##") if s.strip()]
             docs = ["## " + s for s in sections]
@@ -139,11 +133,9 @@ class RAGService:
 
     # ─────────────────────── Retrieval ────────────────────────
 
-    def retrieve_context(self, query: str, top_k: int = 3, score_threshold: float = 1.5) -> str:
+    def retrieve_context(self, query: str, top_k: int = 3, score_threshold: float = 600.0) -> str:
         """
         Tìm kiếm ngữ cảnh liên quan nhất với câu hỏi của user.
-        - top_k: số kết quả trả về tối đa
-        - score_threshold: chỉ lấy kết quả nếu khoảng cách L2 < threshold (càng nhỏ càng liên quan)
         """
         if self.index.ntotal == 0:
             return ""
@@ -151,11 +143,10 @@ class RAGService:
         try:
             query_emb = self.get_embedding(query)
             distances, indices = self.index.search(query_emb, min(top_k, self.index.ntotal))
-
+            
             results = []
             for dist, idx in zip(distances[0], indices[0]):
                 if idx != -1 and idx < len(self.documents):
-                    # Lọc theo score_threshold để tránh trả về context không liên quan
                     if dist <= score_threshold:
                         results.append(self.documents[idx])
 
@@ -165,12 +156,13 @@ class RAGService:
             return ""
 
     def get_stats(self) -> dict:
-        """Trả về thống kê RAG index."""
+        """Trả về thống kê RAG index và 5 doc đầu để verify."""
         return {
             "total_vectors": self.index.ntotal,
             "total_documents": len(self.documents),
             "dimension": self.dimension,
             "embed_model": self.embed_model,
+            "document_previews": [d[:80] + "..." for d in self.documents[:5]]
         }
 
 
