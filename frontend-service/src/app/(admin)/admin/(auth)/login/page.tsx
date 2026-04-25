@@ -30,9 +30,12 @@ export default function AdminLogin() {
             const res = await Apis.post(endpoints["login"], { ...user });
 
             if (res.data.code == 1000) {
-                const token = res.data.result.token;
-                if (token) {
-                    Cookies.set("accessToken", token, { path: "/" });
+                const { accessToken, refreshToken } = res.data.result;
+                if (accessToken) {
+                    Cookies.set("accessToken", accessToken, { path: "/" });
+                }
+                if (refreshToken) {
+                    Cookies.set("refreshToken", refreshToken, { path: "/" });
                 }
 
                 const profile = await authApis.get(endpoints["profile"]);

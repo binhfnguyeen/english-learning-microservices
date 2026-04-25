@@ -23,6 +23,7 @@ const MyUserReducer = (current: User | null, action: Action): User | null => {
       return action.payload;
     case "logout":
       Cookies.remove("accessToken");
+      Cookies.remove("refreshToken");
       return null;
     default:
       return current;

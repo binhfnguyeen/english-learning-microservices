@@ -1,5 +1,7 @@
 const endpoints = {
     login:"/login",
+    refresh: "/refresh",
+    logout: "/logout",
     profile:"/secure/profile",
     topics:"/topics",
     register: "/users",

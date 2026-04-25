@@ -68,6 +68,8 @@ public class SecurityConfig {
                         // ========================
                         // 5. DEFAULT
                         // ========================
+                        .requestMatchers(HttpMethod.POST, "/api/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/logout").permitAll()
                         .anyRequest().authenticated()
                 );
 

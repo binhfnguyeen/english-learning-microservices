@@ -9,6 +9,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthenticateDto {
-    String token;
+    String accessToken;
+    String refreshToken;
+    String tokenType = "Bearer";
     boolean authenticated;
 }

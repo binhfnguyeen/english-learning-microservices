@@ -5,9 +5,11 @@ import com.heulwen.userservice.exception.AppException;
 import com.heulwen.userservice.exception.ErrorCode;
 import com.heulwen.userservice.exception.ResourceNotFoundException;
 import com.heulwen.userservice.form.AuthenticateForm;
+import com.heulwen.userservice.model.RefreshToken;
 import com.heulwen.userservice.model.User;
 import com.heulwen.userservice.repository.UserRepository;
 import com.heulwen.userservice.service.AuthenticateService;
+import com.heulwen.userservice.service.RefreshTokenService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -27,34 +29,47 @@ import java.util.Date;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticateServiceImpl implements AuthenticateService {
-    UserRepository userRepository;
-    PasswordEncoder passwordEncoder; // Inject Bean từ SecurityConfig
 
-    @NonFinal
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
+
     @Value("${spring.jwt.signerkey}")
     protected String SIGNER_KEY;
 
+    @Value("${spring.jwt.access-token-expiration-ms}")
+    private long accessTokenExpirationMs;
+
     @Override
     public AuthenticateDto authenticate(AuthenticateForm form) {
+
         User user = userRepository.findByUsername(form.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        // 2. Check Password
-        boolean authenticated = passwordEncoder.matches(form.getPassword(), user.getPassword());
+        boolean authenticated =
+                passwordEncoder.matches(form.getPassword(), user.getPassword());
 
         if (!authenticated) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        // 3. Generate Token
-        var token = generateToken(user);
+        String accessToken = generateToken(user);
+
+        RefreshToken refreshToken =
+                refreshTokenService.createRefreshToken(user.getId());
 
         return AuthenticateDto.builder()
-                .token(token)
-                .authenticated(authenticated)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken.getToken())
+                .authenticated(true)
+                .tokenType("Bearer")
                 .build();
+    }
+
+    @Override
+    public String generateAccessTokenForRefresh(User user) {
+        return generateToken(user);
     }
 
     private String generateToken(User user) {
@@ -64,9 +79,8 @@ public class AuthenticateServiceImpl implements AuthenticateService {
                 .subject(user.getUsername())
                 .issuer("heulwen.tech")
                 .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
-                ))
+                .expirationTime(new Date(System.currentTimeMillis() + accessTokenExpirationMs))
+                .jwtID(java.util.UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
 

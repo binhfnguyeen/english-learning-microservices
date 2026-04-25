@@ -4,10 +4,14 @@ import com.heulwen.userservice.dto.ApiDto;
 import com.heulwen.userservice.dto.AuthenticateDto;
 import com.heulwen.userservice.dto.UserDto;
 import com.heulwen.userservice.form.AuthenticateForm;
+import com.heulwen.userservice.form.LogoutForm;
+import com.heulwen.userservice.form.RefreshTokenForm;
 import com.heulwen.userservice.mapper.UserMapper;
+import com.heulwen.userservice.model.RefreshToken;
 import com.heulwen.userservice.model.User;
 import com.heulwen.userservice.service.AuthenticateService;
 import com.heulwen.userservice.service.OtpService;
+import com.heulwen.userservice.service.RefreshTokenService;
 import com.heulwen.userservice.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +30,7 @@ import java.util.Map;
 @Slf4j
 public class AuthenticationController {
     AuthenticateService authenticateService;
+    RefreshTokenService refreshTokenService;
     UserService userService;
     OtpService otpService;
 
@@ -71,5 +76,45 @@ public class AuthenticationController {
     ) {
         otpService.verifyOtpAndResetPassword(email, otp, newPassword);
         return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
+    }
+
+    @PostMapping("/refresh")
+    public AuthenticateDto refreshToken(
+            @RequestBody RefreshTokenForm request
+    ) {
+
+        String requestToken = request.getRefreshToken();
+
+        RefreshToken refreshToken = refreshTokenService
+                .findByToken(requestToken);
+
+        refreshTokenService.verifyExpiration(refreshToken);
+
+        User user = refreshToken.getUser();
+
+        String accessToken =
+                authenticateService.generateAccessTokenForRefresh(user);
+
+        return AuthenticateDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(requestToken)
+                .authenticated(true)
+                .tokenType("Bearer")
+                .build();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            @RequestBody LogoutForm request
+    ) {
+
+        RefreshToken token =
+                refreshTokenService.findByToken(request.getRefreshToken());
+
+        refreshTokenService.deleteByUserId(
+                token.getUser().getId()
+        );
+
+        return ResponseEntity.ok("Logged out successfully");
     }
 }

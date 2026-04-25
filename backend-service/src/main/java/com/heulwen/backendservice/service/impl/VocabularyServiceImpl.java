@@ -9,6 +9,7 @@ import com.heulwen.backendservice.form.VocabularyCreateForm;
 import com.heulwen.backendservice.mapper.VocabularyMapper;
 import com.heulwen.backendservice.model.Vocabulary;
 import com.heulwen.backendservice.repository.VocabularyRepository;
+import com.heulwen.backendservice.service.AiAsyncService;
 import com.heulwen.backendservice.service.VocabularyService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +32,16 @@ public class VocabularyServiceImpl implements VocabularyService {
 
     VocabularyRepository vocabularyRepository;
     Cloudinary cloudinary;
+    AiAsyncService aiAsyncService;
 
     @Override
     @Transactional
     public VocabularyDto createVocabulary(VocabularyCreateForm form, MultipartFile image) {
         Vocabulary vocab = VocabularyMapper.map(form);
         uploadImageIfExists(vocab, image);
-        return VocabularyMapper.map(vocabularyRepository.save(vocab));
+        Vocabulary savedVocabulary = vocabularyRepository.save(vocab);
+        aiAsyncService.syncVocabToAi(savedVocabulary);
+        return VocabularyMapper.map(savedVocabulary);
     }
 
     @Override

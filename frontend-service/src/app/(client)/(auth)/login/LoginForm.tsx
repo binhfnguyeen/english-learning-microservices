@@ -28,8 +28,9 @@ export default function LoginForm() {
             const res = await Apis.post(endpoints["login"], { ...user });
 
             if (res.data.code == 1000) {
-                const token = res.data.result.token;
-                Cookies.set("accessToken", token, { path: "/", sameSite: "lax" });
+                const { accessToken, refreshToken } = res.data.result;
+                Cookies.set("accessToken", accessToken, { path: "/", sameSite: "lax" });
+                Cookies.set("refreshToken", refreshToken, { path: "/", sameSite: "lax" });
 
                 const profile = await authApis.get(endpoints["profile"]);
                 dispatch({ type: "login", payload: profile.data.result });
