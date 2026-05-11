@@ -37,11 +37,13 @@ def build_vocab_prompt(topic: str, cefr: str):
 
 
 def extract_json(text: str):
+    if not text:
+        return ""
     start = text.find("{")
-    end = text.rfind("}") + 1
-
-    if start != -1 and end != -1:
-        return text[start:end]
+    end = text.rfind("}")
+    
+    if start != -1 and end != -1 and end > start:
+        return text[start:end+1]
 
     return text
 
@@ -69,48 +71,62 @@ async def websocket_vocab(websocket: WebSocket, user_id: str):
                 })
                 continue
 
-            progress = get_user_progress(user_id, token)
-
-            prompt = build_vocab_prompt(
-                topic=topic,
-                cefr=progress.cefr
-            )
-
-            raw_response = await asyncio.to_thread(
-                call_llm,
-                prompt,
-                "json",
-                180,
-                200
-            )
-
             try:
-                cleaned = extract_json(raw_response)
-                data_json = json.loads(cleaned)
-                if "vocabulary_list" in data_json:
-                    vocab_list = data_json["vocabulary_list"]
-                else:
-                    vocab_list = []
+                progress = get_user_progress(user_id, token)
 
+                prompt = build_vocab_prompt(
+                    topic=topic,
+                    cefr=progress.cefr
+                )
+
+                raw_response = await asyncio.to_thread(
+                    call_llm,
+                    prompt,
+                    "json",
+                    600,
+                    500
+                )
+
+                if raw_response == "Sorry, the system is busy.":
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "AI service is currently busy. Please try again later."
+                    })
+                    continue
+
+                try:
+                    cleaned = extract_json(raw_response)
+                    data_json = json.loads(cleaned)
+                    if "vocabulary_list" in data_json:
+                        vocab_list = data_json["vocabulary_list"]
+                    else:
+                        vocab_list = []
+
+                except Exception as e:
+                    print("JSON ERROR:", e)
+                    print("RAW RESPONSE:", raw_response)
+
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "AI returned invalid format. Retrying might help."
+                    })
+                    continue
+
+                for item in vocab_list:
+                    await websocket.send_json({
+                        "type": "vocab",
+                        "data": item
+                    })
+
+                await websocket.send_json({
+                    "type": "done"
+                })
             except Exception as e:
-                print("JSON ERROR:", e)
-                print("RAW RESPONSE:", raw_response)
-
+                print(f"Error processing vocab request: {e}")
                 await websocket.send_json({
                     "type": "error",
-                    "message": "AI returned invalid JSON"
+                    "message": f"An error occurred: {str(e)}"
                 })
-                continue
-
-            for item in vocab_list:
-                await websocket.send_json({
-                    "type": "vocab",
-                    "data": item
-                })
-
-            await websocket.send_json({
-                "type": "done"
-            })
 
     except WebSocketDisconnect:
         print(f"User {user_id} disconnected")

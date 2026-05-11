@@ -61,7 +61,7 @@ class RAGService:
             "model": self.embed_model,
             "prompt": text
         }
-        res = requests.post(url, json=payload, timeout=30)
+        res = requests.post(url, json=payload, timeout=300)
         res.raise_for_status()
         embedding = res.json().get("embedding")
             

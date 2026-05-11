@@ -43,6 +43,7 @@ export default function Topics() {
     const [hasMore, setHasMore] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [showModal, setShowModal] = useState(false);
+    const [isVocabLoading, setIsVocabLoading] = useState(false);
 
     const loadTopics = async () => {
         let url = `${endpoints["topics"]}?page=${page}`;
@@ -144,7 +145,11 @@ export default function Topics() {
                             e.currentTarget.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.3)";
                         }}
                     >
-                        <IconSparkles /> Học theo lộ trình cá nhân
+                        {isVocabLoading ? (
+                            <><div className="spinner-border spinner-border-sm" role="status"></div> AI đang chạy...</>
+                        ) : (
+                            <><IconSparkles /> Học theo lộ trình cá nhân</>
+                        )}
                     </Button>
                 </div>
             </div>
@@ -214,7 +219,7 @@ export default function Topics() {
                 </div>
             )}
 
-            <SuggestVocab show={showModal} onHide={() => setShowModal(false)} />
+            <SuggestVocab show={showModal} onHide={() => setShowModal(false)} onLoadingChange={setIsVocabLoading} />
         </Container>
     );
 }

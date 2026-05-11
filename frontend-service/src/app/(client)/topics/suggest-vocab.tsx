@@ -10,6 +10,7 @@ import VocabQuizGame from "@/app/(client)/topics/vocab-quiz-game";
 interface Props {
     show: boolean;
     onHide: () => void;
+    onLoadingChange?: (loading: boolean) => void;
 }
 
 interface VocabItem {
@@ -18,7 +19,7 @@ interface VocabItem {
     example: string;
 }
 
-export default function SuggestVocab({ show, onHide }: Props) {
+export default function SuggestVocab({ show, onHide, onLoadingChange }: Props) {
     const context = useContext(UserContext);
     const user = context?.user;
 
@@ -28,20 +29,13 @@ export default function SuggestVocab({ show, onHide }: Props) {
 
     const { speak, isSpeaking } = useTTS();
 
-    useEffect(() => {
-        if (!show) {
-            setTopicInput("");
-            setGeneratedVocabs([]);
-            setWsLoading(false);
-        }
-    }, [show]);
-
     const generateVocab = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         if (!topicInput.trim() || !user) return;
 
         setGeneratedVocabs([]);
         setWsLoading(true);
+        if (onLoadingChange) onLoadingChange(true);
 
         const token = Cookies.get("accessToken");
         if (!token) return;
@@ -56,12 +50,14 @@ export default function SuggestVocab({ show, onHide }: Props) {
             if (data.type === "done" || data.type === "error") {
                 if (data.type === "error") alert(data.message);
                 setWsLoading(false);
+                if (onLoadingChange) onLoadingChange(false);
                 ws.close();
             }
         };
 
         ws.onerror = () => {
             setWsLoading(false);
+            if (onLoadingChange) onLoadingChange(false);
             ws.close();
         };
     };

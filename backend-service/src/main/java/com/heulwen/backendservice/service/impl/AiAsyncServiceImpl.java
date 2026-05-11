@@ -27,18 +27,18 @@ public class AiAsyncServiceImpl implements AiAsyncService {
     public void syncVocabToAi(Vocabulary vocab) {
         try {
             String url = aiServiceUrl + "/api/ai/rag/ingest/vocab";
-            
+
             VocabDto data = VocabDto.builder()
                     .word(vocab.getWord())
                     .meaning(vocab.getMeaning())
-                    .example(vocab.getPartOfSpeech())
-                    .cefr(vocab.getLevel())
+                    .partOfSpeech(vocab.getPartOfSpeech())
+                    .level(vocab.getLevel())
                     .build();
-                    
+
             VocabIngestForm request = VocabIngestForm.builder()
                     .items(List.of(data))
                     .build();
-                    
+
             restTemplate.postForEntity(url, request, String.class);
 
             log.info("Successfully synced vocab '{}' to AI RAG index", vocab.getWord());
