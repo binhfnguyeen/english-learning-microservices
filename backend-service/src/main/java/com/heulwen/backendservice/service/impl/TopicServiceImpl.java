@@ -18,6 +18,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ public class TopicServiceImpl implements TopicService {
 
     // CREATE / UPDATE
     @Override
+    @Transactional
     public TopicDto addOrUpdateTopic(Long id, TopicCreateForm form) {
         Topic topic;
 
@@ -52,6 +54,7 @@ public class TopicServiceImpl implements TopicService {
 
     // GET LIST
     @Override
+    @Transactional(readOnly = true)
     public Page<TopicDto> getTopics(String keyword, Pageable pageable) {
         Page<Topic> topicResult;
 
@@ -69,6 +72,7 @@ public class TopicServiceImpl implements TopicService {
 
     // GET DETAIL
     @Override
+    @Transactional(readOnly = true)
     public TopicDto getTopicById(Long id) {
         Topic topic = topicRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
@@ -80,12 +84,14 @@ public class TopicServiceImpl implements TopicService {
 
     // DELETE
     @Override
+    @Transactional
     public void deleteTopic(Long id) {
         topicRepository.deleteById(id);
     }
 
     // ADD VOCAB
     @Override
+    @Transactional
     public void addVocabToTopic(Long topicId, Long vocabId) {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));
@@ -105,6 +111,7 @@ public class TopicServiceImpl implements TopicService {
 
     // GET VOCAB IN TOPIC
     @Override
+    @Transactional(readOnly = true)
     public Page<VocabularyDto> getVocabulariesWithTopic(Long topicId, String keyword, Pageable pageable) {
         String searchKeyword = (keyword == null) ? "" : keyword;
 
@@ -116,6 +123,7 @@ public class TopicServiceImpl implements TopicService {
 
     // GET VOCAB NOT IN TOPIC
     @Override
+    @Transactional(readOnly = true)
     public List<VocabularyDto> getVocabNotInTopic(Long topicId, String keyword) {
         String searchKeyword = (keyword == null) ? "" : keyword;
 
@@ -127,6 +135,7 @@ public class TopicServiceImpl implements TopicService {
 
     // REMOVE VOCAB
     @Override
+    @Transactional
     public void removeVocabFromTopic(Long topicId, Long vocabId) {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new AppException(ErrorCode.TOPIC_NOT_FOUND));

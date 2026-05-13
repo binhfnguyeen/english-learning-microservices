@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Alert, Button, Card, Container, Form, Nav, Spinner, InputGroup } from "react-bootstrap";
+import { Lightbulb } from "react-bootstrap-icons";
+import PublicApiSuggestVocab from "./suggest-vocabulary";
 
 interface Vocabulary {
     id: number;
@@ -23,6 +25,17 @@ export default function AddVocab() {
     const [keyword, setKeyword] = useState("");
     const [loading, setLoading] = useState(false);
     const [msg, setMsg] = useState("");
+    const [topicName, setTopicName] = useState("");
+    const [showSuggestModal, setShowSuggestModal] = useState(false);
+
+    const loadTopic = async () => {
+        try {
+            const res = await authApis.get(endpoints["topic"](id));
+            setTopicName(res.data.result.name);
+        } catch (err) {
+            console.error("Error loading topic:", err);
+        }
+    };
 
     const loadVocabularies = async () => {
         try {
@@ -39,6 +52,10 @@ export default function AddVocab() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        loadTopic();
+    }, [id]);
 
     useEffect(() => {
         const timer = setTimeout(loadVocabularies, 500);
@@ -75,12 +92,19 @@ export default function AddVocab() {
 
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 className="fw-bold">Chọn từ để thêm vào Topic</h2>
+                <Button
+                    variant="info"
+                    className="text-white fw-bold d-flex align-items-center gap-2"
+                    onClick={() => setShowSuggestModal(true)}
+                >
+                    <Lightbulb /> Gợi ý từ vựng
+                </Button>
             </div>
 
             <InputGroup className="mb-3">
                 <Form.Control
                     type="text"
-                    placeholder="Tìm kiếm từ vựng..."
+                    placeholder="Tìm kiếm từ vựng trong hệ thống..."
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
                 />
@@ -123,8 +147,16 @@ export default function AddVocab() {
             )}
 
             {vocabularies.length === 0 && !loading && (
-                <Alert variant="info" className="mt-3">Không còn từ nào để thêm</Alert>
+                <Alert variant="info" className="mt-3">Không còn từ nào để thêm trong hệ thống</Alert>
             )}
+
+            <PublicApiSuggestVocab
+                show={showSuggestModal}
+                onHide={() => setShowSuggestModal(false)}
+                topicId={id}
+                topicName={topicName}
+                onSuccess={loadVocabularies}
+            />
 
             <style jsx>{`
                 .hover-card {

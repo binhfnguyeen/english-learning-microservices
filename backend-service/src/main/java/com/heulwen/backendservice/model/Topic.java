@@ -1,10 +1,7 @@
 package com.heulwen.backendservice.model;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -16,15 +13,18 @@ import java.util.List;
 @Entity
 @Table(name = "topics")
 @EntityListeners(AuditingEntityListener.class)
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Topic {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "id")
+    @EqualsAndHashCode.Include
     Long id;
 
     @Column(name = "name")
@@ -34,6 +34,7 @@ public class Topic {
     String description;
 
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     List<Test> tests;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -42,6 +43,7 @@ public class Topic {
             joinColumns = @JoinColumn(name = "topic_id"),
             inverseJoinColumns = @JoinColumn(name = "vocabulary_id")
     )
+    @ToString.Exclude
     List<Vocabulary> vocabularies;
 
     @CreatedDate

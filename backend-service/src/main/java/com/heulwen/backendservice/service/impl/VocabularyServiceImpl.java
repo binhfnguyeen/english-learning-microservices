@@ -7,6 +7,7 @@ import com.heulwen.backendservice.exception.AppException;
 import com.heulwen.backendservice.exception.ErrorCode;
 import com.heulwen.backendservice.form.VocabularyCreateForm;
 import com.heulwen.backendservice.mapper.VocabularyMapper;
+import com.heulwen.backendservice.model.Topic;
 import com.heulwen.backendservice.model.Vocabulary;
 import com.heulwen.backendservice.repository.VocabularyRepository;
 import com.heulwen.backendservice.service.AiAsyncService;
@@ -55,6 +56,7 @@ public class VocabularyServiceImpl implements VocabularyService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<VocabularyDto> getVocabularies(String keyword, Pageable pageable) {
         Page<Vocabulary> pageResult;
 
@@ -67,6 +69,7 @@ public class VocabularyServiceImpl implements VocabularyService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public VocabularyDto getVocabularyById(Long id) {
         Vocabulary vocab = vocabularyRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
@@ -76,15 +79,18 @@ public class VocabularyServiceImpl implements VocabularyService {
     @Override
     @Transactional
     public void deleteVocabulary(Long id) {
-        if (!vocabularyRepository.existsById(id)) {
-            throw new AppException(ErrorCode.VOCAB_NOT_FOUND);
+        Vocabulary vocab = vocabularyRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.VOCAB_NOT_FOUND));
+
+        if (vocab.getTopics() != null) {
+            for (Topic topic : vocab.getTopics()) {
+                topic.getVocabularies().remove(vocab);
+            }
         }
-        vocabularyRepository.deleteById(id);
+
+        vocabularyRepository.delete(vocab);
     }
 
-    /**
-     * Helper method để upload ảnh lên Cloudinary
-     */
     private void uploadImageIfExists(Vocabulary vocab, MultipartFile image) {
         if (image != null && !image.isEmpty()) {
             try {

@@ -8,7 +8,12 @@ import { Alert, Button, Card, Col, Container, Form, Nav, Row, Spinner } from "re
 export default function AddVocabs() {
     const imageRef = useRef<HTMLInputElement>(null);
     const [word, setWord] = useState<string>("");
+    const [wordSuggestions, setWordSuggestions] = useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [fetchingDetails, setFetchingDetails] = useState(false);
     const [meaning, setMeaning] = useState<string>("");
+    const [meaningSuggestions, setMeaningSuggestions] = useState<string[]>([]);
+    const [showMeaningSuggestions, setShowMeaningSuggestions] = useState(false);
     const [partOfSpeech, setPartOfSpeech] = useState<string>("");
     const [level, setLevel] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
@@ -18,6 +23,99 @@ export default function AddVocabs() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             setPreviewImage(URL.createObjectURL(e.target.files[0]));
+        }
+    };
+
+    const fetchWordSuggestions = async (text: string) => {
+        if (!text.trim()) {
+            setWordSuggestions([]);
+            return;
+        }
+        try {
+            const res = await fetch(`https://api.datamuse.com/sug?s=${encodeURIComponent(text)}&max=5`);
+            if (res.ok) {
+                const data = await res.json();
+                setWordSuggestions(data.map((d: { word: string }) => d.word));
+                setShowSuggestions(true);
+            }
+        } catch (err) {
+            console.error("Suggestion error:", err);
+        }
+    };
+
+    const handleWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setWord(val);
+        fetchWordSuggestions(val);
+    };
+
+    const handleSelectSuggestion = async (selectedWord: string) => {
+        setWord(selectedWord);
+        setShowSuggestions(false);
+        setFetchingDetails(true);
+
+        try {
+            // Auto-estimate CEFR Level based on true frequency
+            const freqRes = await fetch(`https://api.datamuse.com/words?sp=${encodeURIComponent(selectedWord)}&md=f&max=1`);
+            if (freqRes.ok) {
+                const freqData = await freqRes.json();
+                if (freqData.length > 0 && freqData[0].tags) {
+                    const fTag = freqData[0].tags.find((t: string) => t.startsWith('f:'));
+                    if (fTag) {
+                        const freq = parseFloat(fTag.split(':')[1]);
+                        let autoLevel = "C2";
+                        if (freq > 100) autoLevel = "A1";
+                        else if (freq > 50) autoLevel = "A2";
+                        else if (freq > 10) autoLevel = "B1";
+                        else if (freq > 3) autoLevel = "B2";
+                        else if (freq > 0.5) autoLevel = "C1";
+                        setLevel(autoLevel);
+                    }
+                }
+            }
+
+            // Auto-fill Meaning and populate suggestions from Google Translate API
+            const transRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&dt=bd&q=${encodeURIComponent(selectedWord)}`);
+            if (transRes.ok) {
+                const transData = await transRes.json();
+                
+                // Set primary meaning
+                if (transData[0] && transData[0][0] && transData[0][0][0]) {
+                    setMeaning(transData[0][0][0].toLowerCase());
+                }
+
+                // Extract multiple dictionary definitions
+                let allMeanings: string[] = [];
+                if (transData[1] && transData[1].length > 0) {
+                    transData[1].forEach((posGroup: any) => {
+                        if (posGroup[1] && posGroup[1].length > 0) {
+                            allMeanings = [...allMeanings, ...posGroup[1]];
+                        }
+                    });
+                }
+                
+                if (allMeanings.length > 0) {
+                    setMeaningSuggestions(Array.from(new Set(allMeanings)));
+                } else if (transData[0] && transData[0][0] && transData[0][0][0]) {
+                    setMeaningSuggestions([transData[0][0][0].toLowerCase()]);
+                } else {
+                    setMeaningSuggestions([]);
+                }
+            }
+
+            // Auto-fill Part of Speech
+            const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${selectedWord}`);
+            if (dictRes.ok) {
+                const dictData = await dictRes.json();
+                if (dictData[0] && dictData[0].meanings[0]) {
+                    const pos = dictData[0].meanings[0].partOfSpeech.toLowerCase();
+                    setPartOfSpeech(pos);
+                }
+            }
+        } catch (err) {
+            console.error("Auto-fill error:", err);
+        } finally {
+            setFetchingDetails(false);
         }
     };
 
@@ -71,7 +169,9 @@ export default function AddVocabs() {
 
             <Card className="shadow-sm border-0 rounded-3">
                 <Card.Body>
-                    <h3 className="mb-4 fw-bold text-primary">Thêm từ vựng</h3>
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                        <h3 className="mb-0 fw-bold text-primary">Thêm từ vựng</h3>
+                    </div>
 
                     {msg && (
                         <Alert
@@ -86,39 +186,87 @@ export default function AddVocabs() {
                     <Form onSubmit={addVocab}>
                         <Row className="mb-3">
                             <Col md={6}>
-                                <Form.Group>
+                                <Form.Group className="position-relative">
                                     <Form.Label className="fw-semibold">Từ</Form.Label>
                                     <Form.Control
                                         type="text"
                                         placeholder="Nhập từ..."
                                         value={word}
-                                        onChange={(e) => setWord(e.target.value)}
+                                        onChange={handleWordChange}
+                                        onFocus={() => { if (wordSuggestions.length > 0) setShowSuggestions(true); }}
+                                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                         required
                                     />
+                                    {showSuggestions && wordSuggestions.length > 0 && (
+                                        <div className="position-absolute w-100 bg-white border rounded shadow-sm mt-1" style={{ zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}>
+                                            {wordSuggestions.map((suggestion, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="p-2 cursor-pointer hover-bg-light border-bottom text-dark"
+                                                    style={{ cursor: 'pointer' }}
+                                                    onMouseDown={() => handleSelectSuggestion(suggestion)}
+                                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                                                >
+                                                    {suggestion}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {fetchingDetails && <Form.Text className="text-info"><Spinner size="sm" animation="border" className="me-1" /> Đang tự động điền thông tin...</Form.Text>}
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
-                                <Form.Group>
+                                <Form.Group className="position-relative">
                                     <Form.Label className="fw-semibold">Nghĩa của từ</Form.Label>
                                     <Form.Control
                                         type="text"
                                         placeholder="Nhập nghĩa..."
                                         value={meaning}
                                         onChange={(e) => setMeaning(e.target.value)}
+                                        onFocus={() => { if (meaningSuggestions.length > 0) setShowMeaningSuggestions(true); }}
+                                        onBlur={() => setTimeout(() => setShowMeaningSuggestions(false), 200)}
                                         required
                                     />
+                                    {showMeaningSuggestions && meaningSuggestions.length > 0 && (
+                                        <div className="position-absolute w-100 bg-white border rounded shadow-sm mt-1" style={{ zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}>
+                                            {meaningSuggestions.map((suggestion, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="p-2 cursor-pointer hover-bg-light border-bottom text-dark"
+                                                    style={{ cursor: 'pointer' }}
+                                                    onMouseDown={() => {
+                                                        setMeaning(suggestion);
+                                                        setShowMeaningSuggestions(false);
+                                                    }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                                                >
+                                                    {suggestion}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label className="fw-semibold">Loại từ</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Danh từ, Động từ..."
+                                    <Form.Select
                                         value={partOfSpeech}
                                         onChange={(e) => setPartOfSpeech(e.target.value)}
                                         required
-                                    />
+                                    >
+                                        <option value="">-- Chọn loại từ --</option>
+                                        <option value="noun">Noun (Danh từ)</option>
+                                        <option value="verb">Verb (Động từ)</option>
+                                        <option value="adjective">Adjective (Tính từ)</option>
+                                        <option value="adverb">Adverb (Trạng từ)</option>
+                                        <option value="pronoun">Pronoun (Đại từ)</option>
+                                        <option value="preposition">Preposition (Giới từ)</option>
+                                        <option value="conjunction">Conjunction (Liên từ)</option>
+                                        <option value="interjection">Interjection (Thán từ)</option>
+                                    </Form.Select>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
