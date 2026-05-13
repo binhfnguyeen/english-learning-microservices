@@ -4,7 +4,7 @@ import MySpinner from "@/components/MySpinner";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Alert, Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 
 interface Topic {
@@ -21,7 +21,7 @@ export default function Topics() {
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
 
-    const loadTopics = async () => {
+    const loadTopics = useCallback(async () => {
         let url = `${endpoints["topics"]}?page=${page}`;
         if (keyword) url += `&keyword=${keyword}`;
 
@@ -41,7 +41,7 @@ export default function Topics() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, keyword]);
 
     useEffect(() => {
         setLoading(true);
@@ -52,7 +52,7 @@ export default function Topics() {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [page, keyword]);
+    }, [page, keyword, hasMore, loadTopics]);
 
     useEffect(() => {
         setPage(0);

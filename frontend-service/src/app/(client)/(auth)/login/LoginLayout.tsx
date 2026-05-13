@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React from "react";
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {
@@ -19,11 +20,13 @@ export default function LoginLayout({ children }: { children: React.ReactNode })
         <div className="row d-flex justify-content-center align-items-center h-100">
 
           <div className="col-md-9 col-lg-6 col-xl-5 text-center">
-            <img
+            <Image
               src="/template/EngLearnLogo.png"
+              width={350}
+              height={350}
               className="img-fluid"
               alt="EngLearn Logo"
-              style={{ maxWidth: "350px" }}
+              style={{ maxWidth: "350px", height: "auto" }}
             />
           </div>
 

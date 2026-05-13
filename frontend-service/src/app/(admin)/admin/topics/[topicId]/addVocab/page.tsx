@@ -1,10 +1,9 @@
 "use client"
-import Apis from "@/configs/Apis";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Button, Card, Container, Form, Nav, Spinner, InputGroup } from "react-bootstrap";
 import { Lightbulb } from "react-bootstrap-icons";
 import PublicApiSuggestVocab from "./suggest-vocabulary";
@@ -28,16 +27,16 @@ export default function AddVocab() {
     const [topicName, setTopicName] = useState("");
     const [showSuggestModal, setShowSuggestModal] = useState(false);
 
-    const loadTopic = async () => {
+    const loadTopic = useCallback(async () => {
         try {
             const res = await authApis.get(endpoints["topic"](id));
             setTopicName(res.data.result.name);
         } catch (err) {
             console.error("Error loading topic:", err);
         }
-    };
+    }, [id]);
 
-    const loadVocabularies = async () => {
+    const loadVocabularies = useCallback(async () => {
         try {
             setLoading(true);
             let url = `${endpoints["vocabNotInTopic"](id)}`;
@@ -51,16 +50,16 @@ export default function AddVocab() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, keyword]);
 
     useEffect(() => {
         loadTopic();
-    }, [id]);
+    }, [id, loadTopic]);
 
     useEffect(() => {
         const timer = setTimeout(loadVocabularies, 500);
         return () => clearTimeout(timer);
-    }, [keyword]);
+    }, [keyword, loadVocabularies]);
 
     const handleAddVocab = async (vocabId: number) => {
         try {

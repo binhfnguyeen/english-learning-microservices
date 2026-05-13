@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
@@ -87,7 +88,7 @@ export default function AddVocabs() {
                 // Extract multiple dictionary definitions
                 let allMeanings: string[] = [];
                 if (transData[1] && transData[1].length > 0) {
-                    transData[1].forEach((posGroup: any) => {
+                    transData[1].forEach((posGroup: [string, string[]]) => {
                         if (posGroup[1] && posGroup[1].length > 0) {
                             allMeanings = [...allMeanings, ...posGroup[1]];
                         }
@@ -298,10 +299,13 @@ export default function AddVocabs() {
                                     />
                                     {previewImage && (
                                         <div className="mt-2">
-                                            <img
+                                            <Image
                                                 src={previewImage}
                                                 alt="preview"
-                                                style={{ width: "100px", height: "auto", borderRadius: "8px" }}
+                                                width={100}
+                                                height={100}
+                                                style={{ height: "auto", borderRadius: "8px" }}
+                                                unoptimized
                                             />
                                         </div>
                                     )}

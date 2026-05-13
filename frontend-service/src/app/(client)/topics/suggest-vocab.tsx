@@ -1,6 +1,6 @@
 "use client";
 import { Button, Card, Form, Modal, Spinner, Row, Col, Badge } from "react-bootstrap";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import UserContext from "@/configs/UserContext";
 import Cookies from "js-cookie";
 import { VolumeUp, Magic, LightbulbFill, Controller } from "react-bootstrap-icons";

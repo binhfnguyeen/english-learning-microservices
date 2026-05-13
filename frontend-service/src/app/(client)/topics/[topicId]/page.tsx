@@ -4,7 +4,7 @@ import MySpinner from "@/components/MySpinner";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Container, Nav } from "react-bootstrap";
 import authApis from "@/configs/AuthApis";
 
@@ -20,7 +20,7 @@ export default function StartLearn() {
     const [topic, setTopic] = useState<Topic>();
     const [loading, setLoading] = useState<boolean>(false);
 
-    const loadTopic = async () => {
+    const loadTopic = useCallback(async () => {
         try {
             setLoading(true);
             const res = await authApis.get(endpoints["topic"](id));
@@ -30,11 +30,11 @@ export default function StartLearn() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [id]);
 
     useEffect(() => {
         loadTopic();
-    }, [id])
+    }, [loadTopic]);
 
     return (
         <Container className="my-5">

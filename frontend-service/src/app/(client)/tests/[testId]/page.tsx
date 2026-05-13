@@ -5,7 +5,7 @@ import endpoints from "@/configs/Endpoints";
 import UserContext from "@/configs/UserContext";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import {
     Button,
     Card,
@@ -99,7 +99,7 @@ export default function StartTest() {
     const user = context?.user;
     const router = useRouter();
 
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         if (!id) return;
         try {
             setLoading(true);
@@ -119,11 +119,11 @@ export default function StartTest() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, user]);
 
     useEffect(() => {
         loadData();
-    }, [id, user?.id]);
+    }, [loadData]);
 
     const sortedResults = [...testResults].sort(
         (a, b) => new Date(b.dateTaken).getTime() - new Date(a.dateTaken).getTime()

@@ -1,7 +1,7 @@
 "use client"
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useCallback } from "react";
 import { Button, Card, Container, Form, Badge, ProgressBar } from "react-bootstrap";
 import authApis from "@/configs/AuthApis";
 import MySpinner from "@/components/MySpinner";
@@ -76,7 +76,7 @@ export default function Tests() {
 
     const [learnedCountByTopic, setLearnedCountByTopic] = useState<Record<number, number>>({});
 
-    const loadTestsAndProgress = async () => {
+    const loadTestsAndProgress = useCallback(async () => {
         let url = `${endpoints["Tests"]}?page=${page}&size=6`;
         if (keyword) url += `&keyword=${keyword}`;
 
@@ -114,7 +114,7 @@ export default function Tests() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, keyword, user?.id, learnedCountByTopic]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -123,7 +123,7 @@ export default function Tests() {
             }
         }, 400);
         return () => clearTimeout(timer);
-    }, [page, keyword, user?.id]);
+    }, [page, keyword, hasMore, loadTestsAndProgress]);
 
     useEffect(() => {
         setPage(0);

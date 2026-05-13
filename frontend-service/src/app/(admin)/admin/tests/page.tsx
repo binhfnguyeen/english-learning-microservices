@@ -2,7 +2,7 @@
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Container, Form, Spinner, InputGroup, Alert } from "react-bootstrap";
 
 interface Test {
@@ -20,7 +20,7 @@ export default function Tests() {
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
 
-    const loadTests = async () => {
+    const loadTests = useCallback(async () => {
         let url = `${endpoints["Tests"]}?page=${page}`;
         if (keyword) url += `&keyword=${keyword}`;
 
@@ -40,7 +40,7 @@ export default function Tests() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, keyword]);
 
     const handleDelete = async (e: React.FormEvent<HTMLElement>, id: number) => {
         e.preventDefault();
@@ -59,7 +59,7 @@ export default function Tests() {
 
     useEffect(() => {
         loadTests();
-    }, []);
+    }, [loadTests]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -68,7 +68,7 @@ export default function Tests() {
             }
         }, 400);
         return () => clearTimeout(timer);
-    }, [page, keyword]);
+    }, [page, keyword, hasMore, loadTests]);
 
     useEffect(() => {
         setPage(0);

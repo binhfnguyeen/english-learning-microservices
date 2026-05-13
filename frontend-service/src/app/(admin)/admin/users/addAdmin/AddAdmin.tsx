@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import { useEffect, useRef, useState } from "react";
@@ -158,11 +160,14 @@ export default function AddAdmin({ onSuccess }: AddAdminProps) {
                             </Form.Group>
                             {preview && (
                                 <div className="text-center mt-3">
-                                    <img
+                                    <Image
                                         src={preview}
                                         alt="Avatar Preview"
+                                        width={120}
+                                        height={120}
                                         className="rounded-circle shadow-sm border"
-                                        style={{ width: "120px", height: "120px", objectFit: "cover" }}
+                                        style={{ objectFit: "cover" }}
+                                        unoptimized
                                     />
                                 </div>
                             )}

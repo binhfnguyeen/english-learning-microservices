@@ -3,7 +3,7 @@ import MySpinner from "@/components/MySpinner";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Badge, Card, Container, ListGroup } from "react-bootstrap";
 import authApis from "@/configs/AuthApis";
 
@@ -51,7 +51,7 @@ export default function FullTest() {
     const [test, setTest] = useState<TestFull>();
     const [loading, setLoading] = useState<boolean>(false);
 
-    const loadFullTest = async () => {
+    const loadFullTest = useCallback(async () => {
         try {
             setLoading(true);
             const res = await authApis.get(endpoints["Test"](id));
@@ -61,11 +61,11 @@ export default function FullTest() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [id]);
 
     useEffect(() => {
         if (id) loadFullTest();
-    }, [id])
+    }, [id, loadFullTest]);
 
     return (
         <Container className="my-5" style={{ maxWidth: 850 }}>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import UserContext from "@/configs/UserContext";
 import { useContext } from "react";
 import { Container, Row, Col } from "react-bootstrap";
@@ -27,11 +28,13 @@ export default function Home() {
             <Container className="text-center text-white">
                 <Row className="justify-content-center">
                     <Col md={10} lg={8}>
-                        <img
+                        <Image
                             src="/template/EngLearnLogo.png"
                             alt="EngLearn Logo"
+                            width={250}
+                            height={250}
                             className="mb-4"
-                            style={{ maxWidth: "35%", filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.3))" }}
+                            style={{ maxWidth: "35%", height: "auto", filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.3))" }}
                         />
 
                         <div

@@ -3,7 +3,7 @@ import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Alert, Button, Card, Col, Container, Form, Nav, Row, Spinner } from "react-bootstrap";
 
 interface Topic {
@@ -21,7 +21,7 @@ export default function Update() {
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
 
-    const loadTopic = async () => {
+    const loadTopic = useCallback(async () => {
         try {
             setLoading(true);
             const res = await authApis.get(endpoints["topic"](id));
@@ -31,7 +31,7 @@ export default function Update() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [id]);
 
     const updateTopic = async (e: React.FormEvent<HTMLElement>) => {
         e.preventDefault();

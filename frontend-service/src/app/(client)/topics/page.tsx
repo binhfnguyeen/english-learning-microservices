@@ -2,8 +2,8 @@
 import MySpinner from "@/components/MySpinner";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Alert, Button, Card, Col, Container, Form, Row, InputGroup } from "react-bootstrap";
+import { useEffect, useState, useCallback } from "react";
+import { Button, Card, Col, Container, Form, Row, InputGroup } from "react-bootstrap";
 import authApis from "@/configs/AuthApis";
 import SuggestVocab from "@/app/(client)/topics/suggest-vocab";
 
@@ -45,7 +45,7 @@ export default function Topics() {
     const [showModal, setShowModal] = useState(false);
     const [isVocabLoading, setIsVocabLoading] = useState(false);
 
-    const loadTopics = async () => {
+    const loadTopics = useCallback(async () => {
         let url = `${endpoints["topics"]}?page=${page}`;
         if (keyword) url += `&keyword=${keyword}`;
 
@@ -65,7 +65,7 @@ export default function Topics() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, keyword]);
 
     useEffect(() => {
         setLoading(true);
@@ -76,8 +76,7 @@ export default function Topics() {
         }, 500);
 
         return () => clearTimeout(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, keyword]);
+    }, [page, keyword, hasMore, loadTopics]);
 
     useEffect(() => {
         setPage(0);

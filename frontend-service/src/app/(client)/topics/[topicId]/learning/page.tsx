@@ -1,11 +1,12 @@
 "use client"
+import Image from "next/image";
 import MySpinner from "@/components/MySpinner";
 import endpoints from "@/configs/Endpoints";
 import UserContext from "@/configs/UserContext";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import React, { useContext, useEffect, useState } from "react";
-import { Button, Card, Container, ProgressBar, Badge } from "react-bootstrap";
+import React, { useContext, useEffect, useState, useCallback } from "react";
+import { Button, Card, Container, Badge } from "react-bootstrap";
 import Swal from "sweetalert2";
 import Exercise from "./Exercise";
 import useTTS from "@/utils/useTTS";
@@ -62,7 +63,7 @@ export default function Learning() {
 
     const { speak, isSpeaking } = useTTS();
 
-    const loadVocabularies = async () => {
+    const loadVocabularies = useCallback(async () => {
         const url = `${endpoints["topic_vocabs"](id)}?page=${page}&size=1`;
         try {
             setLoading(true);
@@ -90,7 +91,7 @@ export default function Learning() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [id, page]);
 
     useEffect(() => {
         void loadVocabularies();
@@ -100,7 +101,7 @@ export default function Learning() {
                 window.speechSynthesis.cancel();
             }
         };
-    }, [id, page]);
+    }, [loadVocabularies]);
 
     const handleNext = async (vocabId: number) => {
         if (typeof window !== "undefined" && window.speechSynthesis) {
@@ -219,11 +220,14 @@ export default function Learning() {
 
                             <div className="bg-light d-flex align-items-center justify-content-center position-relative" style={{ height: "260px", borderBottom: "1px solid #f0f0f0" }}>
                                 {currentVocab.picture ? (
-                                    <img
+                                    <Image
                                         src={currentVocab.picture}
                                         alt={currentVocab.word}
+                                        width={600}
+                                        height={260}
                                         className="w-100 h-100"
                                         style={{ objectFit: "cover" }}
+                                        unoptimized
                                     />
                                 ) : (
                                     <div className="d-flex flex-column align-items-center justify-content-center h-100 text-center px-4">

@@ -1,9 +1,10 @@
 "use client"
+import Image from "next/image";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Button, Card, Col, Container, Form, Nav, Row, Spinner } from "react-bootstrap";
 
 interface Vocabulary {
@@ -28,7 +29,7 @@ export default function UpdateVocab() {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [vocabulary, setVocabulary] = useState<Vocabulary>();
 
-    const loadVocabulary = async () => {
+    const loadVocabulary = useCallback(async () => {
         try {
             setLoading(true);
             const res = await authApis.get(endpoints["vocabulary"](id));
@@ -38,7 +39,11 @@ export default function UpdateVocab() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [id]);
+
+    useEffect(() => {
+        loadVocabulary();
+    }, [loadVocabulary]);
 
     const updateVocab = async (e: React.FormEvent<HTMLElement>) => {
         e.preventDefault();
@@ -66,9 +71,6 @@ export default function UpdateVocab() {
         }
     };
 
-    useEffect(() => {
-        loadVocabulary();
-    }, [id])
 
     useEffect(() => {
         if (vocabulary && vocabulary.id) {
@@ -183,10 +185,13 @@ export default function UpdateVocab() {
                                     />
                                     {previewImage && (
                                         <div className="mt-2">
-                                            <img
+                                            <Image
                                                 src={previewImage}
                                                 alt="preview"
-                                                style={{ width: "100px", height: "auto", borderRadius: "8px" }}
+                                                width={100}
+                                                height={100}
+                                                style={{ height: "auto", borderRadius: "8px" }}
+                                                unoptimized
                                             />
                                         </div>
                                     )}

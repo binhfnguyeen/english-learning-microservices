@@ -2,7 +2,7 @@
 
 import endpoints from "@/configs/Endpoints";
 import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Badge, Button, Card, Container, Modal, Table } from "react-bootstrap";
 import AddExercise from "./addExercises/AddExercises";
 import authApis from "@/configs/AuthApis";
@@ -30,7 +30,7 @@ export default function ExercisesVocabPage() {
     const [showAdd, setShowAdd] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
 
-    const loadExercises = async () => {
+    const loadExercises = useCallback(async () => {
         try {
             setLoading(true);
             const res = await authApis.get(endpoints["VocabExercises"](id));
@@ -40,11 +40,11 @@ export default function ExercisesVocabPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
 
     useEffect(() => {
         loadExercises();
-    }, [id]);
+    }, [loadExercises]);
 
     const handleDelete = async (e: React.FormEvent<HTMLElement>, id: number) => {
         e.preventDefault();

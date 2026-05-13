@@ -39,7 +39,7 @@ export default function ClientRootLayout({ children }: { children: React.ReactNo
                 {children}
             </SidebarLayout>
             <AiAssistant />
-            <Dictionary />
+            {user && <Dictionary />}
             <Footer />
         </UserContext.Provider>
     );

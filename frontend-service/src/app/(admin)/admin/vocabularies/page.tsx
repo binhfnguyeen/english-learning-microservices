@@ -4,7 +4,7 @@ import MySpinner from "@/components/MySpinner";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Alert, Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 
 interface Vocabulary {
@@ -23,7 +23,7 @@ export default function Vocabularies() {
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
 
-    const loadVocabularies = async () => {
+    const loadVocabularies = useCallback(async () => {
         let url = `${endpoints["vocabularies"]}?page=${page}`
         if (keyword) {
             url += `&keyword=${keyword}`;
@@ -46,7 +46,7 @@ export default function Vocabularies() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [page, keyword]);
 
     useEffect(() => {
         setLoading(true);
@@ -57,7 +57,7 @@ export default function Vocabularies() {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [page, keyword])
+    }, [page, keyword, hasMore, loadVocabularies])
 
     useEffect(() => {
         setPage(0);

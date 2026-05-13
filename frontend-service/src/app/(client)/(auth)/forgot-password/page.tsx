@@ -80,7 +80,11 @@ export default function ForgotPassword() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        step === 1 ? handleForgotPassword() : handleResetPassword();
+        if (step === 1) {
+            handleForgotPassword();
+        } else {
+            handleResetPassword();
+        }
     };
 
     return (

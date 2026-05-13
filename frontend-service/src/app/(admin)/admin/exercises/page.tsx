@@ -3,7 +3,7 @@
 import MySpinner from "@/components/MySpinner";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     Alert,
     Button,
@@ -31,7 +31,7 @@ export default function VocabsPage() {
     const [keyword, setKeyword] = useState<string>("");
     const [hasMore, setHasMore] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
-    const loadVocabularies = async () => {
+    const loadVocabularies = useCallback(async () => {
         let url = `${endpoints["vocabularies"]}?page=${page}`;
         if (keyword) {
             url += `&keyword=${keyword}`;
@@ -53,7 +53,7 @@ export default function VocabsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, keyword]);
 
     useEffect(() => {
         setLoading(true);
@@ -64,7 +64,7 @@ export default function VocabsPage() {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [page, keyword]);
+    }, [page, keyword, hasMore, loadVocabularies]);
 
     useEffect(() => {
         setPage(0);

@@ -5,7 +5,7 @@ import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Alert, Button, Card, Col, Form, Nav, Row } from "react-bootstrap";
 
 interface Vocabulary {
@@ -27,7 +27,7 @@ export default function VocabTopic() {
     const { topicId } = useParams();
     const id = Number(topicId);
 
-    const loadVocabularies = async () => {
+    const loadVocabularies = useCallback(async () => {
         let url = `${endpoints["topic_vocabs"](id)}?page=${page}`;
 
         if (keyword) {
@@ -50,7 +50,7 @@ export default function VocabTopic() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [id, page, keyword]);
 
     useEffect(() => {
         setLoading(true);
@@ -61,7 +61,7 @@ export default function VocabTopic() {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [page, keyword])
+    }, [page, keyword, hasMore, loadVocabularies])
 
     useEffect(() => {
         setPage(0);

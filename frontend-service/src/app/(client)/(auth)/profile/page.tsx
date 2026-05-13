@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import UserContext from "@/configs/UserContext";
@@ -86,21 +87,22 @@ export default function UpdateProfile() {
                         <>
                             {/* Avatar */}
                             <div className="text-center mb-4">
-                                <img
+                                <Image
                                     src={
                                         avatar
                                             ? URL.createObjectURL(avatar)
                                             : user?.avatar || "/default-avatar.png"
                                     }
                                     alt="Avatar"
+                                    width={120}
+                                    height={120}
                                     className="rounded-circle"
                                     style={{
-                                        width: 120,
-                                        height: 120,
                                         objectFit: "cover",
                                         border: "4px solid #fff",
                                         boxShadow: "0 6px 16px rgba(0,0,0,0.1)"
                                     }}
+                                    unoptimized
                                 />
 
                                 <input
