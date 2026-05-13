@@ -8,6 +8,7 @@ import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import UserContext from "@/configs/UserContext";
 import AiAssistant from "@/components/AiAssistant";
+import Dictionary from "@/components/Dictionary";
 
 export default function ClientRootLayout({ children }: { children: React.ReactNode }) {
     const [user, dispatch] = useReducer(MyUserReducer, null);
@@ -38,6 +39,7 @@ export default function ClientRootLayout({ children }: { children: React.ReactNo
                 {children}
             </SidebarLayout>
             <AiAssistant />
+            <Dictionary />
             <Footer />
         </UserContext.Provider>
     );
