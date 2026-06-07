@@ -1,4 +1,8 @@
 import { Metadata } from "next";
+// @ts-ignore: CSS module declarations missing for bootstrap
+import "bootstrap/dist/css/bootstrap.min.css";
+// @ts-ignore: CSS module declarations missing for globals.css
+import "./globals.css";
 
 export const metadata: Metadata = {
     title: "EngLearn",

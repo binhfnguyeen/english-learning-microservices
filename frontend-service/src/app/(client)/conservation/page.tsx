@@ -1,8 +1,6 @@
 "use client";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Form, Button } from "react-bootstrap";
 import { MicFill, MicMuteFill, Robot } from "react-bootstrap-icons";
-import "bootstrap/dist/css/bootstrap.min.css";
 import useTTS from "@/utils/useTTS";
 import UserContext from "@/configs/UserContext";
 import Cookies from "js-cookie";
@@ -188,112 +186,126 @@ export default function ChatPage() {
     const isMicDisabled = !sttSupported || !connected || isGenerating;
 
     return (
-        <div className="d-flex flex-column" style={{ height: "100vh", overflow: "hidden", background: "linear-gradient(135deg, #e3f2fd, #f1f3f6)", fontFamily: "'Segoe UI', sans-serif" }}>
-            <style>{`
-                .typing-dot {
-                    width: 6px;
-                    height: 6px;
-                    background-color: #6c757d;
-                    border-radius: 50%;
-                    margin: 0 2px;
-                    animation: typing-bounce 1.4s infinite ease-in-out both;
-                }
-                .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-                .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-                
-                @keyframes typing-bounce {
-                    0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
-                    40% { transform: scale(1); opacity: 1; }
-                }
+        <div
+            className="d-flex flex-column"
+            style={{
+                height: "calc(100vh - 120px)",
+                fontFamily: "'Inter', sans-serif",
+                overflow: "hidden"
+            }}
+        >
+            <div className="p-4 flex-shrink-0">
+                <div
+                    className="d-inline-flex align-items-center gap-3 px-4 py-3 bg-white rounded-4"
+                    style={{
+                        borderBottom: "4px solid #d1d5db",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)"
+                    }}
+                >
+                    <div
+                        className="d-flex align-items-center justify-content-center text-white"
+                        style={{
+                            width: "42px",
+                            height: "42px",
+                            borderRadius: "14px",
+                            background: "#4f46e5",
+                            borderBottom: "3px solid #3730a3"
+                        }}
+                    >
+                        <Robot size={20} />
+                    </div>
 
-                .chat-container {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                .chat-container::-webkit-scrollbar {
-                    display: none;
-                }
-            `}</style>
-
-            <div className="d-flex justify-content-between align-items-center p-3 shadow-sm" style={{ background: "#1976d2", color: "white", fontWeight: "600", zIndex: 10 }}>
-                <span className="d-inline-flex align-items-center gap-2 px-2 py-2 rounded-pill bg-light shadow-sm border border-secondary-subtle">
-                    <Robot size={10} className="text-primary" />
-                    <span className="fw-semibold text-dark">AI Speaking Assistant</span>
-                </span>
-            </div>
-
-            <div className="chat-container flex-grow-1 p-4 overflow-auto">
-                {messages.map((msg, idx) => (
-                    <div key={idx} className={`d-flex mb-3 ${msg.sender === "you" ? "justify-content-end" : "justify-content-start"}`}>
-                        <div
-                            className="px-3 py-2 rounded-4 shadow-sm"
+                    <div>
+                        <h6
+                            className="mb-1 fw-bold"
                             style={{
-                                maxWidth: "70%",
-                                background: msg.sender === "you" ? "#1976d2" : "white",
-                                color: msg.sender === "you" ? "white" : "#333",
-                                border: msg.sender === "bot" ? "1px solid #ddd" : "none",
-                                whiteSpace: "pre-wrap",
-                                minHeight: "38px",
-                                display: "flex",
-                                alignItems: "center"
+                                fontSize: "15px"
                             }}
                         >
-                            {msg.text}
-                            {(msg.sender === "bot" && msg.text === "" && idx === messages.length - 1) && (
-                                <div className="d-inline-flex align-items-center ms-1" style={{ height: '20px' }}>
-                                    <span className="typing-dot"></span>
-                                    <span className="typing-dot"></span>
-                                    <span className="typing-dot"></span>
-                                </div>
-                            )}
+                            AI Speaking Assistant
+                        </h6>
+
+                        <small
+                            className="text-muted fw-semibold"
+                            style={{
+                                fontSize: "12px"
+                            }}
+                        >
+                            Trợ lý luyện nói trực tuyến
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                className="flex-grow-1 overflow-auto px-4"
+                style={{
+                    minHeight: 0,
+                    paddingBottom: "16px"
+                }}
+            >
+                {messages.map((msg, idx) => (
+                    <div
+                        key={idx}
+                        className={`d-flex mb-3 ${msg.sender === "you"
+                            ? "justify-content-end"
+                            : "justify-content-start"
+                            }`}
+                    >
+                        <div
+                            className={`px-4 py-3 fw-semibold ${msg.sender === "you"
+                                ? "bg-sky-500 text-white"
+                                : "bg-white text-dark"
+                                }`}
+                            style={{
+                                maxWidth: "75%",
+                                fontSize: "0.95rem",
+                                lineHeight: "1.6",
+                                borderRadius: "20px",
+                                borderBottom:
+                                    msg.sender === "you"
+                                        ? "4px solid #0369a1"
+                                        : "4px solid #d1d5db",
+                                boxShadow:
+                                    "0 4px 12px rgba(0,0,0,0.08)"
+                            }}
+                        >
+                            {msg.text ||
+                                (msg.sender === "bot" &&
+                                    idx === messages.length - 1 && (
+                                        <span className="opacity-50">
+                                            ...
+                                        </span>
+                                    ))}
                         </div>
                     </div>
                 ))}
+
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 bg-white border-top" style={{ zIndex: 10 }}>
-                <Form className="d-flex align-items-center justify-content-center">
+            <div
+                className="flex-shrink-0 d-flex justify-content-center"
+                style={{
+                    padding: "20px 0 24px"
+                }}
+            >
+                <button
+                    onClick={micOn ? stopMic : startMic}
+                    disabled={isGenerating && !micOn}
+                    className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl border-b-4 px-6 py-3 text-sm font-black text-white transition-all active:translate-y-1 active:border-b-0 ${micOn
+                        ? "border-rose-700 bg-rose-500 hover:bg-rose-400"
+                        : "border-sky-700 bg-sky-500 hover:bg-sky-400"
+                        }`}
+                >
                     {micOn ? (
-                        <div className="d-flex flex-column align-items-center">
-                            <Button
-                                variant="danger"
-                                className="rounded-circle shadow-lg d-flex align-items-center justify-content-center pulse"
-                                style={{ width: "80px", height: "80px", border: "none" }}
-                                onClick={stopMic}
-                            >
-                                <MicMuteFill size={30} color="#fff" />
-                            </Button>
-                            <small className="text-danger mt-2 fw-semibold">Đang nghe...</small>
-                        </div>
+                        <MicMuteFill size={18} />
                     ) : (
-                        <div className="d-flex flex-column align-items-center">
-                            <Button
-                                disabled={isMicDisabled}
-                                variant={isMicDisabled ? "secondary" : "light"}
-                                className="rounded-circle shadow-sm d-flex align-items-center justify-content-center"
-                                style={{
-                                    width: "70px",
-                                    height: "70px",
-                                    backgroundColor: isMicDisabled ? "#c0c0c0" : "#1976d2",
-                                    transition: "all 0.3s ease"
-                                }}
-                                onClick={startMic}
-                            >
-                                <MicFill size={28} color="#fff" />
-                            </Button>
-                            <small className={`mt-2 fw-semibold ${isGenerating ? 'text-secondary' : 'text-primary'}`}>
-                                {!connected
-                                    ? "Đang kết nối..."
-                                    : !sttSupported
-                                        ? "Trình duyệt không hỗ trợ Mic"
-                                        : isGenerating
-                                            ? "AI đang trả lời..."
-                                            : "Nhấn để nói"}
-                            </small>
-                        </div>
+                        <MicFill size={18} />
                     )}
-                </Form>
+
+                    {micOn ? "Stop" : "Start"}
+                </button>
             </div>
         </div>
     );

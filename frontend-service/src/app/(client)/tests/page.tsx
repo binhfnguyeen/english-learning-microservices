@@ -194,7 +194,7 @@ export default function Tests() {
 
                                             <div className="d-flex justify-content-between align-items-start mb-3">
                                                 <Badge bg={isUnlocked ? "success" : "secondary"} className="px-2 py-1 rounded-2 d-flex align-items-center gap-1 shadow-sm">
-                                                    {isUnlocked ? <IconUnlock size={14}/> : <IconLock size={14}/>}
+                                                    {isUnlocked ? <IconUnlock size={14} /> : <IconLock size={14} />}
                                                     {isUnlocked ? "Đã mở khóa" : "Đang khóa"}
                                                 </Badge>
 
@@ -256,9 +256,9 @@ export default function Tests() {
                     </div>
 
                     {!loading && tests.length === 0 && (
-                        <div className="text-center py-5 bg-light rounded-4 border mt-2 shadow-sm">
-                            <IconFileText size={48} className="text-muted mb-3 opacity-50" />
-                            <p className="text-muted m-0 fs-5 fw-medium">Không tìm thấy đề thi nào phù hợp.</p>
+                        <div className="d-flex flex-column align-items-center justify-content-center py-5 bg-light rounded-4 border mt-2 shadow-sm">
+                            <IconFileText size={48} className="text-muted mb-3 opacity-50 d-block mx-auto" />
+                            <p className="text-muted m-0 fs-5 fw-medium text-center">Không tìm thấy đề thi nào phù hợp.</p>
                         </div>
                     )}
 

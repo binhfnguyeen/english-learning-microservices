@@ -66,16 +66,20 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT,    "/api/exercises/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/exercises/**").hasAuthority("ROLE_ADMIN")
                         // =========================
-                        // AUTHENTICATED USER APIs
+                        // PUBLIC LEARNING APIs
                         // =========================
-                        // GET vocab / topic / test / question / exercise
+                        // Guests can preview and learn content, but cannot persist progress.
                         .requestMatchers(HttpMethod.GET,
                                 "/api/vocabularies/**",
                                 "/api/topics/**",
                                 "/api/tests/**",
                                 "/api/questions/**",
                                 "/api/exercises/**"
-                        ).authenticated()
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/vocabularies/*/exercises").permitAll()
+                        // =========================
+                        // AUTHENTICATED USER APIs
+                        // =========================
                         // Learned words
                         .requestMatchers("/api/learned-words/**").authenticated()
                         // Progress

@@ -35,7 +35,12 @@ export async function middleware(request: NextRequest) {
     }
 
     const publicPaths = ["/", "/login", "/register", "/forgot-password"];
-    if (!token && !publicPaths.includes(pathname)) {
+    const guestLearningPaths = ["/topics", "/lesson"];
+    const canAccessAsGuest =
+        publicPaths.includes(pathname) ||
+        guestLearningPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+
+    if (!token && !canAccessAsGuest) {
         return NextResponse.redirect(new URL("/", request.url));
     }
 
