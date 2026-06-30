@@ -79,14 +79,14 @@ export default function VocabsPage() {
             <Card className="shadow-sm border-0">
                 <Card.Body>
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h3 className="fw-bold mb-0">Danh sách từ vựng</h3>
+                        <h3 className="fw-bold mb-0">Vocabulary List</h3>
 
                         <InputGroup style={{ maxWidth: "300px" }}>
                             <Form.Control
                                 value={keyword}
                                 onChange={(e) => setKeyword(e.target.value)}
                                 type="text"
-                                placeholder="Tìm kiếm từ vựng..."
+                                placeholder="Search vocabulary..."
                             />
                         </InputGroup>
                     </div>
@@ -94,18 +94,18 @@ export default function VocabsPage() {
                     <Table hover responsive bordered className="align-middle">
                         <thead className="table-light text-center">
                             <tr>
-                                <th>STT</th>
-                                <th>Từ vựng</th>
-                                <th>Nghĩa</th>
-                                <th>Mức độ</th>
-                                <th>Loại từ</th>
-                                <th>Hành động</th>
+                                <th>No.</th>
+                                <th>Word</th>
+                                <th>Meaning</th>
+                                <th>Level</th>
+                                <th>Part of Speech</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="text-center py-4">
+                                    <td colSpan={6} className="text-center py-4">
                                         <MySpinner />
                                     </td>
                                 </tr>
@@ -126,15 +126,15 @@ export default function VocabsPage() {
                                                 href={`/admin/exercises/${v.id}?word=${encodeURIComponent(v.word)}`}
                                                 className="btn btn-outline-primary btn-sm flex-fill"
                                             >
-                                                + Bài luyện tập
+                                                + Exercises
                                             </Link>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="text-center text-muted py-4">
-                                        Không có từ vựng
+                                    <td colSpan={6} className="text-center text-muted py-4">
+                                        No vocabulary found
                                     </td>
                                 </tr>
                             )}
@@ -143,14 +143,14 @@ export default function VocabsPage() {
 
                     {vocabularies.length === 0 && !loading && (
                         <Alert className="mt-4" variant="info">
-                            Không có từ vựng
+                            No vocabulary found
                         </Alert>
                     )}
 
                     {hasMore && !loading && (
                         <div className="mt-3 text-center">
                             <Button variant="secondary" onClick={loadMore}>
-                                Tải thêm
+                                Load More
                             </Button>
                         </div>
                     )}

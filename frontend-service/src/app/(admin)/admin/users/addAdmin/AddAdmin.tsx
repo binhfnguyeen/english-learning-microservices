@@ -24,12 +24,12 @@ interface AddAdminProps {
 
 export default function AddAdmin({ onSuccess }: AddAdminProps) {
     const info: { title: string; field: keyof User; type: string }[] = [
-        { title: "Họ", field: "lastName", type: "text" },
-        { title: "Tên", field: "firstName", type: "text" },
+        { title: "Last Name", field: "lastName", type: "text" },
+        { title: "First Name", field: "firstName", type: "text" },
         { title: "Email", field: "email", type: "text" },
-        { title: "Số điện thoại", field: "phone", type: "tel" },
-        { title: "Tên đăng nhập", field: "username", type: "text" },
-        { title: "Mật khẩu", field: "password", type: "password" },
+        { title: "Phone Number", field: "phone", type: "tel" },
+        { title: "Username", field: "username", type: "text" },
+        { title: "Password", field: "password", type: "password" },
     ];
 
     const [user, setUser] = useState<User>({
@@ -48,18 +48,18 @@ export default function AddAdmin({ onSuccess }: AddAdminProps) {
 
     const validate = () => {
         if (!user) {
-            setMsg("Vui lòng nhập đầy đủ thông tin!");
+            setMsg("Please enter all details!");
             return false;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(user.email)) {
-            setMsg("Email không hợp lệ!");
+            setMsg("Invalid email address!");
             return false;
         }
         const phoneRegex = /^(0[0-9]{9,10})$/;
         if (!phoneRegex.test(user.phone)) {
-            setMsg("Số điện thoại không hợp lệ!");
+            setMsg("Invalid phone number!");
             return false;
         }
         setMsg("");
@@ -84,11 +84,11 @@ export default function AddAdmin({ onSuccess }: AddAdminProps) {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
 
-                setMsg("Tạo tài khoản thành công!");
+                setMsg("Account created successfully!");
                 if (onSuccess) onSuccess();
             } catch (ex) {
                 console.error(ex);
-                setMsg("Tạo tài khoản không thành công!");
+                setMsg("Failed to create account!");
             } finally {
                 setLoading(false);
             }
@@ -107,7 +107,7 @@ export default function AddAdmin({ onSuccess }: AddAdminProps) {
             <Card.Body>
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h3 className="text-primary fw-bold m-0">
-                        <Plus size={28} /> Thêm Admin
+                        <Plus size={28} /> Add Admin
                     </h3>
                     <Button
                         variant="light"
@@ -120,7 +120,7 @@ export default function AddAdmin({ onSuccess }: AddAdminProps) {
 
                 {msg && (
                     <Alert
-                        variant={msg.includes("thành công") ? "success" : "danger"}
+                        variant={msg.toLowerCase().includes("successfully") ? "success" : "danger"}
                         className="text-center"
                     >
                         {msg}
@@ -147,7 +147,7 @@ export default function AddAdmin({ onSuccess }: AddAdminProps) {
 
                         <Col xs={12}>
                             <Form.Group>
-                                <Form.Label>Ảnh đại diện</Form.Label>
+                                <Form.Label>Avatar</Form.Label>
                                 <Form.Control
                                     type="file"
                                     accept="image/*"
@@ -183,10 +183,10 @@ export default function AddAdmin({ onSuccess }: AddAdminProps) {
                             >
                                 {loading ? (
                                     <>
-                                        <Spinner animation="border" size="sm" className="me-2" /> Đang xử lý...
+                                        <Spinner animation="border" size="sm" className="me-2" /> Processing...
                                     </>
                                 ) : (
-                                    "Tạo tài khoản"
+                                    "Create Account"
                                 )}
                             </Button>
                         </Col>

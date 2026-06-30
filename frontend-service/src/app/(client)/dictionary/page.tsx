@@ -73,13 +73,13 @@ export default function DictionaryPage() {
         try {
             const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
             if (!res.ok) {
-                setError(`Không tìm thấy từ "${word}" trong từ điển.`);
+                setError(`Could not find the word "${word}" in the dictionary.`);
                 return;
             }
             const data: DictionaryEntry[] = await res.json();
             setResult(data[0]);
         } catch {
-            setError("Lỗi kết nối. Vui lòng thử lại.");
+            setError("Connection error. Please try again.");
         } finally {
             setLoading(false);
         }

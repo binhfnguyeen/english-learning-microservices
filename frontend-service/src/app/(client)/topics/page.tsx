@@ -97,7 +97,7 @@ function PathNode({ lesson, index, topicId }: { lesson: LearningLesson; index: n
 
             <div className="absolute -top-[68px] flex animate-bounce flex-col items-center drop-shadow-md">
                 <div className="whitespace-nowrap rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 text-[14px] font-black uppercase tracking-wide text-lime-600">
-                    Bắt đầu
+                    Start
                 </div>
                 <div className="-mt-2 h-3 w-3 rotate-45 border-b-2 border-r-2 border-slate-200 bg-white" />
             </div>
@@ -158,7 +158,7 @@ function createLessons(topic: Topic, topicIndex: number, learnedCount: number, p
 
         return {
             id: `${topic.id}-${index + 1}`,
-            title: `${topic.name} - Bài ${index + 1}`,
+            title: `${topic.name} - Lesson ${index + 1}`,
             status,
         };
     });
@@ -310,7 +310,7 @@ export default function Topics() {
                         </div>
                         <input
                             type="text"
-                            placeholder="Tìm kiếm chủ đề..."
+                            placeholder="Search topics..."
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
                             className="w-full rounded-2xl bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none ring-1 ring-slate-200 transition-all focus:bg-white focus:ring-2 focus:ring-sky-500"
@@ -325,12 +325,12 @@ export default function Topics() {
                         {isVocabLoading ? (
                             <>
                                 <div className="spinner-border spinner-border-sm" role="status" style={{ width: '1rem', height: '1rem', borderWidth: '0.15em' }}></div>
-                                AI đang chạy...
+                                AI is running...
                             </>
                         ) : (
                             <>
                                 <IconSparkles />
-                                Học theo lộ trình cá nhân
+                                Learn Personal Path
                             </>
                         )}
                     </button>
@@ -387,7 +387,7 @@ export default function Topics() {
                                                     href={`/topics/${topic.id}`} 
                                                     className="mt-1 flex items-center gap-1.5 text-xs font-bold text-white/90 no-underline transition-colors hover:text-white"
                                                 >
-                                                    <BookOpen size={14} /> Chi tiết
+                                                    <BookOpen size={14} /> Details
                                                 </Link>
                                             </div>
                                         </div>
@@ -416,7 +416,7 @@ export default function Topics() {
 
             {topics.length === 0 && !loading && (
                 <div className="text-center py-5 bg-light rounded-4 mt-4 border border-dashed">
-                    <h5 className="text-muted fw-medium m-0">Không tìm thấy chủ đề nào phù hợp.</h5>
+                    <h5 className="text-muted fw-medium m-0">No matching topics found.</h5>
                 </div>
             )}
 

@@ -43,10 +43,10 @@ export default function Update() {
             }
             const res = await authApis.put(endpoints["topic"](id), body);
             console.info(res.data);
-            setMsg("Cập nhật chủ đề thành công!");
+            setMsg("Topic updated successfully!");
         } catch (ex) {
             console.error(ex);
-            setMsg("Cập nhật chủ đề không thành công!");
+            setMsg("Failed to update topic!");
         } finally {
             setLoading(false);
         }
@@ -75,17 +75,17 @@ export default function Update() {
         <Container className="mt-4">
             <Nav className="mb-3">
                 <Link href="/admin/topics" className="btn btn-outline-secondary btn-sm">
-                    Quay lại
+                    Go Back
                 </Link>
             </Nav>
 
             <Card className="shadow-sm border-0 rounded-3">
                 <Card.Body>
-                    <h3 className="mb-4 fw-bold text-primary">Cập nhật chủ đề</h3>
+                    <h3 className="mb-4 fw-bold text-primary">Update Topic</h3>
 
                     {msg && (
                         <Alert
-                            variant={msg.includes("không") ? "danger" : "success"}
+                            variant={msg.toLowerCase().includes("failed") ? "danger" : "success"}
                             className="py-2 position-fixed top-0 end-0 m-3 shadow"
                             style={{ zIndex: 9999, minWidth: "250px" }}
                         >
@@ -97,10 +97,10 @@ export default function Update() {
                         <Row className="mb-3">
                             <Col md={6}>
                                 <Form.Group controlId="formName">
-                                    <Form.Label className="fw-semibold">Tên chủ đề</Form.Label>
+                                    <Form.Label className="fw-semibold">Topic Name</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Nhập tên chủ đề..."
+                                        placeholder="Enter topic name..."
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         required
@@ -109,11 +109,11 @@ export default function Update() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group controlId="formDescription">
-                                    <Form.Label className="fw-semibold">Mô tả</Form.Label>
+                                    <Form.Label className="fw-semibold">Description</Form.Label>
                                     <Form.Control
                                         as="textarea"
                                         rows={3}
-                                        placeholder="Nhập mô tả chủ đề..."
+                                        placeholder="Enter topic description..."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                         required
@@ -138,10 +138,10 @@ export default function Update() {
                                             role="status"
                                             aria-hidden="true"
                                         />{" "}
-                                        Đang xử lý...
+                                        Saving...
                                     </>
                                 ) : (
-                                    "Lưu thay đổi"
+                                    "Save Changes"
                                 )}
                             </Button>
                         </div>

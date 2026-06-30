@@ -7,7 +7,7 @@ import UserContext from "@/configs/UserContext";
 import { useParams, useRouter } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";
 import { Button, Card, Container, ProgressBar } from "react-bootstrap";
-import Swal from "sweetalert2";
+
 
 import {
     DndContext,
@@ -135,7 +135,7 @@ function WordOrderQuestion({ q, value, onChange, sensors }: WordOrderQuestionPro
         <>
             <h4 className="mb-2">{q.content}</h4>
             <p className="text-muted small mb-4">
-                <em>Gợi ý: Nhấn giữ và kéo thả các khối từ bên dưới để sắp xếp thành một câu hoàn chỉnh.</em>
+                <em>Hint: Drag and drop the word blocks below to arrange them into a complete sentence.</em>
             </p>
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -153,20 +153,20 @@ function WordOrderQuestion({ q, value, onChange, sensors }: WordOrderQuestionPro
 
 function FillInBlankQuestion({ q, value, onChange }: TextQuestionProps) {
     const charLength = q.correctAnswerText ? q.correctAnswerText.length : 0;
-    const lengthHint = charLength > 0 ? ` (từ này có ${charLength} ký tự)` : "";
+    const lengthHint = charLength > 0 ? ` (this word has ${charLength} characters)` : "";
 
     return (
         <>
             <h4 className="mb-2">{q.content}</h4>
             <p className="text-muted small mb-3">
-                <em>Gợi ý: Gõ từ hoặc cụm từ còn thiếu vào ô trống{lengthHint}.</em>
+                <em>Hint: Type the missing word or phrase in the box{lengthHint}.</em>
             </p>
 
             <input
                 className="form-control mt-2 shadow-sm rounded-3"
                 style={{ padding: "12px 16px" }}
                 value={value}
-                placeholder="Nhập đáp án của bạn vào đây..."
+                placeholder="Type your answer here..."
                 onChange={(e) => onChange(e.target.value)}
                 autoComplete="off"
             />
@@ -179,7 +179,7 @@ function RewriteSentenceQuestion({ q, value, onChange }: TextQuestionProps) {
         <>
             <h4 className="mb-2">{q.content}</h4>
             <p className="text-muted small mb-3">
-                <em>Gợi ý: Viết một câu hoàn chỉnh sao cho giữ nguyên ý nghĩa của câu gốc.</em>
+                <em>Hint: Rewrite the sentence such that it keeps the same meaning as the original.</em>
             </p>
 
             <textarea
@@ -187,7 +187,7 @@ function RewriteSentenceQuestion({ q, value, onChange }: TextQuestionProps) {
                 style={{ padding: "12px 16px" }}
                 rows={4}
                 value={value}
-                placeholder="Viết lại câu của bạn tại đây..."
+                placeholder="Rewrite your sentence here..."
                 onChange={(e) => onChange(e.target.value)}
             />
         </>
@@ -199,7 +199,7 @@ function MultipleChoiceQuestion({ q, selectedId, onChange }: MultipleChoiceQuest
         <>
             <h4 className="mb-2">{q.content}</h4>
             <p className="text-muted small mb-4">
-                <em>Gợi ý: Nhấp chuột để chọn một đáp án đúng nhất.</em>
+                <em>Hint: Click to choose the best answer.</em>
             </p>
 
             {q.choices.map((c: Choice) => {
@@ -301,7 +301,12 @@ export default function FullTest() {
                 answers: answers
             });
 
-            Swal.fire("Xong!", "Bạn đã hoàn thành bài thi", "success")
+            if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("update-progress"));
+            }
+
+            const Swal = (await import("sweetalert2")).default;
+            Swal.fire("Success!", "You have completed the test.", "success")
                 .then(() => router.push(`/tests/${id}`));
 
         } catch (err) {
@@ -387,7 +392,7 @@ export default function FullTest() {
                                     onClick={handleNext}
                                     disabled={!canMoveToNext()}
                                 >
-                                    {currentQuestionIndex === test.questions.length - 1 ? "Hoàn thành" : "Next"}
+                                    {currentQuestionIndex === test.questions.length - 1 ? "Submit" : "Next"}
                                 </Button>
                             </div>
 

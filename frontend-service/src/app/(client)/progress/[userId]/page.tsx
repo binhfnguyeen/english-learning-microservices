@@ -109,7 +109,7 @@ export default function Progress() {
                 setProgress(pRes.data.result);
                 setLearnedWords(wRes.data.result || []);
             } catch (err) {
-                console.error("Lỗi tải progress:", err);
+                console.error("Error loading progress:", err);
             } finally {
                 setLoading(false);
             }
@@ -130,8 +130,8 @@ export default function Progress() {
         return (
             <div className="container mt-5 text-center">
                 <div className="p-5 bg-light rounded-4 border border-dashed">
-                    <h5 className="text-muted fw-bold">Không có dữ liệu tiến trình.</h5>
-                    <p className="text-muted mb-0">Học viên này chưa có dữ liệu học tập hoặc tài khoản không tồn tại.</p>
+                    <h5 className="text-muted fw-bold">No progress data available.</h5>
+                    <p className="text-muted mb-0">This student does not have study data yet or the account does not exist.</p>
                 </div>
             </div>
         );
@@ -207,7 +207,7 @@ export default function Progress() {
                                     >
                                         <Card.Body className="p-4">
                                             <IconCalendar className="mb-2 opacity-75" />
-                                            <div className="fw-semibold small text-uppercase tracking-wider opacity-75">Ngày đã học</div>
+                                            <div className="fw-semibold small text-uppercase tracking-wider opacity-75">Days Studied</div>
                                             <h2 className="fw-bold m-0 mt-1">{progress.daysStudied || 0}</h2>
                                         </Card.Body>
                                     </Card>
@@ -225,7 +225,7 @@ export default function Progress() {
                                     >
                                         <Card.Body className="p-4">
                                             <IconBook className="mb-2 opacity-75" />
-                                            <div className="fw-semibold small text-uppercase tracking-wider opacity-75">Từ đã học</div>
+                                            <div className="fw-semibold small text-uppercase tracking-wider opacity-75">Words Learned</div>
                                             <h2 className="fw-bold m-0 mt-1">{progress.wordsLearned || 0}</h2>
                                         </Card.Body>
                                     </Card>
@@ -243,7 +243,7 @@ export default function Progress() {
                                     >
                                         <Card.Body className="p-4">
                                             <IconTrophy className="mb-2 opacity-75" />
-                                            <div className="fw-semibold small text-uppercase tracking-wider opacity-75">Trình độ</div>
+                                            <div className="fw-semibold small text-uppercase tracking-wider opacity-75">Level</div>
                                             <h3 className="fw-bold m-0 mt-1">{progress.cefr || "N/A"}</h3>
                                             <div className="small opacity-75">{progress.proficiency || "-"}</div>
                                         </Card.Body>
@@ -272,7 +272,7 @@ export default function Progress() {
                                 />
 
                                 <div className="text-end mt-2 small text-secondary fw-medium">
-                                    Cần thêm <span className="text-primary fw-bold">{nextLevelXp} XP</span> để thăng cấp {level + 1}
+                                    Need <span className="text-primary fw-bold">{nextLevelXp} XP</span> to level up to {level + 1}
                                 </div>
                             </div>
                         </Col>
@@ -282,13 +282,13 @@ export default function Progress() {
 
             {/* ================= LEARNED WORDS ================= */}
             <h4 className="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
-                <IconBook className="text-primary" size={24} /> Kho từ vựng đã chinh phục ({learnedWords.length})
+                <IconBook className="text-primary" size={24} /> Vocabulary Mastered ({learnedWords.length})
             </h4>
 
             {learnedWords.length === 0 ? (
                 <div className="text-center py-5 bg-white rounded-4 border shadow-sm">
                     <div className="fs-1 mb-2">🌱</div>
-                    <p className="text-muted fw-medium m-0">Hành trình vạn dặm bắt đầu từ một bước chân. Bạn chưa học từ nào!</p>
+                    <p className="text-muted fw-medium m-0">A journey of a thousand miles begins with a single step. You haven't learned any words yet!</p>
                 </div>
             ) : (
                 <Row className="g-3">
@@ -351,7 +351,7 @@ export default function Progress() {
                                         </div>
 
                                         <div className="mt-auto pt-2 border-top text-end" style={{ fontSize: 11, color: "#94a3b8" }}>
-                                            Học ngày: {new Date(item.learnedDate).toLocaleDateString("vi-VN")}
+                                            Learned on: {new Date(item.learnedDate).toLocaleDateString("en-US")}
                                         </div>
                                     </Card.Body>
                                 </Card>

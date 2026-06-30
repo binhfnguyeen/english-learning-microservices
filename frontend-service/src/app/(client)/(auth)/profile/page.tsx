@@ -57,7 +57,7 @@ export default function UpdateProfile() {
         if (!user?.id) return;
 
         const confirmUpdate = window.confirm(
-            "Bạn có chắc muốn cập nhật thông tin cá nhân?"
+            "Are you sure you want to update your profile?"
         );
 
         if (!confirmUpdate) return;
@@ -86,11 +86,11 @@ export default function UpdateProfile() {
                 }
             );
 
-            alert("Cập nhật thành công!");
+            alert("Profile updated successfully!");
             setEditing(false);
         } catch (err) {
             console.error(err);
-            alert("Có lỗi xảy ra khi cập nhật.");
+            alert("An error occurred while updating profile.");
         } finally {
             setLoading(false);
         }
@@ -100,7 +100,7 @@ export default function UpdateProfile() {
         return (
             <div className="container py-5">
                 <div className="alert alert-danger">
-                    Không tìm thấy thông tin người dùng.
+                    User profile not found.
                 </div>
             </div>
         );
@@ -117,11 +117,11 @@ export default function UpdateProfile() {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 className="fw-bold mb-1">
-                        Hồ sơ cá nhân
+                        User Profile
                     </h2>
 
                     <p className="text-muted mb-0">
-                        Quản lý thông tin tài khoản
+                        Manage account information
                     </p>
                 </div>
 
@@ -134,7 +134,7 @@ export default function UpdateProfile() {
                         }}
                         onClick={() => setEditing(true)}
                     >
-                        Chỉnh sửa hồ sơ
+                        Edit Profile
                     </button>
                 ) : (
                     <button
@@ -145,7 +145,7 @@ export default function UpdateProfile() {
                         }}
                         onClick={handleCancel}
                     >
-                        Hủy
+                        Cancel
                     </button>
                 )}
             </div>
@@ -196,7 +196,7 @@ export default function UpdateProfile() {
                                 </h4>
 
                                 <p className="text-muted">
-                                    Thành viên EngLearn
+                                    EngLearn Member
                                 </p>
 
                                 {editing && (
@@ -219,7 +219,7 @@ export default function UpdateProfile() {
                             <div className="row">
                                 <div className="col-md-6 mb-3">
                                     <label className="form-label fw-bold">
-                                        Họ
+                                        First Name
                                     </label>
 
                                     <input
@@ -247,7 +247,7 @@ export default function UpdateProfile() {
 
                                 <div className="col-md-6 mb-3">
                                     <label className="form-label fw-bold">
-                                        Tên
+                                        Last Name
                                     </label>
 
                                     <input
@@ -300,7 +300,7 @@ export default function UpdateProfile() {
 
                             <div className="mb-4">
                                 <label className="form-label fw-bold">
-                                    Số điện thoại
+                                    Phone Number
                                 </label>
 
                                 <input
@@ -333,8 +333,8 @@ export default function UpdateProfile() {
                                     }}
                                 >
                                     {loading
-                                        ? "Đang cập nhật..."
-                                        : "Lưu thay đổi"}
+                                        ? "Updating..."
+                                        : "Save Changes"}
                                 </button>
                             )}
                         </div>

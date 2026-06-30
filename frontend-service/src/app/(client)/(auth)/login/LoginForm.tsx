@@ -35,12 +35,12 @@ export default function LoginForm() {
                 const profile = await authApis.get(endpoints["profile"]);
                 dispatch({ type: "login", payload: profile.data.result });
                 await authApis.post(endpoints["dateLearned"](profile.data.result.id));
-                setMsg("Đăng nhập thành công!");
+                setMsg("Logged in successfully!");
                 router.push("/");
             }
         } catch (ex) {
             console.error(ex);
-            setMsg("Đăng nhập thất bại!");
+            setMsg("Login failed!");
         } finally {
             setLoading(false);
         }
@@ -57,7 +57,7 @@ export default function LoginForm() {
         <div className="card shadow-lg border-0 rounded-4 p-4">
             {msg && (
                 <Alert
-                    variant={msg.includes("thất bại") ? "danger" : "success"}
+                    variant={msg.includes("failed") ? "danger" : "success"}
                     className="py-2 position-fixed top-0 end-0 m-3 shadow"
                     style={{ zIndex: 9999, minWidth: "250px" }}
                 >
@@ -66,13 +66,13 @@ export default function LoginForm() {
             )}
 
             <form onSubmit={login}>
-                <h3 className="text-center fw-bold mb-4">Đăng nhập</h3>
+                <h3 className="text-center fw-bold mb-4">Login</h3>
 
                 <div className="form-outline mb-4">
                     <input
                         type="text"
                         className="form-control form-control-lg"
-                        placeholder="Tên đăng nhập"
+                        placeholder="Username"
                         value={user["username"] || ""}
                         onChange={(e) => setUser({ ...user, username: e.target.value })}
                         required
@@ -83,7 +83,7 @@ export default function LoginForm() {
                     <input
                         type="password"
                         className="form-control form-control-lg"
-                        placeholder="Mật khẩu"
+                        placeholder="Password"
                         value={user["password"] || ""}
                         onChange={(e) => setUser({ ...user, password: e.target.value })}
                         required
@@ -94,11 +94,11 @@ export default function LoginForm() {
                     <div className="form-check">
                         <input className="form-check-input me-2" type="checkbox" id="rememberMe" />
                         <label className="form-check-label" htmlFor="rememberMe">
-                            Ghi nhớ tôi
+                            Remember me
                         </label>
                     </div>
                     <a href="/forgot-password" className="text-primary fw-semibold small">
-                        Quên mật khẩu?
+                        Forgot password?
                     </a>
                 </div>
 
@@ -115,18 +115,18 @@ export default function LoginForm() {
                                     role="status"
                                     aria-hidden="true"
                                 ></span>
-                                Đang xử lý...
+                                Logging in...
                             </>
                         ) : (
-                            "Đăng nhập"
+                            "Login"
                         )}
                     </button>
                 </div>
 
                 <p className="small fw-bold mt-3 text-center">
-                    Chưa có tài khoản?{" "}
+                    Don't have an account?{" "}
                     <a href="/register" className="link-danger">
-                        Đăng ký
+                        Register
                     </a>
                 </p>
             </form>

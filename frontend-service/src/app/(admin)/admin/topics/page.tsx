@@ -66,10 +66,10 @@ export default function Topics() {
         e.preventDefault();
         try {
             await authApis.delete(endpoints["topic"](id));
-            setMsg("Xóa chủ đề thành công!");
+            setMsg("Topic deleted successfully!");
             setTopics(prev => prev.filter(t => t.id !== id));
         } catch (err) {
-            setMsg("Xóa chủ đề không thành công!");
+            setMsg("Failed to delete topic!");
             console.error(err);
         }
     };
@@ -86,7 +86,7 @@ export default function Topics() {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 className="fw-bold">English Topics</h2>
                 <Link href="/admin/topics/addTopic" className="btn btn-primary">
-                    + Thêm chủ đề
+                    + Add Topic
                 </Link>
             </div>
 
@@ -95,7 +95,7 @@ export default function Topics() {
                     value={keyword}
                     onChange={kw => setKeyword(kw.target.value)}
                     type="text"
-                    placeholder="Tìm kiếm chủ đề..."
+                    placeholder="Search topics..."
                     className="shadow-sm"
                 />
             </Form>
@@ -123,10 +123,10 @@ export default function Topics() {
                             <Card.Footer className="bg-white border-0">
                                 <div className="d-flex gap-2">
                                     <Link href={`/admin/topics/${topic.id}`} className="btn btn-outline-primary btn-sm flex-fill">
-                                        Xem từ vựng
+                                        View Vocabulary
                                     </Link>
                                     <Link href={`/admin/topics/${topic.id}/update`} className="btn btn-outline-success btn-sm flex-fill">
-                                        Cập nhật
+                                        Edit
                                     </Link>
                                     <Button
                                         variant="outline-danger"
@@ -134,7 +134,7 @@ export default function Topics() {
                                         className="flex-fill"
                                         onClick={(e) => handleDelete(e, topic.id)}
                                     >
-                                        Xóa
+                                        Delete
                                     </Button>
                                 </div>
                             </Card.Footer>
@@ -144,7 +144,7 @@ export default function Topics() {
             </Row>
 
             {topics.length === 0 &&
-                <Alert className="mt-4" variant="info">Không có chủ đề</Alert>
+                <Alert className="mt-4" variant="info">No topics found</Alert>
             }
 
             {loading && <MySpinner />}
@@ -152,7 +152,7 @@ export default function Topics() {
             {page > 0 && hasMore && (
                 <div className="mt-4 text-center">
                     <Button variant="secondary" onClick={loadMore}>
-                        Xem thêm...
+                        Load More...
                     </Button>
                 </div>
             )}

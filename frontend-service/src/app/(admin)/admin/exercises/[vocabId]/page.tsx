@@ -50,10 +50,10 @@ export default function ExercisesVocabPage() {
         e.preventDefault();
         try {
             await authApis.delete(endpoints["delExercise"](id));
-            setMsg("Xóa chủ đề thành công!");
+            setMsg("Exercise deleted successfully!");
             setExercises(prev => prev.filter(t => t.id !== id));
         } catch (err) {
-            setMsg("Xóa chủ đề không thành công!");
+            setMsg("Failed to delete exercise!");
             console.error(err);
         }
     }
@@ -70,14 +70,14 @@ export default function ExercisesVocabPage() {
             <Card className="shadow-sm border-0">
                 <Card.Body>
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h3 className="fw-bold mb-0">Bài tập cho từ vựng: {word}</h3>
+                        <h3 className="fw-bold mb-0">Exercises for vocabulary: {word}</h3>
 
                         <div className="d-flex gap-2">
                             <Button variant="primary" onClick={() => setShowAdd(true)}>
-                                + Thêm Exercise
+                                + Add Exercise
                             </Button>
                             <Link href="/admin/exercises" className="btn btn-outline-secondary">
-                                Quay lại
+                                Go Back
                             </Link>
                         </div>
                     </div>
@@ -95,18 +95,18 @@ export default function ExercisesVocabPage() {
                     <Table hover responsive bordered className="align-middle">
                         <thead className="table-light text-center">
                             <tr>
-                                <th>STT</th>
-                                <th>Câu hỏi</th>
-                                <th>Loại</th>
-                                <th>Đáp án</th>
-                                <th>Xóa</th>
+                                <th>No.</th>
+                                <th>Question</th>
+                                <th>Type</th>
+                                <th>Answers</th>
+                                <th>Delete</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
                                     <td colSpan={6} className="text-center py-4">
-                                        Đang tải...
+                                        Loading...
                                     </td>
                                 </tr>
                             ) : exercises.length > 0 ? (
@@ -141,7 +141,7 @@ export default function ExercisesVocabPage() {
                                                 size="sm"
                                                 onClick={(e) => handleDelete(e, ex.id)}
                                             >
-                                                Xóa
+                                                Delete
                                             </Button>
                                         </td>
                                     </tr>
@@ -149,7 +149,7 @@ export default function ExercisesVocabPage() {
                             ) : (
                                 <tr>
                                     <td colSpan={6} className="text-center text-muted py-4">
-                                        Không có bài tập
+                                        No exercises found
                                     </td>
                                 </tr>
                             )}

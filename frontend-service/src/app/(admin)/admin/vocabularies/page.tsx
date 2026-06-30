@@ -71,10 +71,10 @@ export default function Vocabularies() {
         e.preventDefault();
         try {
             await authApis.delete(endpoints["vocabulary"](id));
-            setMsg("Xóa từ vựng thành công!")
+            setMsg("Vocabulary deleted successfully!")
             loadVocabularies();
         } catch (err) {
-            setMsg("Xóa từ vựng không thành công!");
+            setMsg("Failed to delete vocabulary!");
             console.error(err);
         }
     }
@@ -91,12 +91,12 @@ export default function Vocabularies() {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 className="fw-bold">English Vocabulary</h2>
                 <Link href="/admin/vocabularies/addVocab" className="btn btn-primary">
-                    + Thêm từ vựng
+                    + Add Vocabulary
                 </Link>
             </div>
             <Form>
                 <Form.Group className="mb-3 mt-2">
-                    <Form.Control value={keyword} onChange={kw => setKeyword(kw.target.value)} type="text" placeholder="Tìm kiếm từ vựng..." />
+                    <Form.Control value={keyword} onChange={kw => setKeyword(kw.target.value)} type="text" placeholder="Search vocabulary..." />
                 </Form.Group>
             </Form>
             {msg && (
@@ -129,14 +129,14 @@ export default function Vocabularies() {
                                         href={`/admin/vocabularies/${vocab.id}/updateVocab`}
                                         className="btn btn-success btn-sm flex-grow-1"
                                     >
-                                        Cập nhật
+                                        Edit
                                     </Link>
                                     <Link
                                         href="#"
                                         onClick={(e)=>handleDelete(e, vocab.id)}
                                         className="btn btn-danger btn-sm flex-grow-1"
                                     >
-                                        Xóa
+                                        Delete
                                     </Link>
                                 </div>
                             </Card.Body>
@@ -146,13 +146,13 @@ export default function Vocabularies() {
             </Row>
 
             {vocabularies.length === 0 &&
-                <Alert className="mt-4" variant="info">Không có chủ đề</Alert>
+                <Alert className="mt-4" variant="info">No vocabulary found</Alert>
             }
 
             {loading && <MySpinner />}
 
             {hasMore && <div className="mt-2 mb-2 text-center">
-                <Button variant="primary" onClick={loadMore}>Xem thêm...</Button>
+                <Button variant="primary" onClick={loadMore}>Load More...</Button>
             </div>}
         </Container>
     );

@@ -19,8 +19,8 @@ export default function AdminLogin() {
     const { dispatch } = useContext(UserContext)!;
 
     const info = [
-        { title: "Tên đăng nhập", field: "username", type: "text" },
-        { title: "Mật khẩu", field: "password", type: "password" },
+        { title: "Username", field: "username", type: "text" },
+        { title: "Password", field: "password", type: "password" },
     ];
 
     const login = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -40,12 +40,12 @@ export default function AdminLogin() {
 
                 const profile = await authApis.get(endpoints["profile"]);
                 dispatch({ type: "login", payload: profile.data.result });
-                setMsg("Đăng nhập thành công!")
+                setMsg("Logged in successfully!")
                 router.push("/admin");
             }
         } catch (ex) {
             console.error(ex);
-            setMsg("Đăng nhập thất bại!");
+            setMsg("Login failed!");
         } finally {
             setLoading(false);
         }
@@ -71,7 +71,7 @@ export default function AdminLogin() {
         >
             {msg && (
                 <Alert
-                    variant={msg.includes("thất bại") ? "danger" : "success"}
+                    variant={msg.includes("failed") ? "danger" : "success"}
                     className="position-fixed top-0 end-0 m-4 shadow"
                     style={{ zIndex: 9999, minWidth: "280px", borderRadius: "12px" }}
                 >
@@ -105,7 +105,7 @@ export default function AdminLogin() {
                         ADMIN LOGIN
                     </h2>
                     <p className="text-muted small mt-2">
-                        Hệ thống quản trị EngLearn
+                        EngLearn Admin System
                     </p>
                 </div>
 
@@ -156,7 +156,7 @@ export default function AdminLogin() {
                         {loading ? (
                             <Spinner size="sm" animation="border" />
                         ) : (
-                            "Đăng nhập"
+                            "Login"
                         )}
                     </Button>
                 </Form>

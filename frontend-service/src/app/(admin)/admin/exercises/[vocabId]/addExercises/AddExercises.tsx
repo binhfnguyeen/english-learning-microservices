@@ -43,7 +43,7 @@ export default function AddExercise({ onSuccess }: AddExerciseProps) {
             setLoading(true);
             const payload = {
                 question: exerciseType === "LISTEN_AND_TYPE"
-                    ? "Nghe và nhập lại từ sau"
+                    ? "Listen and write the word"
                     : question,
                 exerciseType,
                 vocabularyId: vocabId,
@@ -57,11 +57,11 @@ export default function AddExercise({ onSuccess }: AddExerciseProps) {
             if (onSuccess) onSuccess();
         } catch (err: unknown) {
             if (err instanceof Error) {
-                console.error("Thêm exercise thất bại:", err.message);
+                console.error("Add exercise failed:", err.message);
             } else {
-                console.error("Thêm exercise thất bại:", err);
+                console.error("Add exercise failed:", err);
             }
-            alert("Không thể thêm exercise!");
+            alert("Could not add exercise!");
         } finally {
             setLoading(false);
         }
@@ -71,7 +71,7 @@ export default function AddExercise({ onSuccess }: AddExerciseProps) {
         <Card className="shadow-lg p-4 border-0" style={{ borderRadius: "15px" }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h3 className="text-primary fw-bold m-0">
-                    <Plus size={28} /> Thêm bài tập cho từ vựng: {word}
+                    <Plus size={28} /> Add Exercise for vocabulary: {word}
                 </h3>
                 <Button variant="light" className="border-0" onClick={onSuccess}>
                     <X size={24} />
@@ -80,29 +80,29 @@ export default function AddExercise({ onSuccess }: AddExerciseProps) {
 
             <Form>
                 <Form.Group className="mb-3">
-                    <Form.Label>Loại bài tập</Form.Label>
+                    <Form.Label>Exercise Type</Form.Label>
                     <Form.Select
                         value={exerciseType}
                         onChange={(e) => setExerciseType(e.target.value as "CHOOSE_MEANING" | "LISTEN_AND_TYPE")}
                     >
-                        <option value="CHOOSE_MEANING">Chọn nghĩa</option>
-                        <option value="LISTEN_AND_TYPE">Nghe và viết lại từ</option>
+                        <option value="CHOOSE_MEANING">Choose Meaning</option>
+                        <option value="LISTEN_AND_TYPE">Listen and Write Word</option>
                     </Form.Select>
                 </Form.Group>
 
                 {exerciseType === "CHOOSE_MEANING" && (
                     <Form.Group className="mb-3">
-                        <Form.Label>Câu hỏi</Form.Label>
+                        <Form.Label>Question</Form.Label>
                         <Form.Control
                             type="text"
                             value={question}
                             onChange={(e) => setQuestion(e.target.value)}
-                            placeholder="Nhập câu hỏi"
+                            placeholder="Enter question"
                         />
                     </Form.Group>
                 )}
 
-                <Form.Label>Đáp án</Form.Label>
+                <Form.Label>Answers</Form.Label>
                 {exerciseType === "CHOOSE_MEANING" ? (
                     <>
                         {choices.map((c, idx) => (
@@ -113,7 +113,7 @@ export default function AddExercise({ onSuccess }: AddExerciseProps) {
                                     onChange={(e) =>
                                         handleChoiceChange(idx, "content", e.target.value)
                                     }
-                                    placeholder={`Lựa chọn ${idx + 1}`}
+                                    placeholder={`Choice ${idx + 1}`}
                                     className="me-2"
                                 />
                                 <Form.Check
@@ -128,7 +128,7 @@ export default function AddExercise({ onSuccess }: AddExerciseProps) {
                                             }))
                                         )
                                     }
-                                    label="Đúng"
+                                    label="Correct"
                                 />
                             </div>
                         ))}
@@ -139,7 +139,7 @@ export default function AddExercise({ onSuccess }: AddExerciseProps) {
 
                 <div className="mt-4 text-end">
                     <Button variant="primary" onClick={addExercise} disabled={loading}>
-                        {loading ? "Đang lưu..." : "Lưu bài tập"}
+                        {loading ? "Saving..." : "Save Exercise"}
                     </Button>
                 </div>
             </Form>

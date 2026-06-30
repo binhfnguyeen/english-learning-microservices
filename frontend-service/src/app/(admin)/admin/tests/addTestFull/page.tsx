@@ -5,7 +5,7 @@ import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button, Container, Form, Card, Row, Col, Badge } from "react-bootstrap";
-import Swal from "sweetalert2";
+
 
 interface Vocabulary {
     id: number;
@@ -105,7 +105,7 @@ export default function AddTestFull() {
                 const res = await authApis.get(`${endpoints["topics"]}?page=0&size=9999`);
                 setTopics(res.data.result.content || []);
             } catch (err) {
-                console.error("Lỗi tải danh sách chủ đề:", err);
+                console.error("Error loading topics:", err);
             }
         })();
     }, []);
@@ -121,14 +121,14 @@ export default function AddTestFull() {
             const res = await authApis.get(url);
             setVocabularies(res.data.result.content || []);
         } catch (err) {
-            console.error("Lỗi tải từ vựng:", err);
+            console.error("Error loading vocabulary:", err);
         }
     };
 
     const addQuestion = () => {
         setQuestions([
             ...questions,
-            { content: "Chọn đáp án đúng nhất:", type: "MULTIPLE_CHOICE", correctAnswerText: "", choices: [] }
+            { content: "Choose the correct answer:", type: "MULTIPLE_CHOICE", correctAnswerText: "", choices: [] }
         ]);
     };
 
@@ -165,13 +165,13 @@ export default function AddTestFull() {
                 currentContent.startsWith("Chọn đáp")
             ) {
                 if (typeValue === "WORD_ORDER") {
-                    updated[index].content = "Sắp xếp các khối từ sau thành câu hoàn chỉnh:";
+                    updated[index].content = "Arrange the following word blocks into a complete sentence:";
                 } else if (typeValue === "REWRITE_SENTENCE") {
-                    updated[index].content = "Viết lại câu sau với nghĩa tương đương: \"[Nhập câu gốc vào đây]\"";
+                    updated[index].content = "Rewrite the following sentence with equivalent meaning: \"[Enter original sentence here]\"";
                 } else if (typeValue === "FILL_IN_BLANK") {
-                    updated[index].content = "Điền từ/cụm từ thích hợp vào chỗ trống: [Nhập phần đầu] ___ [Nhập phần cuối]";
+                    updated[index].content = "Fill in the blank with the appropriate word/phrase: [Enter beginning] ___ [Enter ending]";
                 } else if (typeValue === "MULTIPLE_CHOICE") {
-                    updated[index].content = "Chọn đáp án đúng nhất:";
+                    updated[index].content = "Choose the correct answer:";
                 }
             }
         }
@@ -179,10 +179,11 @@ export default function AddTestFull() {
         setQuestions(updated);
     };
 
-    const autoGenerateWordBlocks = (qIndex: number) => {
+    const autoGenerateWordBlocks = async (qIndex: number) => {
         const q = questions[qIndex];
         if (!q.correctAnswerText || q.correctAnswerText.trim() === "") {
-            void Swal.fire("Chú ý", "Vui lòng nhập 'Đáp án chính xác' trước khi tự động cắt chữ!", "warning");
+            const Swal = (await import("sweetalert2")).default;
+            void Swal.fire("Attention", "Please enter the 'Correct Answer' before auto-generating word blocks!", "warning");
             return;
         }
 
@@ -226,14 +227,15 @@ export default function AddTestFull() {
 
     const handleSubmit = async () => {
         setSubmitted(true);
+        const Swal = (await import("sweetalert2")).default;
 
         if (!title || !difficultyLevel || selectedTopicId === "") {
-            await Swal.fire("Lỗi", "Vui lòng nhập Tiêu đề và Bắt buộc chọn Chủ đề!", "error");
+            await Swal.fire("Error", "Please enter a Title and select a Topic!", "error");
             return;
         }
 
         if (questions.length === 0) {
-            await Swal.fire("Lỗi", "Vui lòng thêm ít nhất 1 câu hỏi", "error");
+            await Swal.fire("Error", "Please add at least 1 question", "error");
             return;
         }
 
@@ -254,10 +256,10 @@ export default function AddTestFull() {
 
         try {
             await authApis.post(endpoints["Tests"], payload);
-            await Swal.fire("Thành công!", "Đã thêm đề kiểm tra mới", "success");
+            await Swal.fire("Success!", "New practice test has been added", "success");
         } catch (err) {
             console.error(err);
-            await Swal.fire("Thất bại!", "Đã có lỗi xảy ra khi lưu đề thi", "error");
+            await Swal.fire("Failed!", "An error occurred while saving the test", "error");
         }
     };
 
@@ -267,7 +269,7 @@ export default function AddTestFull() {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 className="fw-bold text-dark m-0 d-flex align-items-center gap-2">
-                        <IconFileText className="text-primary" size={28} /> Tạo Đề Kiểm Tra Mới
+                        <IconFileText className="text-primary" size={28} /> Create New Practice Test
                     </h2>
                 </div>
                 <Link
@@ -275,17 +277,17 @@ export default function AddTestFull() {
                     className="btn btn-outline-secondary px-4 fw-medium"
                     style={{ borderRadius: '12px' }}
                 >
-                    ← Quay lại
+                    ← Go Back
                 </Link>
             </div>
 
             <Card className="shadow-sm border-0 mb-4 rounded-4">
                 <Card.Body className="p-4 bg-light">
-                    <h5 className="fw-bold mb-3 text-dark">1. Thông tin chung</h5>
+                    <h5 className="fw-bold mb-3 text-dark">1. General Information</h5>
                     <Row className="g-3">
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label className="fw-bold">Chọn chủ đề bài học <span className="text-danger">*</span></Form.Label>
+                                <Form.Label className="fw-bold">Select Topic <span className="text-danger">*</span></Form.Label>
                                 <Form.Select
                                     required
                                     value={selectedTopicId}
@@ -293,7 +295,7 @@ export default function AddTestFull() {
                                     className={`shadow-sm ${submitted && selectedTopicId === "" ? "border-danger" : ""}`}
                                     style={{ padding: '10px 14px' }}
                                 >
-                                    <option value="">-- Bắt buộc chọn chủ đề --</option>
+                                    <option value="">-- Select Topic (Required) --</option>
                                     {topics.map((t) => (
                                         <option key={t.id} value={t.id}>
                                             {t.name}
@@ -301,48 +303,48 @@ export default function AddTestFull() {
                                     ))}
                                 </Form.Select>
                                 {selectedTopicId === "" && submitted && (
-                                    <div className="text-danger small mt-1 fw-medium">Vui lòng chọn một chủ đề.</div>
+                                    <div className="text-danger small mt-1 fw-medium">Please select a topic.</div>
                                 )}
                             </Form.Group>
                         </Col>
                         <Col md={6}>
                             <Form.Group>
-                                <Form.Label className="fw-bold">Mức độ khó <span className="text-danger">*</span></Form.Label>
+                                <Form.Label className="fw-bold">Difficulty Level <span className="text-danger">*</span></Form.Label>
                                 <Form.Select
                                     value={difficultyLevel}
                                     onChange={(e) => setDifficultyLevel(e.target.value)}
                                     className="shadow-sm"
                                     style={{ padding: '10px 14px' }}
                                 >
-                                    <option value="Easy">Dễ (Easy)</option>
-                                    <option value="Medium">Trung bình (Medium)</option>
-                                    <option value="Hard">Khó (Hard)</option>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
                                 </Form.Select>
                             </Form.Group>
                         </Col>
                         <Col md={12}>
                             <Form.Group>
-                                <Form.Label className="fw-bold">Tiêu đề bài kiểm tra <span className="text-danger">*</span></Form.Label>
+                                <Form.Label className="fw-bold">Test Title <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
                                     value={title}
-                                    placeholder="Nhập tiêu đề..."
+                                    placeholder="Enter title..."
                                     onChange={(e) => setTitle(e.target.value)}
                                     className={`shadow-sm ${submitted && !title ? "border-danger" : ""}`}
                                     style={{ padding: '10px 14px' }}
                                 />
                                 {!title && submitted && (
-                                    <div className="text-danger small mt-1 fw-medium">Tiêu đề không được bỏ trống.</div>
+                                    <div className="text-danger small mt-1 fw-medium">Title cannot be empty.</div>
                                 )}
                             </Form.Group>
                         </Col>
                         <Col md={12}>
                             <Form.Group>
-                                <Form.Label className="fw-bold">Mô tả thêm</Form.Label>
+                                <Form.Label className="fw-bold">Description</Form.Label>
                                 <Form.Control
                                     as="textarea"
                                     rows={3}
                                     value={description}
-                                    placeholder="Nhập mô tả..."
+                                    placeholder="Enter description..."
                                     onChange={(e) => setDescription(e.target.value)}
                                     className="shadow-sm"
                                     style={{ padding: '10px 14px' }}
@@ -354,7 +356,7 @@ export default function AddTestFull() {
             </Card>
 
             {/* DANH SÁCH CÂU HỎI */}
-            <h5 className="fw-bold mb-3 text-dark mt-5">2. Danh sách câu hỏi</h5>
+            <h5 className="fw-bold mb-3 text-dark mt-5">2. Questions List</h5>
             {questions.map((q, qIndex) => {
                 const showVocabSelect = selectedTopicId !== "" && q.type === "MULTIPLE_CHOICE";
 
@@ -362,14 +364,14 @@ export default function AddTestFull() {
                     <Card key={qIndex} className="shadow-sm mb-4 rounded-4 border-start border-primary border-4">
                         <Card.Body className="p-4">
                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                <Badge bg="primary" className="fs-6 px-3 py-2 rounded-pill shadow-sm">Câu {qIndex + 1}</Badge>
+                                <Badge bg="primary" className="fs-6 px-3 py-2 rounded-pill shadow-sm">Question {qIndex + 1}</Badge>
                                 <Button
                                     variant="outline-danger"
                                     size="sm"
                                     className="d-flex align-items-center gap-1 rounded-pill px-3"
                                     onClick={() => removeQuestion(qIndex)}
                                 >
-                                    <IconTrash size={16} /> Xóa câu này
+                                    <IconTrash size={16} /> Delete question
                                 </Button>
                             </div>
 
@@ -377,16 +379,16 @@ export default function AddTestFull() {
                                 {/* Loại câu hỏi */}
                                 <Col md={4}>
                                     <Form.Group>
-                                        <Form.Label className="fw-bold text-muted small text-uppercase">Loại câu hỏi</Form.Label>
+                                        <Form.Label className="fw-bold text-muted small text-uppercase">Question Type</Form.Label>
                                         <Form.Select
                                             value={q.type}
                                             onChange={(e) => updateQuestion(qIndex, "type", e.target.value as QuestionType)}
                                             className="shadow-sm"
                                         >
-                                            <option value="MULTIPLE_CHOICE">Trắc nghiệm</option>
-                                            <option value="FILL_IN_BLANK">Điền vào chỗ trống</option>
-                                            <option value="WORD_ORDER">Sắp xếp từ</option>
-                                            <option value="REWRITE_SENTENCE">Viết lại câu</option>
+                                            <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                                            <option value="FILL_IN_BLANK">Fill in the Blank</option>
+                                            <option value="WORD_ORDER">Word Order</option>
+                                            <option value="REWRITE_SENTENCE">Rewrite Sentence</option>
                                         </Form.Select>
                                     </Form.Group>
                                 </Col>
@@ -394,11 +396,11 @@ export default function AddTestFull() {
                                 <Col md={8}>
                                     <Form.Group>
                                         <Form.Label className="fw-bold text-muted small text-uppercase">
-                                            Nội dung câu hỏi (Gợi ý cấu trúc)
+                                            Question Content (Structure Suggestion)
                                         </Form.Label>
                                         <Form.Control
                                             value={q.content}
-                                            placeholder="Ví dụ: Chọn từ đúng..."
+                                            placeholder="Example: Choose the correct word..."
                                             onChange={(e) => updateQuestion(qIndex, "content", e.target.value)}
                                             className="shadow-sm"
                                         />
@@ -410,7 +412,7 @@ export default function AddTestFull() {
                                         <div className="bg-success bg-opacity-10 p-3 rounded-4 border border-success border-opacity-25 shadow-sm">
                                             <div className="d-flex justify-content-between align-items-center mb-2">
                                                 <Form.Label className="fw-bold text-success m-0">
-                                                    Đáp án chính xác (Văn bản)
+                                                    Correct Answer (Text)
                                                 </Form.Label>
                                                 {q.type === "WORD_ORDER" && (
                                                     <Button
@@ -419,19 +421,19 @@ export default function AddTestFull() {
                                                         className="fw-bold px-3 py-1 shadow-sm d-flex align-items-center gap-1 rounded-pill"
                                                         onClick={() => autoGenerateWordBlocks(qIndex)}
                                                     >
-                                                        <IconZap size={14} /> Tự động tạo khối
+                                                        <IconZap size={14} /> Auto Generate Blocks
                                                     </Button>
                                                 )}
                                             </div>
 
                                             <Form.Control
                                                 value={q.correctAnswerText}
-                                                placeholder={q.type === "WORD_ORDER" ? "Nhập câu hoàn chỉnh vào đây rồi bấm nút 'Tự động tạo khối' ở trên ↗" : "Nhập đáp án chuẩn để hệ thống đối chiếu..."}
+                                                placeholder={q.type === "WORD_ORDER" ? "Enter the complete sentence here then click 'Auto Generate Blocks' above ↗" : "Enter correct answer for auto-matching..."}
                                                 onChange={(e) => updateQuestion(qIndex, "correctAnswerText", e.target.value)}
                                             />
                                             <Form.Text className="text-muted mt-2 d-flex align-items-center gap-1">
                                                 <IconLightbulb className="text-warning" />
-                                                {q.type === "WORD_ORDER" ? "Gõ nguyên câu liền mạch, hệ thống sẽ tự chia cắt thành các mảnh ghép kéo thả." : "Nhập từ/câu đúng."}
+                                                {q.type === "WORD_ORDER" ? "Type the full sentence; the system will split it into drag-and-drop blocks." : "Enter correct word/sentence."}
                                             </Form.Text>
                                         </div>
                                     </Col>
@@ -442,7 +444,7 @@ export default function AddTestFull() {
                                 <div className="bg-light p-3 rounded-4 border shadow-sm">
                                     <div className="d-flex justify-content-between align-items-center mb-3">
                                         <span className="fw-bold text-secondary text-uppercase small">
-                                            {q.type === "WORD_ORDER" ? "Các mảnh ghép từ (Blocks)" : "Các lựa chọn đáp án"}
+                                            {q.type === "WORD_ORDER" ? "Word blocks (Drag & Drop)" : "Answer choices"}
                                         </span>
                                         <Button
                                             variant="secondary"
@@ -450,14 +452,14 @@ export default function AddTestFull() {
                                             className="d-flex align-items-center gap-1 rounded-pill px-3"
                                             onClick={() => addChoice(qIndex)}
                                         >
-                                            <IconPlus size={16} /> Thêm {q.type === "WORD_ORDER" ? "mảnh ghép" : "lựa chọn"}
+                                            <IconPlus size={16} /> Add {q.type === "WORD_ORDER" ? "block" : "choice"}
                                         </Button>
                                     </div>
 
                                     {q.choices.length === 0 && (
                                         <p className="text-muted small m-0 fst-italic d-flex align-items-center gap-1">
                                             <IconLightbulb className="text-warning" />
-                                            {q.type === "WORD_ORDER" ? "Hãy gõ đáp án ở trên rồi bấm nút 'Tự động tạo khối'." : "Chưa có dữ liệu."}
+                                            {q.type === "WORD_ORDER" ? "Enter correct sentence above then click 'Auto Generate Blocks'." : "No data available."}
                                         </p>
                                     )}
 
@@ -470,7 +472,7 @@ export default function AddTestFull() {
                                                         value={c.vocabularyId}
                                                         onChange={(e) => updateChoice(qIndex, cIndex, "vocabularyId", e.target.value ? Number(e.target.value) : "")}
                                                     >
-                                                        <option value="">-- Từ vựng --</option>
+                                                        <option value="">-- Vocabulary --</option>
                                                         {vocabularies.map((v) => (
                                                             <option key={v.id} value={v.id}>
                                                                 {v.word}
@@ -482,7 +484,7 @@ export default function AddTestFull() {
 
                                             <Col xs={12} md={q.type === "MULTIPLE_CHOICE" ? (showVocabSelect ? 5 : 8) : 9}>
                                                 <Form.Control
-                                                    placeholder={showVocabSelect ? "Hoặc nhập chữ (nếu không chọn từ)" : "Nhập nội dung hiển thị..."}
+                                                    placeholder={showVocabSelect ? "Or enter text (if not selecting vocabulary)" : "Enter text display..."}
                                                     value={c.textContent}
                                                     onChange={(e) => updateChoice(qIndex, cIndex, "textContent", e.target.value)}
                                                 />
@@ -492,7 +494,7 @@ export default function AddTestFull() {
                                                 <Col xs={8} md={2} className="text-center">
                                                     <Form.Check
                                                         type="checkbox"
-                                                        label={<span className={c.isCorrect ? "text-success fw-bold" : ""}>Đúng</span>}
+                                                        label={<span className={c.isCorrect ? "text-success fw-bold" : ""}>Correct</span>}
                                                         checked={c.isCorrect}
                                                         onChange={(e) => updateChoice(qIndex, cIndex, "isCorrect", e.target.checked)}
                                                     />
@@ -506,7 +508,7 @@ export default function AddTestFull() {
                                                     className="d-flex align-items-center justify-content-center gap-1 w-100 rounded-3"
                                                     onClick={() => removeChoice(qIndex, cIndex)}
                                                 >
-                                                    <IconTrash size={16} /> Xóa
+                                                    <IconTrash size={16} /> Delete
                                                 </Button>
                                             </Col>
                                         </Row>
@@ -524,7 +526,7 @@ export default function AddTestFull() {
                     onClick={addQuestion}
                     className="fw-bold px-4 py-2 border-2 d-flex align-items-center gap-2 rounded-pill"
                 >
-                    <IconPlus /> THÊM CÂU HỎI
+                    <IconPlus /> ADD QUESTION
                 </Button>
 
                 <Button
@@ -533,7 +535,7 @@ export default function AddTestFull() {
                     onClick={handleSubmit}
                     className="fw-bold px-5 py-2 rounded-pill shadow d-flex align-items-center gap-2 transition hover-scale"
                 >
-                    <IconSave /> LƯU ĐỀ THI
+                    <IconSave /> SAVE TEST
                 </Button>
             </div>
 

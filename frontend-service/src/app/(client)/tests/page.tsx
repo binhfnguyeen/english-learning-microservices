@@ -110,7 +110,7 @@ export default function Tests() {
             }
 
         } catch (err) {
-            console.error("Lỗi khi tải dữ liệu bài kiểm tra:", err);
+            console.error("Error loading test data:", err);
         } finally {
             setLoading(false);
         }
@@ -143,9 +143,9 @@ export default function Tests() {
             <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
                 <div>
                     <h2 className="fw-bold text-dark m-0 d-flex align-items-center gap-2">
-                        <IconFileText className="text-primary" size={28} /> Danh sách Đề thi
+                        <IconFileText className="text-primary" size={28} /> Practice Tests
                     </h2>
-                    <span className="text-muted small">Hoàn thành từ vựng trong chủ đề để mở khóa bài kiểm tra tương ứng.</span>
+                    <span className="text-muted small">Complete the topic vocabulary to unlock the corresponding practice test.</span>
                 </div>
 
                 <div className="position-relative" style={{ width: "100%", maxWidth: "350px" }}>
@@ -156,7 +156,7 @@ export default function Tests() {
                         value={keyword}
                         onChange={kw => setKeyword(kw.target.value)}
                         type="text"
-                        placeholder="Tìm kiếm đề thi..."
+                        placeholder="Search tests..."
                         className="shadow-sm border-0 bg-light py-2"
                         style={{ paddingLeft: '40px', borderRadius: '12px' }}
                     />
@@ -195,7 +195,7 @@ export default function Tests() {
                                             <div className="d-flex justify-content-between align-items-start mb-3">
                                                 <Badge bg={isUnlocked ? "success" : "secondary"} className="px-2 py-1 rounded-2 d-flex align-items-center gap-1 shadow-sm">
                                                     {isUnlocked ? <IconUnlock size={14} /> : <IconLock size={14} />}
-                                                    {isUnlocked ? "Đã mở khóa" : "Đang khóa"}
+                                                    {isUnlocked ? "Unlocked" : "Locked"}
                                                 </Badge>
 
                                                 <Badge
@@ -211,15 +211,15 @@ export default function Tests() {
                                             </Card.Title>
 
                                             <Card.Text className="text-muted small flex-grow-1 mb-3">
-                                                {test.description || "Không có mô tả chi tiết cho đề thi này."}
+                                                {test.description || "No description available for this test."}
                                             </Card.Text>
 
                                             {/* HIỂN THỊ TIẾN ĐỘ NẾU BỊ KHÓA VÀ CÓ TOPIC */}
                                             {!isUnlocked && topicId && (
                                                 <div className="mb-4 mt-auto">
                                                     <div className="d-flex justify-content-between small text-muted mb-1 fw-medium">
-                                                        <span>Tiến độ chủ đề</span>
-                                                        <span>{learnedVocabs} / {requiredVocabs} từ</span>
+                                                        <span>Topic progress</span>
+                                                        <span>{learnedVocabs} / {requiredVocabs} words</span>
                                                     </div>
                                                     <ProgressBar
                                                         now={progressPercent}
@@ -236,7 +236,7 @@ export default function Tests() {
                                                     className="btn btn-primary w-100 fw-bold mt-auto d-flex align-items-center justify-content-center gap-2 shadow-sm"
                                                     style={{ borderRadius: '10px', padding: '10px 0' }}
                                                 >
-                                                    <IconPlay /> Làm bài ngay
+                                                    <IconPlay /> Start Test
                                                 </Link>
                                             ) : (
                                                 <Link
@@ -244,7 +244,7 @@ export default function Tests() {
                                                     className="btn btn-outline-secondary w-100 fw-bold mt-auto d-flex align-items-center justify-content-center gap-2"
                                                     style={{ borderRadius: '10px', padding: '10px 0' }}
                                                 >
-                                                    Học thêm từ vựng
+                                                    Learn more vocabulary
                                                 </Link>
                                             )}
 
@@ -258,7 +258,7 @@ export default function Tests() {
                     {!loading && tests.length === 0 && (
                         <div className="d-flex flex-column align-items-center justify-content-center py-5 bg-light rounded-4 border mt-2 shadow-sm">
                             <IconFileText size={48} className="text-muted mb-3 opacity-50 d-block mx-auto" />
-                            <p className="text-muted m-0 fs-5 fw-medium text-center">Không tìm thấy đề thi nào phù hợp.</p>
+                            <p className="text-muted m-0 fs-5 fw-medium text-center">No matching tests found.</p>
                         </div>
                     )}
 
@@ -269,7 +269,7 @@ export default function Tests() {
                                 className="px-5 fw-bold rounded-pill shadow-sm"
                                 onClick={() => setPage((p) => p + 1)}
                             >
-                                Xem thêm
+                                View More
                             </Button>
                         </div>
                     )}

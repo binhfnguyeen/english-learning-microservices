@@ -66,10 +66,10 @@ export default function AddVocab() {
             await authApis.post(endpoints["topic_vocabs"](id), null, {
                 params: { vocabId }
             });
-            setMsg("Thêm từ thành công!");
+            setMsg("Word added successfully!");
             loadVocabularies();
         } catch (err) {
-            setMsg("Thêm từ thất bại!");
+            setMsg("Failed to add word!");
             console.error(err);
         }
     };
@@ -85,25 +85,25 @@ export default function AddVocab() {
         <Container className="my-5">
             <Nav className="mb-3">
                 <Link href={`/admin/topics/${id}`} className="btn btn-outline-secondary btn-sm">
-                    Quay lại
+                    Go Back
                 </Link>
             </Nav>
 
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold">Chọn từ để thêm vào Topic</h2>
+                <h2 className="fw-bold">Select word to add to Topic</h2>
                 <Button
                     variant="info"
                     className="text-white fw-bold d-flex align-items-center gap-2"
                     onClick={() => setShowSuggestModal(true)}
                 >
-                    <Lightbulb /> Gợi ý từ vựng
+                    <Lightbulb /> Vocabulary Suggestions
                 </Button>
             </div>
 
             <InputGroup className="mb-3">
                 <Form.Control
                     type="text"
-                    placeholder="Tìm kiếm từ vựng trong hệ thống..."
+                    placeholder="Search vocabulary in system..."
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
                 />
@@ -111,7 +111,7 @@ export default function AddVocab() {
 
             {msg && (
                 <Alert
-                    variant={msg.includes("thất bại") ? "danger" : "success"}
+                    variant={msg.toLowerCase().includes("failed") ? "danger" : "success"}
                     className="py-2 position-fixed top-0 end-0 m-3 shadow"
                     style={{ zIndex: 9999, minWidth: "250px" }}
                 >
@@ -137,7 +137,7 @@ export default function AddVocab() {
                                     size="sm"
                                     onClick={() => handleAddVocab(vocab.id)}
                                 >
-                                    Thêm
+                                    Add
                                 </Button>
                             </Card.Body>
                         </Card>
@@ -146,7 +146,7 @@ export default function AddVocab() {
             )}
 
             {vocabularies.length === 0 && !loading && (
-                <Alert variant="info" className="mt-3">Không còn từ nào để thêm trong hệ thống</Alert>
+                <Alert variant="info" className="mt-3">No more vocabulary left to add in the system</Alert>
             )}
 
             <PublicApiSuggestVocab

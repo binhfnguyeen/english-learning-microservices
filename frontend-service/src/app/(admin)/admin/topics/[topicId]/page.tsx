@@ -78,11 +78,11 @@ export default function VocabTopic() {
             await authApis.delete(endpoints["topic_vocabs"](topicId), {
                 params: { vocabId }
             });
-            setMsg("Xóa từ thành công!");
+            setMsg("Vocabulary removed successfully!");
             loadVocabularies();
         } catch (err) {
             console.error(err);
-            setMsg("Xóa từ không thành công!");
+            setMsg("Failed to remove vocabulary!");
         } finally {
             setLoading(false);
         }
@@ -98,12 +98,12 @@ export default function VocabTopic() {
     return (
         <div className="container mt-4">
             <Nav className="ms-auto align-items-center gap-2 mb-2">
-                <Link href="/admin/topics" className="btn btn-outline-primary btn-sm">Quay lại</Link>
+                <Link href="/admin/topics" className="btn btn-outline-secondary btn-sm">Go Back</Link>
             </Nav>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold">Danh sách từ vựng</h2>
+                <h2 className="fw-bold">Vocabulary List</h2>
                 <Link href={`/admin/topics/${id}/addVocab`} className="btn btn-primary">
-                    + Thêm từ vựng thuộc chủ đề
+                    + Add Vocabulary to Topic
                 </Link>
             </div>
             <Form className="mb-3 mt-2">
@@ -112,7 +112,7 @@ export default function VocabTopic() {
                         value={keyword}
                         onChange={kw => setKeyword(kw.target.value)}
                         type="text"
-                        placeholder="Tìm kiếm từ vựng..."
+                        placeholder="Search vocabulary..."
                     />
                 </Form.Group>
             </Form>
@@ -152,7 +152,7 @@ export default function VocabTopic() {
                                         onClick={(e)=>handleRemove(e, id, vocab.id)}
                                         className="btn btn-danger btn-sm flex-grow-1"
                                     >
-                                        Xóa
+                                        Remove
                                     </Link>
                                 </div>
                             </Card.Body>
@@ -162,14 +162,14 @@ export default function VocabTopic() {
             </Row>
 
             {vocabularies.length === 0 &&
-                <Alert variant="info">Không có từ vựng thuộc chủ đề</Alert>
+                <Alert variant="info">No vocabulary belongs to this topic</Alert>
             }
 
             {loading && <MySpinner />}
 
             {page > 0 && hasMore && (
                 <div className="mt-2 mb-2 text-center">
-                    <Button variant="primary" onClick={loadMore}>Xem thêm...</Button>
+                    <Button variant="primary" onClick={loadMore}>Load More...</Button>
                 </div>
             )}
         </div>

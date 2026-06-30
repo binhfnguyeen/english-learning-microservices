@@ -41,16 +41,16 @@ export default function AiAssistant() {
                         <Bot size={24} />
                     </div>
                     <div>
-                        <p className="m-0 text-base font-black">Trợ lý học tập</p>
+                        <p className="m-0 text-base font-black">Learning Assistant</p>
                         <p className="m-0 text-xs font-bold text-indigo-100">
-                            {connected ? "Đang trực tuyến" : "Đang kết nối"}
+                            {connected ? "Online" : "Connecting..."}
                         </p>
                     </div>
                 </div>
                 <button
                     onClick={closeAssistant}
                     className="rounded-full p-2 text-white/90 transition-colors hover:bg-white/15 hover:text-white"
-                    aria-label="Thu nhỏ"
+                    aria-label="Minimize"
                 >
                     <Minus size={20} />
                 </button>
@@ -60,7 +60,7 @@ export default function AiAssistant() {
                 {messages.length === 0 && (
                     <div className="flex h-full flex-col items-center justify-center text-center text-slate-400">
                         <Bot className="mb-3" size={44} />
-                        <p className="m-0 text-sm font-bold">Bắt đầu cuộc trò chuyện...</p>
+                        <p className="m-0 text-sm font-bold">Start a conversation...</p>
                     </div>
                 )}
 
@@ -94,7 +94,7 @@ export default function AiAssistant() {
                     value={input}
                     onChange={(event) => setInput(event.target.value)}
                     disabled={!connected || isGenerating}
-                    placeholder={isGenerating ? "AI đang suy nghĩ..." : "Hỏi bài tại đây..."}
+                    placeholder={isGenerating ? "AI is thinking..." : "Ask a question here..."}
                     className="min-w-0 flex-1 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold outline-none ring-indigo-200 transition focus:ring-2 disabled:cursor-not-allowed disabled:opacity-70"
                 />
                 <button

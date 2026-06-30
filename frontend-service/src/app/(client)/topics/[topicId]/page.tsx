@@ -44,10 +44,10 @@ export default function StartLearn() {
                         href="/topics"
                         className="btn btn-outline-primary btn-sm"
                     >
-                        Quay lại
+                        Go Back
                     </Link>
                 </Nav>
-                <h2 className="fw-bold m-0">Chủ đề: {topic?.name}</h2>
+                <h2 className="fw-bold m-0">Topic: {topic?.name}</h2>
             </div>
 
             {loading ? (
@@ -55,7 +55,7 @@ export default function StartLearn() {
             ) : (
                 <>
                     <p className="text-muted fs-5 text-center mb-4">
-                        {topic?.description || "Không có mô tả cho chủ đề này."}
+                        {topic?.description || "No description available for this topic."}
                     </p>
 
                     <div className="text-center">
@@ -74,7 +74,7 @@ export default function StartLearn() {
                                 (e.currentTarget.style.transform = "scale(1)")
                             }
                         >
-                            Bắt đầu học
+                            Start Learning
                         </Link>
                     </div>
                 </>

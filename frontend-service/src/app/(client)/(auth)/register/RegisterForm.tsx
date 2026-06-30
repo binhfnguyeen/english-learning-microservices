@@ -35,21 +35,21 @@ export default function RegisterForm() {
 
     const validate = () => {
         if (!user.lastName || !user.firstName || !user.email || !user.username || !user.password) {
-            setMsg("Vui lòng nhập đầy đủ thông tin!");
+            setMsg("Please fill in all fields!");
             return false;
         }
         if (user.password !== user.confirm) {
-            setMsg("Mật khẩu KHÔNG khớp!");
+            setMsg("Passwords do not match!");
             return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(user.email)) {
-            setMsg("Email không hợp lệ!");
+            setMsg("Invalid email address!");
             return false;
         }
         const phoneRegex = /^(0[0-9]{9,10})$/;
         if (!phoneRegex.test(user.phone)) {
-            setMsg("Số điện thoại không hợp lệ!");
+            setMsg("Invalid phone number!");
             return false;
         }
         setMsg("");
@@ -77,11 +77,11 @@ export default function RegisterForm() {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
-            setMsg("Đăng ký thành công!");
+            setMsg("Registration successful!");
             router.push("/login");
         } catch (ex) {
             console.error(ex);
-            setMsg("Đăng ký thất bại!");
+            setMsg("Registration failed!");
         } finally {
             setLoading(false);
         }
@@ -98,7 +98,7 @@ export default function RegisterForm() {
         <div className="card shadow border-0 rounded-4 p-4" style={{ maxWidth: "420px", margin: "0 auto" }}>
             {msg && (
                 <Alert
-                    variant={msg.includes("thất bại") ? "danger" : "success"}
+                    variant={msg.includes("failed") ? "danger" : "success"}
                     className="py-2 position-fixed top-0 end-0 m-3 shadow"
                     style={{ zIndex: 9999, minWidth: "250px" }}
                 >
@@ -107,14 +107,14 @@ export default function RegisterForm() {
             )}
 
             <form onSubmit={register}>
-                <h4 className="text-center fw-bold mb-4">Đăng ký</h4>
+                <h4 className="text-center fw-bold mb-4">Register</h4>
 
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <input
                             type="text"
                             className="form-control"
-                            placeholder="Họ"
+                            placeholder="First Name"
                             value={user.lastName}
                             onChange={(e) => setUser({ ...user, lastName: e.target.value })}
                             required
@@ -125,7 +125,7 @@ export default function RegisterForm() {
                         <input
                             type="text"
                             className="form-control"
-                            placeholder="Tên"
+                            placeholder="Last Name"
                             value={user.firstName}
                             onChange={(e) => setUser({ ...user, firstName: e.target.value })}
                             required
@@ -148,7 +148,7 @@ export default function RegisterForm() {
                     <input
                         type="tel"
                         className="form-control"
-                        placeholder="Số điện thoại"
+                        placeholder="Phone Number"
                         value={user.phone}
                         onChange={(e) => setUser({ ...user, phone: e.target.value })}
                         required
@@ -159,7 +159,7 @@ export default function RegisterForm() {
                     <input
                         type="text"
                         className="form-control"
-                        placeholder="Tên đăng nhập"
+                        placeholder="Username"
                         value={user.username}
                         onChange={(e) => setUser({ ...user, username: e.target.value })}
                         required
@@ -170,7 +170,7 @@ export default function RegisterForm() {
                     <input
                         type="password"
                         className="form-control"
-                        placeholder="Mật khẩu"
+                        placeholder="Password"
                         value={user.password}
                         onChange={(e) => setUser({ ...user, password: e.target.value })}
                         required
@@ -181,7 +181,7 @@ export default function RegisterForm() {
                     <input
                         type="password"
                         className="form-control"
-                        placeholder="Xác nhận mật khẩu"
+                        placeholder="Confirm Password"
                         value={user.confirm}
                         onChange={(e) => setUser({ ...user, confirm: e.target.value })}
                         required
@@ -205,16 +205,16 @@ export default function RegisterForm() {
                                     role="status"
                                     aria-hidden="true"
                                 ></span>
-                                Đang đăng ký...
+                                Registering...
                             </>
                         ) : (
-                            "Đăng ký"
+                            "Register"
                         )}
                     </button>
                     <p className="small fw-bold mt-3 mb-0">
-                        Đã có tài khoản?{" "}
+                        Already have an account?{" "}
                         <a href="/login" className="link-danger">
-                            Đăng nhập
+                            Log in
                         </a>
                     </p>
                 </div>

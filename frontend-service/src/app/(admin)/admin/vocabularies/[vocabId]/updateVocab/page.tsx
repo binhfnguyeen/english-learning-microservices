@@ -62,10 +62,10 @@ export default function UpdateVocab() {
             const res = await authApis.post(endpoints["vocabularies"], formData);
             console.info(res.data);
 
-            setMsg("Cập nhật từ vựng thành công!");
+            setMsg("Vocabulary updated successfully!");
         } catch (ex) {
             console.error(ex);
-            setMsg("Cập nhật từ vựng không thành công!");
+            setMsg("Failed to update vocabulary!");
         } finally {
             setLoading(false);
         }
@@ -99,17 +99,17 @@ export default function UpdateVocab() {
         <Container className="mt-4">
             <Nav className="mb-3">
                 <Link href="/admin/vocabularies" className="btn btn-outline-secondary btn-sm">
-                    Quay lại
+                    Go Back
                 </Link>
             </Nav>
 
             <Card className="shadow-sm border-0 rounded-3">
                 <Card.Body>
-                    <h3 className="mb-4 fw-bold text-primary">Cập nhật từ vựng</h3>
+                    <h3 className="mb-4 fw-bold text-primary">Update Vocabulary</h3>
 
                     {msg && (
                         <Alert
-                            variant={msg.includes("không") ? "danger" : "success"}
+                            variant={msg.toLowerCase().includes("failed") ? "danger" : "success"}
                             className="py-2 position-fixed top-0 end-0 m-3 shadow"
                             style={{ zIndex: 9999, minWidth: "250px" }}
                         >
@@ -122,10 +122,10 @@ export default function UpdateVocab() {
                         <Row className="mb-3">
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label className="fw-semibold">Từ</Form.Label>
+                                    <Form.Label className="fw-semibold">Word</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Nhập từ..."
+                                        placeholder="Enter word..."
                                         value={word}
                                         onChange={(e) => setWord(e.target.value)}
                                         required
@@ -134,10 +134,10 @@ export default function UpdateVocab() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label className="fw-semibold">Nghĩa của từ</Form.Label>
+                                    <Form.Label className="fw-semibold">Word Meaning</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Nhập nghĩa..."
+                                        placeholder="Enter meaning..."
                                         value={meaning}
                                         onChange={(e) => setMeaning(e.target.value)}
                                         required
@@ -146,10 +146,10 @@ export default function UpdateVocab() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label className="fw-semibold">Loại từ</Form.Label>
+                                    <Form.Label className="fw-semibold">Part of Speech</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Danh từ, Động từ..."
+                                        placeholder="Noun, Verb, Adjective..."
                                         value={partOfSpeech}
                                         onChange={(e) => setPartOfSpeech(e.target.value)}
                                         required
@@ -158,13 +158,13 @@ export default function UpdateVocab() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label className="fw-semibold">Mức độ</Form.Label>
+                                    <Form.Label className="fw-semibold">Level</Form.Label>
                                     <Form.Select
                                         value={level}
                                         onChange={(e) => setLevel(e.target.value)}
                                         required
                                     >
-                                        <option value="">-- Chọn mức độ --</option>
+                                        <option value="">-- Select Level --</option>
                                         <option value="A1">A1</option>
                                         <option value="A2">A2</option>
                                         <option value="B1">B1</option>
@@ -176,7 +176,7 @@ export default function UpdateVocab() {
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label className="fw-semibold">Hình</Form.Label>
+                                    <Form.Label className="fw-semibold">Image</Form.Label>
                                     <Form.Control
                                         type="file"
                                         accept="image/*"
@@ -204,10 +204,10 @@ export default function UpdateVocab() {
                                 {loading ? (
                                     <>
                                         <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />{" "}
-                                        Đang xử lý...
+                                        Processing...
                                     </>
                                 ) : (
-                                    "Cập nhật từ vựng"
+                                    "Update Vocabulary"
                                 )}
                             </Button>
                         </div>

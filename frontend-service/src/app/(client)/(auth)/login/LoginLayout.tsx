@@ -23,9 +23,9 @@ export default function LoginLayout({ children }: { children: React.ReactNode })
                 className="h-auto w-auto"
               />
             </div>
-            <h1 className="text-4xl font-black leading-tight">Học tiếng Anh hiệu quả với EngLearn</h1>
+            <h1 className="text-4xl font-black leading-tight">Learn English effectively with EngLearn</h1>
             <p className="mt-5 max-w-md text-sm leading-7 text-slate-200">
-              Đăng nhập để lưu tiến trình, theo dõi XP và mở khóa toàn bộ tính năng học tiếng Anh.
+              Log in to save progress, track XP, and unlock all English learning features.
             </p>
           </div>
         </div>

@@ -104,7 +104,7 @@ export default function Home() {
                 setTopics(response.data.result.content ?? []);
             } catch (err) {
                 console.error("Cannot load topics", err);
-                setError("Không tải được lộ trình học. Vui lòng thử lại sau.");
+                setError("Failed to load learning path. Please try again later.");
             } finally {
                 setLoading(false);
             }
@@ -156,10 +156,10 @@ export default function Home() {
                             </svg>
                         </div>
                         <h2 className="mb-4 text-2xl font-black text-slate-800 sm:text-3xl">
-                            Bắt đầu hành trình học tập!
+                            Start your learning journey!
                         </h2>
                         <p className="mb-8 max-w-lg text-sm font-bold leading-relaxed text-slate-500 sm:text-base">
-                            Đăng nhập hoặc tạo hồ sơ để mở khóa lộ trình, lưu tiến trình, theo dõi XP và chinh phục các thử thách từ vựng mỗi ngày.
+                            Log in or create a profile to unlock paths, save progress, track XP, and conquer vocabulary challenges every day.
                         </p>
 
                         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
@@ -167,13 +167,13 @@ export default function Home() {
                                 href="/register"
                                 className="flex min-w-[160px] items-center justify-center rounded-2xl border-b-4 border-lime-600 bg-lime-500 px-6 py-3.5 text-sm font-black uppercase tracking-wide text-white transition-transform hover:-translate-y-0.5 hover:bg-lime-400 active:translate-y-1 active:border-b-0"
                             >
-                                Tạo hồ sơ
+                                Create Profile
                             </Link>
                             <Link
                                 href="/login"
                                 className="flex min-w-[160px] items-center justify-center rounded-2xl border-b-4 border-sky-600 bg-sky-500 px-6 py-3.5 text-sm font-black uppercase tracking-wide text-white transition-transform hover:-translate-y-0.5 hover:bg-sky-400 active:translate-y-1 active:border-b-0"
                             >
-                                Đăng nhập
+                                Log in
                             </Link>
                         </div>
                     </div>
@@ -183,7 +183,7 @@ export default function Home() {
                     {loading && (
                         <div className="flex min-h-[300px] flex-col items-center justify-center rounded-[32px] border-2 border-slate-100 bg-white p-8">
                             <div className="mb-5 h-12 w-12 animate-spin rounded-full border-4 border-slate-100 border-t-sky-500"></div>
-                            <span className="text-lg font-black text-slate-400">Đang tải lộ trình...</span>
+                            <span className="text-lg font-black text-slate-400">Loading path...</span>
                         </div>
                     )}
 
@@ -201,7 +201,7 @@ export default function Home() {
                             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-200/50 text-slate-400">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
                             </div>
-                            <p className="text-lg font-black text-slate-500">Chưa có chủ đề học tập nào.</p>
+                            <p className="text-lg font-black text-slate-500">No learning topics available.</p>
                         </div>
                     )}
                 </div>

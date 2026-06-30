@@ -66,19 +66,19 @@ export default function SuggestVocab({ show, onHide, onLoadingChange }: Props) {
         <Modal show={show} onHide={onHide} size="xl" centered backdrop="static">
             <Modal.Header closeButton className="border-0 pb-0">
                 <Modal.Title className="fw-bold text-primary d-flex align-items-center gap-2 fs-4">
-                    <Magic className="text-warning" /> AI Khám phá từ vựng
+                    <Magic className="text-warning" /> AI Vocabulary Discovery
                 </Modal.Title>
             </Modal.Header>
 
             <Modal.Body className="pt-2 px-4 pb-4">
-                <p className="text-muted mb-4">Nhập bất kỳ chủ đề nào bạn muốn học (VD: Travel, IT, Cooking), AI sẽ ngay lập tức tạo ra bộ từ vựng và bài tập trắc nghiệm cho riêng bạn!</p>
+                <p className="text-muted mb-4">Enter any topic you want to learn (e.g., Travel, IT, Cooking), and the AI will instantly generate a list of vocabulary and quiz exercises just for you!</p>
 
                 <Form className="d-flex gap-2 mb-4" onSubmit={generateVocab}>
                     <Form.Control
                         type="text"
                         value={topicInput}
                         onChange={(e) => setTopicInput(e.target.value)}
-                        placeholder="Nhập chủ đề vào đây..."
+                        placeholder="Enter a topic here..."
                         className="shadow-sm rounded-pill px-4 border-primary"
                         style={{ height: '50px' }}
                     />
@@ -88,24 +88,24 @@ export default function SuggestVocab({ show, onHide, onLoadingChange }: Props) {
                         className="rounded-pill px-4 fw-bold d-flex align-items-center gap-2 shadow-sm"
                         style={{ height: '50px' }}
                     >
-                        {wsLoading ? <Spinner size="sm" animation="border" /> : <><LightbulbFill /> Tạo bộ từ</>}
+                        {wsLoading ? <Spinner size="sm" animation="border" /> : <><LightbulbFill /> Generate Vocabulary</>}
                     </Button>
                 </Form>
 
                 {wsLoading && generatedVocabs.length === 0 && (
                     <div className="text-center py-5">
                         <Spinner animation="grow" variant="primary" />
-                        <p className="text-muted mt-3 fw-medium">AI đang vắt óc suy nghĩ từ vựng cho bạn...</p>
+                        <p className="text-muted mt-3 fw-medium">AI is brainstorming vocabulary for you...</p>
                     </div>
                 )}
 
                 {(generatedVocabs.length > 0 || wsLoading) && (
                     <Row className="g-4">
-                        {/* Cột Danh sách Từ vựng */}
+                        {/* Vocabulary List Column */}
                         <Col lg={6}>
                             <div className="bg-light p-3 rounded-4 h-100 border">
                                 <h5 className="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-                                    <Badge bg="primary" pill>{generatedVocabs.length}</Badge> Từ vựng tìm được
+                                    <Badge bg="primary" pill>{generatedVocabs.length}</Badge> Words Found
                                 </h5>
 
                                 <div className="pe-2" style={{ maxHeight: "500px", overflowY: "auto", overflowX: 'hidden' }}>
@@ -145,13 +145,13 @@ export default function SuggestVocab({ show, onHide, onLoadingChange }: Props) {
                         <Col lg={6}>
                             <div className="bg-primary bg-opacity-10 p-3 rounded-4 h-100 border border-primary border-opacity-25">
                                 <h5 className="fw-bold text-primary mb-3 d-flex align-items-center gap-2">
-                                    <Controller /> Mini Game Ôn Tập
+                                    <Controller /> Review Mini Game
                                 </h5>
                                 {generatedVocabs.length >= 3 ? (
                                     <VocabQuizGame vocabs={generatedVocabs} />
                                 ) : (
                                     <div className="text-center text-muted py-5 mt-5">
-                                        Đang đợi AI tạo đủ ít nhất 3 từ để bắt đầu game...
+                                        Waiting for AI to generate at least 3 words to start the game...
                                     </div>
                                 )}
                             </div>

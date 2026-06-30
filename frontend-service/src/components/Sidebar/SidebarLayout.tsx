@@ -30,7 +30,7 @@ export default function SidebarLayout({ children }: { children?: React.ReactNode
     }, []);
 
     if (!context) {
-        return <div className="p-4 text-center">Không tìm thấy context người dùng.</div>;
+        return <div className="p-4 text-center">User context not found.</div>;
     }
 
     const { user, dispatch } = context;
@@ -108,36 +108,36 @@ export default function SidebarLayout({ children }: { children?: React.ReactNode
 
                         {sidebarOpen && (
                             <div className="px-3 mt-3">
-                                <h6 className="text-muted mb-3">Chức năng</h6>
+                                <h6 className="text-muted mb-3">Functions</h6>
 
                                 <Nav className="flex-column">
                                     {user ? (
                                         <>
                                             <Nav.Link as={Link} href="/topics">
-                                                Học từ vựng
+                                                Learn Vocabulary
                                             </Nav.Link>
 
                                             <Nav.Link as={Link} href="/tests">
-                                                Kiểm tra từ vựng
+                                                Practice Tests
                                             </Nav.Link>
 
                                             <Nav.Link as={Link} href="/conservation">
-                                                Luyện nói với chatbot
+                                                Speaking Practice
                                             </Nav.Link>
 
                                             <Nav.Link as={Link} href={`/progress/${user.id}`}>
-                                                Theo dõi tiến độ
+                                                Track Progress
                                             </Nav.Link>
 
                                             <Nav.Link as={Link} href="/profile">
-                                                Thông tin cá nhân
+                                                Personal Information
                                             </Nav.Link>
 
                                             <Button
                                                 className={`mt-4 ${styles.logoutBtn}`}
                                                 onClick={handleLogout}
                                             >
-                                                Đăng xuất
+                                                Log out
                                             </Button>
                                         </>
                                     ) : (
@@ -145,7 +145,7 @@ export default function SidebarLayout({ children }: { children?: React.ReactNode
                                             href="/login"
                                             className="btn btn-outline-primary btn-sm"
                                         >
-                                            Đăng nhập
+                                            Log in
                                         </Link>
                                     )}
                                 </Nav>

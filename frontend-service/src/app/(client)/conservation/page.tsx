@@ -147,7 +147,7 @@ export default function ChatPage() {
     useEffect(() => {
         handleSendTranscriptRef.current = (transcript: string) => {
             if (!transcript.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || isGenerating) {
-                console.warn("WebSocket chưa sẵn sàng hoặc đang gen nội dung.");
+                console.warn("WebSocket is not ready or content generation is in progress.");
                 return;
             }
 
@@ -178,7 +178,7 @@ export default function ChatPage() {
     if (!user) {
         return (
             <div className="d-flex align-items-center justify-content-center" style={{ height: "100vh" }}>
-                <div className="text-secondary fw-bold">Vui lòng đăng nhập để sử dụng tính năng này!</div>
+                <div className="text-secondary fw-bold">Please log in to use this feature!</div>
             </div>
         );
     }
@@ -231,7 +231,7 @@ export default function ChatPage() {
                                 fontSize: "12px"
                             }}
                         >
-                            Trợ lý luyện nói trực tuyến
+                            Online Speaking Practice Assistant
                         </small>
                     </div>
                 </div>

@@ -30,7 +30,7 @@ export default function AdminSidebarLayout({ children }: { children?: React.Reac
     }, []);
 
     if (!context) {
-        return <div className="p-4 text-center">Không tìm thấy context người dùng.</div>;
+        return <div className="p-4 text-center">User context not found.</div>;
     }
 
     const { user, dispatch } = context;
@@ -108,36 +108,36 @@ export default function AdminSidebarLayout({ children }: { children?: React.Reac
 
                         {sidebarOpen && (
                             <div className="px-3 mt-3">
-                                <h6 className="text-muted mb-3">Admin chức năng</h6>
+                                <h6 className="text-muted mb-3">Admin Functions</h6>
 
                                 <Nav className="flex-column">
                                     {user ? (
                                         <>
                                             <Nav.Link as={Link} href="/admin/topics">
-                                                Thêm chủ đề tiếng Anh
+                                                Manage Topics
                                             </Nav.Link>
 
                                             <Nav.Link as={Link} href="/admin/vocabularies">
-                                                Thêm từ vựng
+                                                Manage Vocabularies
                                             </Nav.Link>
 
                                             <Nav.Link as={Link} href="/admin/tests">
-                                                Thêm đề ôn tập
+                                                Manage Practice Tests
                                             </Nav.Link>
 
                                             <Nav.Link as={Link} href="/admin/exercises">
-                                                Thêm luyện tập
+                                                Manage Exercises
                                             </Nav.Link>
 
                                             <Nav.Link as={Link} href="/admin/users">
-                                                Quản trị viên
+                                                Manage Admins
                                             </Nav.Link>
 
                                             <Button
                                                 className={`mt-4 ${styles.logoutBtn}`}
                                                 onClick={handleLogout}
                                             >
-                                                Đăng xuất
+                                                Log out
                                             </Button>
                                         </>
                                     ) : (
@@ -145,7 +145,7 @@ export default function AdminSidebarLayout({ children }: { children?: React.Reac
                                             href="/login"
                                             className="btn btn-outline-primary btn-sm"
                                         >
-                                            Đăng nhập
+                                            Log in
                                         </Link>
                                     )}
                                 </Nav>

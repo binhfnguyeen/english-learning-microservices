@@ -12,11 +12,11 @@ type ClientLeftSidebarProps = {
 };
 
 const navItems = [
-    { label: "Học từ vựng", href: "/topics", icon: BookOpen },
-    { label: "Từ điển", href: "/dictionary", icon: BookOpen },
-    { label: "Làm bài kiểm tra", href: "/tests", icon: Trophy },
-    { label: "Luyện nói", href: "/conservation", icon: Mic },
-    { label: "Hồ sơ", href: "/profile", icon: UserCircle },
+    { label: "Learn Vocabulary", href: "/topics", icon: BookOpen },
+    { label: "Dictionary", href: "/dictionary", icon: BookOpen },
+    { label: "Practice Tests", href: "/tests", icon: Trophy },
+    { label: "Speaking Practice", href: "/conservation", icon: Mic },
+    { label: "Profile", href: "/profile", icon: UserCircle },
 ];
 
 export default function ClientLeftSidebar({ userId }: ClientLeftSidebarProps) {
@@ -27,7 +27,7 @@ export default function ClientLeftSidebar({ userId }: ClientLeftSidebarProps) {
 
     // Luôn render danh sách item
     const items = navItems.map((item) =>
-        item.label === "Hồ sơ" ? { ...item, href: profileHref } : item
+        item.label === "Profile" ? { ...item, href: profileHref } : item
     );
 
     const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -86,7 +86,7 @@ export default function ClientLeftSidebar({ userId }: ClientLeftSidebarProps) {
                             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-100"
                         >
                             <LogOut size={18} strokeWidth={2.2} />
-                            Đăng xuất
+                            Log out
                         </button>
                     ) : (
                         <Link
@@ -94,7 +94,7 @@ export default function ClientLeftSidebar({ userId }: ClientLeftSidebarProps) {
                             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-black text-sky-700 transition hover:bg-sky-100 no-underline"
                         >
                             <LogIn size={18} strokeWidth={2.2} />
-                            Đăng nhập
+                            Log in
                         </Link>
                     )}
                 </div>

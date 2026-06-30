@@ -83,10 +83,10 @@ export default function VocabQuizGame({ vocabs }: Props) {
                 {/* Header: Tiến trình & Điểm số */}
                 <div className="d-flex justify-content-between align-items-center mb-2">
                     <span className="fw-bold text-secondary small text-uppercase tracking-wider">
-                        Câu {currentIndex + 1} / {quizVocabs.length}
+                        Question {currentIndex + 1} / {quizVocabs.length}
                     </span>
                     <Badge bg="warning" text="dark" className="px-3 py-2 rounded-pill shadow-sm fs-6">
-                        Điểm: {score} 🌟
+                        Score: {score} 🌟
                     </Badge>
                 </div>
 
@@ -99,7 +99,7 @@ export default function VocabQuizGame({ vocabs }: Props) {
 
                 {/* Nội dung câu hỏi */}
                 <div className="text-center mb-4 mt-2">
-                    <div className="text-muted small mb-1">Nghĩa của từ này là gì?</div>
+                    <div className="text-muted small mb-1">What is the meaning of this word?</div>
                     <h2 className="fw-bold text-dark display-6 m-0">{current.word}</h2>
                 </div>
 
@@ -145,17 +145,17 @@ export default function VocabQuizGame({ vocabs }: Props) {
                     {selected && (
                         <div className={`p-3 rounded-4 mb-3 ${selected === current.meaning ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'}`}>
                             <div className="fw-bold mb-1">
-                                {selected === current.meaning ? 'Chính xác!' : 'Rất tiếc, sai rồi!'}
+                                {selected === current.meaning ? 'Correct!' : 'Oops, incorrect!'}
                             </div>
                             <div className="small text-dark">
-                                <span className="fw-bold">Ví dụ:</span> {current.example}
+                                <span className="fw-bold">Example:</span> {current.example}
                             </div>
                         </div>
                     )}
 
                     {isFinished ? (
                         <Button variant="primary" size="lg" className="w-100 fw-bold rounded-pill shadow d-flex justify-content-center align-items-center gap-2" onClick={restartGame}>
-                            <ArrowRepeat size={24} /> Chơi lại lần nữa
+                            <ArrowRepeat size={24} /> Play again
                         </Button>
                     ) : (
                         <Button
@@ -166,7 +166,7 @@ export default function VocabQuizGame({ vocabs }: Props) {
                             disabled={!selected}
                             style={{ opacity: !selected ? 0 : 1, transition: '0.3s' }}
                         >
-                            Câu tiếp theo <ArrowRightCircleFill size={20} />
+                            Next Question <ArrowRightCircleFill size={20} />
                         </Button>
                     )}
                 </div>

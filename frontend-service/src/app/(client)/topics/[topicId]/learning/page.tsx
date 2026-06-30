@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import { Button, Card, Container, Badge } from "react-bootstrap";
-import Swal from "sweetalert2";
+
 import Exercise from "./Exercise";
 import useTTS from "@/utils/useTTS";
 import authApis from "@/configs/AuthApis";
@@ -120,6 +120,9 @@ export default function Learning() {
                 userId: user.id,
                 vocabularyId: vocabId
             });
+            if (typeof window !== "undefined") {
+                window.dispatchEvent(new CustomEvent("update-progress"));
+            }
         } catch (err) {
             console.error(err);
         }
@@ -128,10 +131,11 @@ export default function Learning() {
     };
 
     const handleFinish = async () => {
+        const Swal = (await import("sweetalert2")).default;
         await Swal.fire({
             icon: "success",
-            title: "Hoàn thành bài học!",
-            text: "Chúc mừng bạn đã học xong tất cả từ vựng.",
+            title: "Lesson Completed!",
+            text: "Congratulations! You have finished studying all the vocabulary.",
             showConfirmButton: true,
             confirmButtonColor: "#0d6efd"
         });
@@ -156,7 +160,7 @@ export default function Learning() {
             {loading && vocabularies.length === 0 ? (
                 <div className="py-5 text-center">
                     <MySpinner />
-                    <p className="text-muted mt-3">Đang tải bài học...</p>
+                    <p className="text-muted mt-3">Loading lesson...</p>
                 </div>
             ) : currentVocab ? (
                 showExercise ? (
@@ -177,7 +181,7 @@ export default function Learning() {
                     <div className="w-100" style={{ maxWidth: "600px" }}>
                         <div className="mb-4">
                             <div className="d-flex justify-content-between align-items-center mb-2 px-1">
-                                <span className="text-muted small fw-bold text-uppercase">Tiến trình học ({vocabularies.length}/{total})</span>
+                                <span className="text-muted small fw-bold text-uppercase">Learning Progress ({vocabularies.length}/{total})</span>
                             </div>
 
                             <div className="d-flex align-items-center gap-2 overflow-auto pb-2" style={{ scrollbarWidth: "thin", scrollBehavior: "smooth" }}>
@@ -233,7 +237,7 @@ export default function Learning() {
                                 ) : (
                                     <div className="d-flex flex-column align-items-center justify-content-center h-100 text-center px-4">
                                         <IconImagePlaceholder />
-                                        <span className="text-muted small mt-2 opacity-75">Không có hình ảnh minh họa</span>
+                                        <span className="text-muted small mt-2 opacity-75">No image available</span>
                                     </div>
                                 )}
                             </div>
@@ -286,7 +290,7 @@ export default function Learning() {
                                         className="fw-bold px-5 py-3 w-100 shadow-sm"
                                         style={{ borderRadius: "16px", fontSize: "1.1rem" }}
                                     >
-                                        Qua lại bước hiện tại →
+                                        Continue →
                                     </Button>
                                 ) : (
                                     <Button
@@ -298,8 +302,8 @@ export default function Learning() {
                                         style={{ borderRadius: "16px", fontSize: "1.1rem" }}
                                     >
                                         {isSpeaking
-                                            ? "Đang phát âm..."
-                                            : (hasMore ? "Làm bài tập vận dụng →" : "Làm bài tập cuối cùng")}
+                                            ? "Pronouncing..."
+                                            : (hasMore ? "Practice Exercise →" : "Finish Lesson")}
                                     </Button>
                                 )}
 
@@ -309,10 +313,10 @@ export default function Learning() {
                 )
             ) : (
                 <div className="text-center py-5 bg-light rounded-4 border w-100" style={{ maxWidth: "500px" }}>
-                    <h5 className="text-dark fw-bold">Chưa có từ vựng nào</h5>
-                    <p className="text-muted">Chủ đề này hiện tại chưa có dữ liệu từ vựng để học.</p>
+                    <h5 className="text-dark fw-bold">No vocabulary found</h5>
+                    <p className="text-muted">This topic has no vocabulary data available for learning yet.</p>
                     <Link href="/topics" className="btn btn-primary px-4 rounded-pill mt-2">
-                        ← Chọn chủ đề khác
+                        ← Choose another topic
                     </Link>
                 </div>
             )}

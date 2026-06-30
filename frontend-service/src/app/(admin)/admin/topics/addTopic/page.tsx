@@ -73,10 +73,10 @@ export default function AddTopic() {
             console.info(res.data);
             setName("");
             setDescription("");
-            setMsg("Thêm chủ đề mới thành công!");
+            setMsg("New topic added successfully!");
         } catch (ex) {
             console.error(ex);
-            setMsg("Thêm chủ đề mới không thành công!");
+            setMsg("Failed to add new topic!");
         } finally {
             setLoading(false);
         }
@@ -94,13 +94,13 @@ export default function AddTopic() {
         <Container className="mt-4">
             <Nav className="mb-3">
                 <Link href="/admin/topics" className="btn btn-outline-secondary btn-sm">
-                    Quay lại
+                    Go Back
                 </Link>
             </Nav>
 
             <Card className="shadow-sm border-0 rounded-3">
                 <Card.Body>
-                    <h3 className="mb-4 fw-bold text-primary">Thêm chủ đề</h3>
+                    <h3 className="mb-4 fw-bold text-primary">Add Topic</h3>
 
                     {msg && (
                         <Alert variant={msg.includes("không") ? "danger" : "success"}
@@ -115,10 +115,10 @@ export default function AddTopic() {
                         <Row className="mb-3">
                             <Col md={6}>
                                 <Form.Group controlId="formName" className="position-relative">
-                                    <Form.Label className="fw-semibold">Tên chủ đề</Form.Label>
+                                    <Form.Label className="fw-semibold">Topic Name</Form.Label>
                                     <Form.Control
                                         type="text"
-                                        placeholder="Nhập tên chủ đề..."
+                                        placeholder="Enter topic name..."
                                         value={name}
                                         onChange={handleNameChange}
                                         onFocus={() => { if (topicSuggestions.length > 0) setShowSuggestions(true); }}
@@ -141,16 +141,16 @@ export default function AddTopic() {
                                             ))}
                                         </div>
                                     )}
-                                    {fetchingDescription && <Form.Text className="text-info"><Spinner size="sm" animation="border" className="me-1" /> Đang tự động điền mô tả...</Form.Text>}
+                                    {fetchingDescription && <Form.Text className="text-info"><Spinner size="sm" animation="border" className="me-1" /> Auto-filling description...</Form.Text>}
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group controlId="formDescription">
-                                    <Form.Label className="fw-semibold">Mô tả</Form.Label>
+                                    <Form.Label className="fw-semibold">Description</Form.Label>
                                     <Form.Control
                                         as="textarea"
                                         rows={3}
-                                        placeholder="Nhập mô tả chủ đề..."
+                                        placeholder="Enter topic description..."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                         required
@@ -175,10 +175,10 @@ export default function AddTopic() {
                                             role="status"
                                             aria-hidden="true"
                                         />{" "}
-                                        Đang xử lý...
+                                        Processing...
                                     </>
                                 ) : (
-                                    "Thêm chủ đề"
+                                    "Add Topic"
                                 )}
                             </Button>
                         </div>

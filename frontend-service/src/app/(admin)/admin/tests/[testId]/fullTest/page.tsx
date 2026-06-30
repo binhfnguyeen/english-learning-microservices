@@ -71,11 +71,11 @@ export default function FullTest() {
         <Container className="my-5" style={{ maxWidth: 850 }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 className="fw-bold text-dark m-0">Chi tiết đề thi</h2>
+                    <h2 className="fw-bold text-dark m-0">Test Details</h2>
                     <span className="text-muted">{test?.title}</span>
                 </div>
                 <Link href="/admin/tests" className="btn btn-outline-secondary px-4 rounded-pill fw-medium">
-                    ← Quay lại
+                    ← Go Back
                 </Link>
             </div>
 
@@ -86,7 +86,7 @@ export default function FullTest() {
                     <Card.Body className="p-4 p-md-5">
                         <div className="mb-4 pb-3 border-bottom">
                             <h4 className="fw-bold text-primary">{test.title}</h4>
-                            <Card.Text className="text-muted fst-italic">{test.description || "Không có mô tả chi tiết cho bài kiểm tra này."}</Card.Text>
+                            <Card.Text className="text-muted fst-italic">{test.description || "No detailed description available for this test."}</Card.Text>
                         </div>
 
                         <ListGroup variant="flush">
@@ -94,7 +94,7 @@ export default function FullTest() {
                                 <ListGroup.Item key={q.id} className="py-4 border-light">
                                     <div className="d-flex justify-content-between align-items-start mb-2">
                                         <div className="fw-bold fs-5 text-dark">
-                                            Câu {index + 1}: <span className="fw-medium text-secondary">{q.content}</span>
+                                            Question {index + 1}: <span className="fw-medium text-secondary">{q.content}</span>
                                         </div>
                                         <Badge bg="primary" className="bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-bold">
                                             {getQuestionTypeIcon(q.type)} {q.type}
@@ -114,7 +114,7 @@ export default function FullTest() {
                                                                 <div>
                                                                     <strong className="me-2 text-primary">{label}.</strong> {displayValue}
                                                                 </div>
-                                                                {c.isCorrect && <Badge bg="success" className="rounded-pill px-3 py-2"><IconCheck /> Đáp án</Badge>}
+                                                                {c.isCorrect && <Badge bg="success" className="rounded-pill px-3 py-2"><IconCheck /> Answer</Badge>}
                                                             </div>
                                                         </div>
                                                     );
@@ -125,7 +125,7 @@ export default function FullTest() {
                                         {q.type === 'WORD_ORDER' && (
                                             <div className="d-flex flex-column gap-3">
                                                 <div className="d-flex flex-wrap gap-2 p-3 bg-light rounded-3 border">
-                                                    <div className="w-100 text-muted small fw-bold text-uppercase mb-1">Các mảnh ghép (Blocks):</div>
+                                                    <div className="w-100 text-muted small fw-bold text-uppercase mb-1">Blocks:</div>
                                                     {q.choices.map((c) => (
                                                         <div key={c.id} className="px-3 py-1 bg-white border rounded-2 shadow-sm fw-medium">
                                                             {c.textContent || c.vocabulary?.word}
@@ -133,7 +133,7 @@ export default function FullTest() {
                                                     ))}
                                                 </div>
                                                 <div className="p-3 bg-success bg-opacity-10 border-start border-success border-4 rounded-3">
-                                                    <div className="text-success small fw-bold text-uppercase mb-1">Câu hoàn chỉnh:</div>
+                                                    <div className="text-success small fw-bold text-uppercase mb-1">Complete Sentence:</div>
                                                     <div className="fs-5 fw-bold text-dark">{q.correctAnswerText}</div>
                                                 </div>
                                             </div>
@@ -141,8 +141,8 @@ export default function FullTest() {
 
                                         {(q.type === 'FILL_IN_BLANK' || q.type === 'REWRITE_SENTENCE') && (
                                             <div className="p-4 bg-primary bg-opacity-10 border-start border-primary border-4 rounded-3">
-                                                <div className="text-primary small fw-bold text-uppercase mb-1">Đáp án chính xác:</div>
-                                                <div className="fs-5 fw-bold text-dark">{q.correctAnswerText || "Chưa thiết lập đáp án"}</div>
+                                                 <div className="text-primary small fw-bold text-uppercase mb-1">Correct Answer:</div>
+                                                 <div className="fs-5 fw-bold text-dark">{q.correctAnswerText || "No answer set"}</div>
                                             </div>
                                         )}
 
@@ -154,7 +154,7 @@ export default function FullTest() {
                 </Card>
             ) : (
                 <div className="text-center py-5 bg-light rounded-4 border border-dashed">
-                    <p className="text-muted m-0">Không tìm thấy dữ liệu đề thi.</p>
+                    <p className="text-muted m-0">Test data not found.</p>
                 </div>
             )}
         </Container>

@@ -87,7 +87,7 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
             setSuggestions(items);
         } catch (err) {
             console.error("Error fetching suggestions:", err);
-            alert("Không thể lấy gợi ý từ Datamuse API.");
+            alert("Could not retrieve suggestions from Datamuse API.");
         } finally {
             setLoading(false);
         }
@@ -157,7 +157,7 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
             if (onSuccess) onSuccess();
         } catch (err) {
             console.error(err);
-            alert("Thêm từ thất bại!");
+            alert("Failed to add word!");
             setSuggestions(prev => prev.map((v, i) => i === index ? { ...v, isLoading: false } : v));
         }
     };
@@ -210,13 +210,13 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
                         <div className="bg-white p-2 rounded shadow-sm d-flex align-items-center justify-content-center">
                             <Search size={20} className="text-primary" />
                         </div>
-                        Gợi ý từ vựng tự động
+                        Auto Vocabulary Suggestions
                     </Modal.Title>
                 </Modal.Header>
 
                 <Modal.Body className="p-4 pt-2 bg-light rounded-bottom d-flex flex-column">
                     <p className="text-muted small mb-4">
-                        Hệ thống sẽ tự động tìm kiếm các từ vựng phổ biến và đồng nghĩa liên quan đến chủ đề bạn nhập.
+                        The system will automatically search for popular vocabulary and synonyms related to the topic you enter.
                     </p>
 
                     <Form className="d-flex gap-2 mb-4 flex-shrink-0" onSubmit={fetchSuggestions}>
@@ -226,7 +226,7 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
                                 size="lg"
                                 value={topicInput}
                                 onChange={(e) => setTopicInput(e.target.value)}
-                                placeholder="Nhập chủ đề bằng Tiếng Anh hoặc Tiếng Việt (VD: Environment...)"
+                                placeholder="Enter topic in English or Vietnamese (e.g., Environment...)"
                                 className="shadow-sm border-0 rounded-3 px-4 fs-6"
                                 style={{ height: '48px' }}
                                 disabled={!!topicName}
@@ -240,7 +240,7 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
                             variant="primary"
                             style={{ height: '48px' }}
                         >
-                            {loading ? <Spinner size="sm" animation="border" /> : <><LightbulbFill size={18} /> Phân tích</>}
+                            {loading ? <Spinner size="sm" animation="border" /> : <><LightbulbFill size={18} /> Analyze</>}
                         </Button>
                     </Form>
 
@@ -265,7 +265,7 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
                                                 </div>
                                             ) : (
                                                 <div className="text-muted small fst-italic">
-                                                    Nhấn "Thêm" để hệ thống tự động dịch nghĩa...
+                                                    Click "Add" to automatically translate definition...
                                                 </div>
                                             )}
                                         </div>
@@ -279,11 +279,11 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
                                                 style={{ minWidth: "130px", justifyContent: "center" }}
                                             >
                                                 {item.isLoading ? (
-                                                    <><Spinner size="sm" /> Đang thêm...</>
+                                                    <><Spinner size="sm" /> Adding...</>
                                                 ) : item.isAdded ? (
-                                                    <><BookmarkCheckFill size={16} /> Đã thêm</>
+                                                    <><BookmarkCheckFill size={16} /> Added</>
                                                 ) : (
-                                                    <><PlusCircleFill size={16} /> {topicName ? `Thêm vào topic ${topicName}` : 'Thêm'}</>
+                                                    <><PlusCircleFill size={16} /> {topicName ? `Add to topic ${topicName}` : 'Add'}</>
                                                 )}
                                             </Button>
                                         </div>
@@ -295,8 +295,8 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
                                 <div className="bg-light p-3 rounded-circle mb-3">
                                     <Search size={40} className="text-muted opacity-50" />
                                 </div>
-                                <h6 className="fw-bold text-secondary">Chưa có dữ liệu từ vựng</h6>
-                                <p className="text-muted small mb-0 px-4">Hãy nhập một chủ đề bất kỳ vào ô tìm kiếm phía trên để AI gợi ý danh sách từ vựng phù hợp nhất.</p>
+                                <h6 className="fw-bold text-secondary">No vocabulary data yet</h6>
+                                <p className="text-muted small mb-0 px-4">Enter any topic in the search box above to get the most relevant vocabulary suggestions from AI.</p>
                             </div>
                         )}
                     </div>

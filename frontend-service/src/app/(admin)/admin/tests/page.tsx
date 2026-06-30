@@ -47,11 +47,11 @@ export default function Tests() {
         try {
             setLoading(true);
             await authApis.delete(endpoints["Test"](id));
-            setMsg("Xóa bài kiểm tra thành công!");
+            setMsg("Test deleted successfully!");
             loadTests();
         } catch (err) {
             console.error(err);
-            setMsg("Xóa bài kiểm tra không thành công!");
+            setMsg("Failed to delete test!");
         } finally {
             setLoading(false);
         }
@@ -84,9 +84,9 @@ export default function Tests() {
     return (
         <Container className="my-5">
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold">List of exam questions</h2>
+                <h2 className="fw-bold">Practice Tests List</h2>
                 <Link href="/admin/tests/addTestFull" className="btn btn-success shadow-sm px-4">
-                    + Thêm đề kiểm tra
+                    + Add Test
                 </Link>
             </div>
 
@@ -96,7 +96,7 @@ export default function Tests() {
                         value={keyword}
                         onChange={(kw) => setKeyword(kw.target.value)}
                         type="text"
-                        placeholder="Tìm kiếm đề thi..."
+                        placeholder="Search tests..."
                         className="shadow-sm"
                     />
                 </InputGroup>
@@ -132,7 +132,7 @@ export default function Tests() {
                                             href={`/admin/tests/${test.id}/fullTest`}
                                             className="btn btn-outline-primary btn-sm flex-fill"
                                         >
-                                            Xem chi tiết
+                                            View Details
                                         </Link>
                                         <Button
                                             variant="outline-danger"
@@ -140,7 +140,7 @@ export default function Tests() {
                                             className="flex-fill"
                                             onClick={(e) => handleDelete(e, test.id)}
                                         >
-                                            Xóa
+                                            Delete
                                         </Button>
                                     </div>
                                 </Card.Footer>
@@ -151,13 +151,13 @@ export default function Tests() {
             )}
 
             {!loading && tests.length === 0 && (
-                <Alert variant="info" className="mt-2">Không có đề thi nào.</Alert>
+                <Alert variant="info" className="mt-2">No tests found.</Alert>
             )}
 
             {!loading && hasMore && (
                 <div className="text-center mt-4">
                     <Button variant="outline-secondary" onClick={() => setPage((p) => p + 1)}>
-                        Tải thêm
+                        Load More
                     </Button>
                 </div>
             )}

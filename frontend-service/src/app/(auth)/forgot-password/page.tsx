@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
         try {
             if (step === 1) {
                 await Apis.post(`${endpoints.forgotPassword}?email=${encodeURIComponent(email)}`);
-                setMessage("Mã OTP đã được gửi đến email của bạn.");
+                setMessage("OTP code has been sent to your email.");
                 setStep(2);
             } else {
                 await Apis.post(`${endpoints.resetPassword}?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`);
@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
             }
         } catch (error) {
             console.error(error);
-            setMessage(step === 1 ? "Gửi OTP thất bại." : "OTP không hợp lệ hoặc đã hết hạn.");
+            setMessage(step === 1 ? "Failed to send OTP." : "Invalid or expired OTP.");
         } finally {
             setLoading(false);
         }
@@ -39,9 +39,9 @@ export default function ForgotPasswordPage() {
 
     return (
         <div className="rounded-3xl border border-white/10 bg-white p-6 text-slate-900 shadow-2xl sm:p-8">
-            <p className="mb-2 text-sm font-black uppercase text-lime-600">Khôi phục tài khoản</p>
+            <p className="mb-2 text-sm font-black uppercase text-lime-600">Recover Account</p>
             <h2 className="mb-6 text-3xl font-black">
-                {step === 1 ? "Quên mật khẩu" : "Đặt lại mật khẩu"}
+                {step === 1 ? "Forgot Password" : "Reset Password"}
             </h2>
 
             <form onSubmit={submit} className="space-y-4">
@@ -57,20 +57,20 @@ export default function ForgotPasswordPage() {
 
                 {step === 2 && (
                     <>
-                        <input value={otp} onChange={(event) => setOtp(event.target.value)} maxLength={6} className="w-full rounded-2xl border-2 border-slate-200 px-4 py-3 font-bold outline-none focus:border-sky-500" placeholder="Mã OTP" required />
-                        <input value={newPassword} onChange={(event) => setNewPassword(event.target.value)} type="password" className="w-full rounded-2xl border-2 border-slate-200 px-4 py-3 font-bold outline-none focus:border-sky-500" placeholder="Mật khẩu mới" required />
+                        <input value={otp} onChange={(event) => setOtp(event.target.value)} maxLength={6} className="w-full rounded-2xl border-2 border-slate-200 px-4 py-3 font-bold outline-none focus:border-sky-500" placeholder="OTP Code" required />
+                        <input value={newPassword} onChange={(event) => setNewPassword(event.target.value)} type="password" className="w-full rounded-2xl border-2 border-slate-200 px-4 py-3 font-bold outline-none focus:border-sky-500" placeholder="New Password" required />
                     </>
                 )}
 
                 {message && <div className="rounded-2xl bg-sky-50 px-4 py-3 text-sm font-bold text-sky-700">{message}</div>}
 
                 <button type="submit" disabled={loading} className="w-full rounded-2xl border-b-4 border-sky-700 bg-sky-500 px-5 py-3 font-black uppercase text-white hover:bg-sky-400 disabled:border-slate-300 disabled:bg-slate-300">
-                    {loading ? "Đang xử lý..." : step === 1 ? "Gửi OTP" : "Xác nhận"}
+                    {loading ? "Processing..." : step === 1 ? "Send OTP" : "Confirm"}
                 </button>
             </form>
 
             <Link href="/login" className="mt-5 block text-center text-sm font-black text-slate-500 no-underline hover:text-slate-800">
-                Quay lại đăng nhập
+                Back to Login
             </Link>
         </div>
     );

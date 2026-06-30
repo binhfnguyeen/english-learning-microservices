@@ -135,7 +135,7 @@ export default function DetailTest() {
             setScore(resResult.data.result?.score ?? 0);
             setAnswers(resAnswers.data.result ?? []);
         } catch (err) {
-            console.error("Lỗi tải dữ liệu:", err);
+            console.error("Error loading data:", err);
         } finally {
             setLoading(false);
         }
@@ -148,19 +148,19 @@ export default function DetailTest() {
     const getDifficultyVariant = (level?: string) => {
         if (!level) return "secondary";
         const text = level.toLowerCase();
-        if (text.includes("easy") || text.includes("dễ")) return "success";
-        if (text.includes("medium") || text.includes("trung")) return "warning";
-        if (text.includes("hard") || text.includes("khó")) return "danger";
+        if (text.includes("easy")) return "success";
+        if (text.includes("medium")) return "warning";
+        if (text.includes("hard")) return "danger";
         return "secondary";
     };
 
     const percent = (score / 10) * 100;
 
     const getEvaluation = (p: number) => {
-        if (p >= 80) return { text: "Xuất sắc!", icon: <IconFire className="text-danger" />, color: "text-success" };
-        if (p >= 65) return { text: "Khá tốt!", icon: <IconThumbsUp className="text-primary" />, color: "text-primary" };
-        if (p >= 50) return { text: "Cần cố gắng!", icon: <IconTrendingUp className="text-warning" />, color: "text-warning" };
-        return { text: "Ôn tập lại nhé!", icon: <IconBook className="text-danger" />, color: "text-danger" };
+        if (p >= 80) return { text: "Excellent!", icon: <IconFire className="text-danger" />, color: "text-success" };
+        if (p >= 65) return { text: "Very good!", icon: <IconThumbsUp className="text-primary" />, color: "text-primary" };
+        if (p >= 50) return { text: "Needs effort!", icon: <IconTrendingUp className="text-warning" />, color: "text-warning" };
+        return { text: "Keep studying!", icon: <IconBook className="text-danger" />, color: "text-danger" };
     };
 
     const evaluation = getEvaluation(percent);
@@ -170,15 +170,15 @@ export default function DetailTest() {
             {/* Header Navigation */}
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 className="fw-bold text-dark m-0">Chi tiết bài làm</h2>
-                    <span className="text-muted small">Phân tích kết quả và đáp án</span>
+                    <h2 className="fw-bold text-dark m-0">Test Result Details</h2>
+                    <span className="text-muted small">Analysis of score and answers</span>
                 </div>
                 <Link
                     href={`/tests/${id}`}
                     className="btn btn-outline-secondary px-4 fw-medium"
                     style={{ borderRadius: '12px' }}
                 >
-                    ← Quay lại bài thi
+                    ← Back to Test Info
                 </Link>
             </div>
 
@@ -198,7 +198,7 @@ export default function DetailTest() {
                                     </h4>
                                     <Badge bg="light" text="dark" className="px-3 py-2 fs-6 rounded-pill border shadow-sm">
                                         <span className={`text-${getDifficultyVariant(test.difficultyLevel)}`}>
-                                            Độ khó: {test.difficultyLevel}
+                                            Difficulty: {test.difficultyLevel}
                                         </span>
                                     </Badge>
                                 </div>
@@ -209,7 +209,7 @@ export default function DetailTest() {
                                     {/* Điểm số */}
                                     <div className="col-md-4">
                                         <div className="p-4 rounded-4 bg-light border border-2 border-primary border-opacity-10">
-                                            <div className="text-muted mb-2 fw-medium">Tổng điểm</div>
+                                            <div className="text-muted mb-2 fw-medium">Score</div>
                                             <h1 className="fw-bold text-primary m-0 display-4">
                                                 {score.toFixed(1)} <span className="fs-4 text-muted">/ 10</span>
                                             </h1>
@@ -219,7 +219,7 @@ export default function DetailTest() {
                                     {/* Tỷ lệ đúng */}
                                     <div className="col-md-4">
                                         <div className="p-4 rounded-4 bg-light border border-2 border-success border-opacity-10">
-                                            <div className="text-muted mb-2 fw-medium">Tỷ lệ chính xác</div>
+                                            <div className="text-muted mb-2 fw-medium">Accuracy</div>
                                             <h1 className="fw-bold text-success m-0 display-4">
                                                 {percent.toFixed(0)}%
                                             </h1>
@@ -229,7 +229,7 @@ export default function DetailTest() {
                                     {/* Nhận xét */}
                                     <div className="col-md-4">
                                         <div className="p-4 rounded-4 bg-light border border-2 border-secondary border-opacity-10 h-100 d-flex flex-column justify-content-center">
-                                            <div className="text-muted mb-2 fw-medium">Đánh giá</div>
+                                            <div className="text-muted mb-2 fw-medium">Evaluation</div>
                                             <h3 className={`fw-bold m-0 d-flex align-items-center justify-content-center gap-2 ${evaluation.color}`}>
                                                 {evaluation.text} {evaluation.icon}
                                             </h3>
@@ -239,7 +239,7 @@ export default function DetailTest() {
 
                                 <div className="mt-5">
                                     <div className="d-flex justify-content-between text-muted small mb-2 fw-bold">
-                                        <span>Tiến độ hoàn thành</span>
+                                        <span>Completion Progress</span>
                                         <span className={evaluation.color}>{percent.toFixed(0)}%</span>
                                     </div>
                                     <ProgressBar
@@ -254,7 +254,7 @@ export default function DetailTest() {
 
                     {/* ===== DANH SÁCH CÂU HỎI & ĐÁP ÁN ===== */}
                     <h4 className="fw-bold mb-4 d-flex align-items-center gap-2 text-primary">
-                        <IconTarget size={28} /> Giải chi tiết
+                        <IconTarget size={28} /> Detailed Answer Key
                     </h4>
 
                     <div className="d-flex flex-column gap-4">
@@ -286,11 +286,11 @@ export default function DetailTest() {
                                             <div className="d-flex flex-column gap-3">
                                                 {/* Câu trả lời của user */}
                                                 <div className={`p-3 px-4 rounded-3 border-start border-4 ${isTextCorrect ? 'bg-success bg-opacity-10 border-success' : 'bg-danger bg-opacity-10 border-danger'}`}>
-                                                    <div className="text-muted small fw-bold mb-1 text-uppercase">Bài làm của bạn</div>
+                                                    <div className="text-muted small fw-bold mb-1 text-uppercase">Your Answer</div>
                                                     <div className="fs-5 fw-medium d-flex align-items-center gap-2">
                                                         {isTextCorrect ? <IconCheck className="text-success" /> : <IconX className="text-danger" />}
                                                         <span className={isTextCorrect ? "text-success" : "text-danger text-decoration-line-through opacity-75"}>
-                                                            {userAnswer?.givenAnswerText || "(Bỏ trống)"}
+                                                            {userAnswer?.givenAnswerText || "(Blank)"}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -298,7 +298,7 @@ export default function DetailTest() {
                                                 {/* Đáp án chuẩn (Chỉ hiện khi user sai) */}
                                                 {!isTextCorrect && (
                                                     <div className="p-3 px-4 rounded-3 bg-light border border-secondary border-opacity-25">
-                                                        <div className="text-muted small fw-bold mb-1 text-uppercase">Đáp án chuẩn</div>
+                                                        <div className="text-muted small fw-bold mb-1 text-uppercase">Correct Answer</div>
                                                         <div className="fs-5 fw-bold text-success d-flex align-items-center gap-2">
                                                             <IconLightbulb className="text-warning" /> {q.correctAnswerText}
                                                         </div>
@@ -338,12 +338,12 @@ export default function DetailTest() {
                                                             <div className="d-flex gap-2">
                                                                 {isUserChoice && !isCorrect && (
                                                                     <Badge bg="danger" className="p-2 d-flex align-items-center gap-1">
-                                                                        <IconX size={14} /> Sai
+                                                                        <IconX size={14} /> Incorrect
                                                                     </Badge>
                                                                 )}
                                                                 {isCorrect && (
                                                                     <Badge bg="success" className="p-2 d-flex align-items-center gap-1">
-                                                                        <IconCheck size={14} /> Đáp án
+                                                                        <IconCheck size={14} /> Correct
                                                                     </Badge>
                                                                 )}
                                                             </div>
@@ -360,7 +360,7 @@ export default function DetailTest() {
                 </>
             ) : (
                 <div className="text-center py-5 bg-light rounded-4 border">
-                    <p className="text-muted m-0">Không có dữ liệu bài làm.</p>
+                    <p className="text-muted m-0">No test result data found.</p>
                 </div>
             )}
         </Container>

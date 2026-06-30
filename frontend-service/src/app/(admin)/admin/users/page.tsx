@@ -54,7 +54,7 @@ export default function ListAdmin() {
             setShowDelete(false);
         } catch (err) {
             console.error("Error deleting admin:", err);
-            alert("Xóa thất bại, vui lòng thử lại!");
+            alert("Delete failed, please try again!");
         } finally {
             setLoading(false);
         }
@@ -68,20 +68,20 @@ export default function ListAdmin() {
         <div className="container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h3 className="mb-4 text-primary d-flex align-items-center gap-2">
-                    <PeopleFill size={28} /> Danh sách Quản trị viên
+                    <PeopleFill size={28} /> Admin List
                 </h3>
                 <Button variant="primary" onClick={() => setShowAdd(true)}>
-                    + Thêm quản trị viên
+                    + Add Admin
                 </Button>
             </div>
 
             {loading ? (
                 <div className="text-center py-5">
                     <Spinner animation="border" variant="primary" />
-                    <p className="mt-3 text-muted">Đang tải dữ liệu...</p>
+                    <p className="mt-3 text-muted">Loading data...</p>
                 </div>
             ) : users.length === 0 ? (
-                <p className="text-center text-muted">Không có admin nào.</p>
+                <p className="text-center text-muted">No admins found.</p>
             ) : (
                 <Row xs={1} sm={2} md={3} lg={4} className="g-4">
                     {users.map((u) => (
@@ -129,7 +129,7 @@ export default function ListAdmin() {
                                         size="sm"
                                         onClick={() => confirmDelete(u)}
                                     >
-                                        <Trash className="me-1" /> Xóa
+                                        <Trash className="me-1" /> Delete
                                     </Button>
                                 </Card.Body>
                             </Card>
@@ -149,18 +149,18 @@ export default function ListAdmin() {
 
             <Modal show={showDelete} onHide={() => setShowDelete(false)} centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>Cảnh báo</Modal.Title>
+                    <Modal.Title>Warning</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Bạn có chắc muốn xóa tài khoản{" "}
-                    <strong>{userToDelete?.firstName} {userToDelete?.lastName}</strong> không?
+                    Are you sure you want to delete the account{" "}
+                    <strong>{userToDelete?.firstName} {userToDelete?.lastName}</strong>?
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setShowDelete(false)}>
-                        Hủy
+                        Cancel
                     </Button>
                     <Button variant="danger" onClick={deleteUser} disabled={loading}>
-                        {loading ? <Spinner size="sm" animation="border" /> : "Xóa"}
+                        {loading ? <Spinner size="sm" animation="border" /> : "Delete"}
                     </Button>
                 </Modal.Footer>
             </Modal>

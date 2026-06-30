@@ -119,7 +119,7 @@ export default function Exercise({ vocabId, onDone }: Props) {
         >
             <div className="mb-4">
                 <Badge bg="warning" text="dark" className="px-3 py-2 rounded-pill fw-bold border border-warning border-opacity-25 mb-3">
-                    Bài tập vận dụng {current + 1}/{exercises.length}
+                    Exercise {current + 1}/{exercises.length}
                 </Badge>
                 <Card.Title className="fw-bold m-0" style={{ fontSize: "1.3rem", lineHeight: "1.5" }}>
                     {exercise.question}
@@ -194,7 +194,7 @@ export default function Exercise({ vocabId, onDone }: Props) {
 
                     <Form.Control
                         type="text"
-                        placeholder="Nhập đáp án bạn nghe được..."
+                        placeholder="Type what you hear..."
                         value={selected}
                         onChange={(e) => setSelected(e.target.value)}
                         disabled={submitted}
@@ -204,7 +204,7 @@ export default function Exercise({ vocabId, onDone }: Props) {
 
                     {submitted && !isCorrect && (
                         <div className="mt-3 p-3 bg-light rounded-3 border">
-                            <span className="text-muted d-block mb-1 small text-uppercase fw-bold">Đáp án chuẩn</span>
+                            <span className="text-muted d-block mb-1 small text-uppercase fw-bold">Correct Answer</span>
                             <span className="fw-bold text-success fs-5">
                                 {exercise.choices[0]?.content}
                             </span>
@@ -222,12 +222,12 @@ export default function Exercise({ vocabId, onDone }: Props) {
                         disabled={!selected}
                         style={{ fontSize: "1.1rem", borderRadius: "16px" }}
                     >
-                        Kiểm tra đáp án
+                        Check Answer
                     </Button>
                 ) : (
                     <div className="d-flex flex-column align-items-center gap-3">
                         <div className={`fw-bold fs-5 d-flex align-items-center gap-2 ${isCorrect ? "text-success" : "text-danger"}`}>
-                            {isCorrect ? "Chính xác tuyệt đối!" : "Sai mất rồi, cố lên nhé!"}
+                            {isCorrect ? "Perfectly Correct!" : "Incorrect, keep trying!"}
                         </div>
                         <Button
                             variant={isCorrect ? "success" : "primary"}
@@ -235,7 +235,7 @@ export default function Exercise({ vocabId, onDone }: Props) {
                             onClick={handleNext}
                             style={{ fontSize: "1.1rem", borderRadius: "16px" }}
                         >
-                            {current < exercises.length - 1 ? "Câu tiếp theo →" : "Tiếp tục bài học"}
+                            {current < exercises.length - 1 ? "Next Question →" : "Continue Lesson"}
                         </Button>
                     </div>
                 )}

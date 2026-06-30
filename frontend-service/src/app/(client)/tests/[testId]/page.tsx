@@ -115,7 +115,7 @@ export default function StartTest() {
                 setTestResults(resultRes.data.result || []);
             }
         } catch (err) {
-            console.error("Lỗi tải dữ liệu:", err);
+            console.error("Error loading data:", err);
         } finally {
             setLoading(false);
         }
@@ -145,7 +145,7 @@ export default function StartTest() {
         return (
             <Container className="my-5 text-center py-5 bg-light rounded-4 border">
                 <p className="text-muted m-0 fs-5">
-                    Vui lòng đăng nhập để xem thông tin và làm bài thi.
+                    Please log in to view details and take the test.
                 </p>
             </Container>
         );
@@ -156,16 +156,16 @@ export default function StartTest() {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 className="fw-bold text-dark m-0 d-flex align-items-center gap-2">
-                        <IconFileText className="text-primary" size={28} /> Thông tin bài thi
+                        <IconFileText className="text-primary" size={28} /> Test Details
                     </h2>
-                    <span className="text-muted small">Kiểm tra thông tin trước khi bắt đầu</span>
+                    <span className="text-muted small">Review test details before starting</span>
                 </div>
                 <Link
                     href="/tests"
                     className="btn btn-outline-secondary px-4 fw-medium"
                     style={{ borderRadius: '12px' }}
                 >
-                    ← Danh sách đề thi
+                    ← Back to tests list
                 </Link>
             </div>
 
@@ -184,17 +184,17 @@ export default function StartTest() {
                                         <div>
                                             <Badge bg="light" text="dark" className="mb-3 px-3 py-2 fs-6 rounded-pill border shadow-sm">
                                                 <span className={`text-${getDifficultyVariant(test.difficultyLevel)}`}>
-                                                    Độ khó: {test.difficultyLevel}
+                                                    Difficulty: {test.difficultyLevel}
                                                 </span>
                                             </Badge>
                                             <h1 className="fw-bold mb-2">{test.title}</h1>
                                             <p className="text-white-50 fs-5 m-0" style={{ maxWidth: '600px' }}>
-                                                {test.description || "Không có mô tả chi tiết."}
+                                                {test.description || "No description available."}
                                             </p>
                                         </div>
                                         <div className="d-flex align-items-center justify-content-md-end">
                                             <div className="bg-white bg-opacity-10 p-3 rounded-4 text-center border border-white border-opacity-25" style={{ minWidth: '120px' }}>
-                                                <div className="text-white-50 small mb-1">Số câu hỏi</div>
+                                                <div className="text-white-50 small mb-1">Questions</div>
                                                 <div className="fw-bold fs-2">{test.questions.length}</div>
                                             </div>
                                         </div>
@@ -207,7 +207,7 @@ export default function StartTest() {
                                         className="px-5 py-3 fw-bold rounded-pill d-flex align-items-center gap-2 shadow-sm transition hover-shadow"
                                         onClick={() => router.push(`/tests/${id}/fullTest`)}
                                     >
-                                        <IconPlay /> Bắt đầu làm bài
+                                        <IconPlay /> Start Test
                                     </Button>
                                 </div>
                             </Card.Body>
@@ -219,15 +219,15 @@ export default function StartTest() {
                             <div className="col-md-4">
                                 <div className="p-4 rounded-4 bg-light border border-2 border-secondary border-opacity-10 h-100">
                                     <IconRotate className="text-secondary mb-2" size={28} />
-                                    <div className="text-muted mb-1 fw-medium">Số lần làm</div>
-                                    <h2 className="fw-bold text-dark m-0">{testResults.length} <span className="fs-5 text-muted fw-normal">lần</span></h2>
+                                    <div className="text-muted mb-1 fw-medium">Attempts</div>
+                                    <h2 className="fw-bold text-dark m-0">{testResults.length} <span className="fs-5 text-muted fw-normal">times</span></h2>
                                 </div>
                             </div>
 
                             <div className="col-md-4">
                                 <div className="p-4 rounded-4 bg-light border border-2 border-success border-opacity-10 h-100">
                                     <IconTrophy className="text-success mb-2" size={28} />
-                                    <div className="text-muted mb-1 fw-medium">Điểm cao nhất</div>
+                                    <div className="text-muted mb-1 fw-medium">Best Score</div>
                                     <h2 className="fw-bold text-success m-0">{bestScore.toFixed(1)} <span className="fs-5 text-muted fw-normal">/ 10</span></h2>
                                 </div>
                             </div>
@@ -235,7 +235,7 @@ export default function StartTest() {
                             <div className="col-md-4">
                                 <div className="p-4 rounded-4 bg-light border border-2 border-primary border-opacity-10 h-100">
                                     <IconActivity className="text-primary mb-2" size={28} />
-                                    <div className="text-muted mb-1 fw-medium">Điểm trung bình</div>
+                                    <div className="text-muted mb-1 fw-medium">Average Score</div>
                                     <h2 className="fw-bold text-primary m-0">{avgScore.toFixed(1)} <span className="fs-5 text-muted fw-normal">/ 10</span></h2>
                                 </div>
                             </div>
@@ -244,7 +244,7 @@ export default function StartTest() {
 
                     <div className="d-flex align-items-center gap-2 mb-4 mt-5">
                         <IconHistory className="text-dark" size={26} />
-                        <h4 className="fw-bold m-0 text-dark">Lịch sử làm bài</h4>
+                        <h4 className="fw-bold m-0 text-dark">Test History</h4>
                     </div>
 
                     {sortedResults.length > 0 ? (
@@ -252,9 +252,9 @@ export default function StartTest() {
                             <Table hover responsive className="align-middle text-center mb-0 border-white">
                                 <thead className="bg-light">
                                 <tr>
-                                    <th className="text-start ps-4 py-3 text-muted fw-medium border-0">Thời gian</th>
-                                    <th style={{ width: "35%" }} className="py-3 text-muted fw-medium border-0">Tiến độ</th>
-                                    <th className="py-3 text-muted fw-medium border-0">Kết quả</th>
+                                    <th className="text-start ps-4 py-3 text-muted fw-medium border-0">Date Taken</th>
+                                    <th style={{ width: "35%" }} className="py-3 text-muted fw-medium border-0">Progress</th>
+                                    <th className="py-3 text-muted fw-medium border-0">Result</th>
                                     <th className="py-3 border-0"></th>
                                 </tr>
                                 </thead>
@@ -270,10 +270,10 @@ export default function StartTest() {
                                             {/* Thời gian */}
                                             <td className="text-start ps-4 py-3 border-light-subtle">
                                                 <div className="fw-bold text-dark">
-                                                    {new Date(result.dateTaken).toLocaleDateString("vi-VN")}
+                                                    {new Date(result.dateTaken).toLocaleDateString("en-US")}
                                                 </div>
                                                 <small className="text-muted">
-                                                    {new Date(result.dateTaken).toLocaleTimeString("vi-VN", {
+                                                    {new Date(result.dateTaken).toLocaleTimeString("en-US", {
                                                         hour: "2-digit",
                                                         minute: "2-digit",
                                                     })}
@@ -311,7 +311,7 @@ export default function StartTest() {
                                                     href={`/tests/${id}/results/${result.id}/detailTest`}
                                                     className="btn btn-light text-primary fw-medium btn-sm rounded-pill px-3"
                                                 >
-                                                    Chi tiết
+                                                    Details
                                                 </Link>
                                             </td>
                                         </tr>
@@ -323,7 +323,7 @@ export default function StartTest() {
                     ) : (
                         <div className="text-center py-5 bg-light rounded-4 border">
                             <IconHistory size={48} className="text-muted mb-3 opacity-50" />
-                            <p className="text-muted m-0 fs-5">Bạn chưa có lượt làm bài nào.</p>
+                            <p className="text-muted m-0 fs-5">You have not taken this test yet.</p>
                         </div>
                     )}
                 </>
