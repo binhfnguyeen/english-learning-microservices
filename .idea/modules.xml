@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ai-service/.venv/.venv.iml" filepath="$PROJECT_DIR$/ai-service/.venv/.venv.iml" />
       <module fileurl="file://$PROJECT_DIR$/ai-service/ai-service.iml" filepath="$PROJECT_DIR$/ai-service/ai-service.iml" />
-      <module fileurl="file://$PROJECT_DIR$/backend-service/backend-service.iml" filepath="$PROJECT_DIR$/backend-service/backend-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/english-learning-microservices.iml" filepath="$PROJECT_DIR$/.idea/english-learning-microservices.iml" />
     </modules>
   </component>
