@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useContext } from "react";
 import Link from "next/link";
-import { LearningLesson, LearningTopic } from "@/components/LearningPath";
 import authApis from "@/configs/AuthApis";
 import endpoints from "@/configs/Endpoints";
 import UserContext from "@/configs/UserContext";
@@ -16,6 +15,19 @@ type TopicDto = {
 };
 
 type LessonStatus = "locked" | "current" | "completed";
+
+type LearningLesson = {
+    id: string;
+    title: string;
+    status: LessonStatus;
+};
+
+type LearningTopic = {
+    id: string;
+    name: string;
+    color: string;
+    lessons: LearningLesson[];
+};
 
 const topicColors = ["#58cc02", "#1cb0f6", "#ce82ff", "#ff9600", "#ff4b4b"];
 
@@ -113,7 +125,7 @@ export default function Home() {
                 const learnedWords = response.data.result || [];
                 const counts: Record<number, number> = {};
 
-                learnedWords.forEach((item: any) => {
+                learnedWords.forEach((item: { vocabulary?: { topicIds?: number[] } }) => {
                     const topicIds: number[] = item.vocabulary?.topicIds || [];
                     topicIds.forEach((topicId) => {
                         counts[topicId] = (counts[topicId] || 0) + 1;

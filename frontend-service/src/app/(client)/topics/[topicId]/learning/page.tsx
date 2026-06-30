@@ -148,6 +148,7 @@ export default function Learning() {
             speak(currentVocab.word);
             setHasSpoken(true);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentVocab?.id, showExercise]);
 
     return (

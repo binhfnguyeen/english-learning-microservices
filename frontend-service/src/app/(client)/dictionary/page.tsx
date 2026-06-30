@@ -1,6 +1,5 @@
 "use client";
 
-import Dictionary from "@/components/Dictionary";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Button, Form, Spinner } from "react-bootstrap";
 import { BookHalf, ChevronDown, ChevronUp, Search, VolumeUpFill } from "react-bootstrap-icons";

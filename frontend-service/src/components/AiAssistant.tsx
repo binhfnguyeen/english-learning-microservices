@@ -15,7 +15,6 @@ export default function AiAssistant() {
         isGenerating,
         isOpen,
         messages,
-        openAssistant,
         sendMessage,
         setInput,
     } = useAiAssistant();

@@ -1,7 +1,6 @@
 "use client"
 import React, { useEffect, useReducer } from "react";
 import AdminSidebarLayout from "@/components/Sidebar/AdminSidebarLayout";
-import Footer from "@/components/Footer";
 import MyUserReducer from "@/reducers/MyUserReducer";
 import UserContext from "@/configs/UserContext";
 import Cookies from "js-cookie";
@@ -11,10 +10,10 @@ import endpoints from "@/configs/Endpoints";
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
     const [user, dispatch] = useReducer(MyUserReducer, null);
 
-    useEffect(()=>{
+    useEffect(() => {
         const loadUser = async () => {
             const token = Cookies.get("accessToken");
-            if (token){
+            if (token) {
                 try {
                     const res = await authApis.get(endpoints['profile']);
                     dispatch({
@@ -30,13 +29,12 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
 
         loadUser();
     }, [])
-    
+
     return (
-        <UserContext.Provider value={{user, dispatch}}>
+        <UserContext.Provider value={{ user, dispatch }}>
             <AdminSidebarLayout>
                 {children}
             </AdminSidebarLayout>
-            <Footer/>
         </UserContext.Provider>
     );
 }

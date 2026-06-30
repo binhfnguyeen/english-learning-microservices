@@ -54,7 +54,7 @@ export default function Update() {
 
     useEffect(() => {
         loadTopic();
-    }, [id])
+    }, [loadTopic])
 
     useEffect(() => {
         if (topic && topic.id) {

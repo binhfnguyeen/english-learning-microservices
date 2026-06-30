@@ -10,7 +10,7 @@ import { List, X } from "react-bootstrap-icons";
 import styles from "@/components/Sidebar/SidebarGlobal.module.css";
 import Image from "next/image";
 
-export default function AdminSidebarLayout({ children }: { children: React.ReactNode }) {
+export default function AdminSidebarLayout({ children }: { children?: React.ReactNode }) {
     const router = useRouter();
     const context = useContext(UserContext);
 

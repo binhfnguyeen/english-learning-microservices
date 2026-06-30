@@ -292,7 +292,7 @@ export default function ChatPage() {
             >
                 <button
                     onClick={micOn ? stopMic : startMic}
-                    disabled={isGenerating && !micOn}
+                    disabled={isMicDisabled && !micOn}
                     className={`flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl border-b-4 px-6 py-3 text-sm font-black text-white transition-all active:translate-y-1 active:border-b-0 ${micOn
                         ? "border-rose-700 bg-rose-500 hover:bg-rose-400"
                         : "border-sky-700 bg-sky-500 hover:bg-sky-400"
