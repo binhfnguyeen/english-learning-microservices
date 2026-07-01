@@ -23,10 +23,18 @@ export default function ClientRightPanel() {
     const [startingXp, setStartingXp] = useState<number | null>(null);
     const [goalNotificationShown, setGoalNotificationShown] = useState<boolean>(false);
 
-    const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+    const [todayStr, setTodayStr] = useState<string>("");
 
-    // Load saved daily goal
     useEffect(() => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        setTodayStr(`${year}-${month}-${day}`);
+    }, []);
+
+    useEffect(() => {
+        if (!todayStr) return;
         if (typeof window !== "undefined" && user?.id) {
             const savedGoal = localStorage.getItem(`dailyGoal_${user.id}`);
             if (savedGoal) {
@@ -37,13 +45,11 @@ export default function ClientRightPanel() {
         }
     }, [user?.id, todayStr]);
 
-    // Handle goal selection change
     const handleSelectGoal = (goal: number) => {
-        if (!user?.id) return;
+        if (!user?.id || !todayStr) return;
         setDailyGoal(goal);
         localStorage.setItem(`dailyGoal_${user.id}`, goal.toString());
-        
-        // Reset achieved state for the new higher goal if applicable
+
         const currentTodayXp = startingXp !== null && progress ? Math.max(0, (progress.xp ?? 0) - startingXp) : 0;
         if (currentTodayXp < goal) {
             localStorage.setItem(`goalAchieved_${user.id}_${todayStr}`, "false");
@@ -51,7 +57,6 @@ export default function ClientRightPanel() {
         }
     };
 
-    // Calculate today's XP relative to starting XP of the day
     const todayXp = useMemo(() => {
         if (startingXp === null || !progress) return 0;
         return Math.max(0, (progress.xp ?? 0) - startingXp);
@@ -62,9 +67,8 @@ export default function ClientRightPanel() {
         return Math.min((todayXp / dailyGoal) * 100, 100);
     }, [todayXp, dailyGoal]);
 
-    // Track starting XP for today
     useEffect(() => {
-        if (!user?.id || !progress) return;
+        if (!todayStr || !user?.id || !progress) return;
         const currentXp = progress.xp ?? 0;
         const key = `startXp_${user.id}_${todayStr}`;
         const savedStart = localStorage.getItem(key);
@@ -78,7 +82,7 @@ export default function ClientRightPanel() {
 
     // Detect when daily goal is reached
     useEffect(() => {
-        if (!user?.id || todayXp === 0 || dailyGoal === 0) return;
+        if (!todayStr || !user?.id || todayXp === 0 || dailyGoal === 0) return;
         if (todayXp >= dailyGoal && !goalNotificationShown) {
             localStorage.setItem(`goalAchieved_${user.id}_${todayStr}`, "true");
             setGoalNotificationShown(true);
@@ -138,7 +142,7 @@ export default function ClientRightPanel() {
     return (
         <aside className="scrollbar-soft fixed right-0 top-0 z-30 hidden h-screen w-[300px] overflow-y-auto border-l-2 border-slate-100 bg-white px-4 py-5 xl:block">
             <div className="space-y-3 pb-4">
-                
+
                 {!user && (
                     <div className="rounded-2xl border-2 border-slate-100 bg-white p-3 shadow-sm">
                         <h2 className="m-0 text-[15px] font-black text-slate-800">Unlock Progress</h2>
@@ -186,11 +190,10 @@ export default function ClientRightPanel() {
                                 type="button"
                                 onClick={() => handleSelectGoal(goal)}
                                 disabled={!user}
-                                className={`rounded-xl border-2 py-1.5 text-xs font-black transition-colors ${
-                                    goal === dailyGoal
+                                className={`rounded-xl border-2 py-1.5 text-xs font-black transition-colors ${goal === dailyGoal
                                         ? "border-lime-500 bg-lime-50 text-lime-700"
                                         : "border-slate-100 bg-white text-slate-500 hover:bg-slate-50"
-                                } ${!user ? "cursor-not-allowed" : ""}`}
+                                    } ${!user ? "cursor-not-allowed" : ""}`}
                             >
                                 {goal} XP
                             </button>

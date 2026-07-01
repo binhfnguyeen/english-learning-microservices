@@ -15,23 +15,21 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <main className="min-h-screen bg-[#0f1f24] text-white">
                 <div className="grid min-h-screen lg:grid-cols-[minmax(360px,0.9fr)_minmax(420px,1fr)]">
 
-                    {/* Đã thêm items-center để căn giữa, đổi p-10 thành py-12 px-10 để cách viền trên/dưới đẹp hơn */}
                     <section
                         className="relative hidden flex-col items-center justify-between border-r border-white/10 py-12 px-10 lg:flex bg-cover bg-center bg-no-repeat"
                         style={{
                             backgroundImage: "url('/template/bg.jpg')"
                         }}
                     >
-                        {/* Đã giảm độ mờ từ 60% xuống 20% giúp ảnh nền sáng rõ */}
                         <div className="absolute inset-0 bg-black/20 z-0"></div>
 
                         <Link href="/" className="relative z-10 flex w-full justify-center no-underline">
                             <Image
                                 src="/template/EngLearnLogo.png"
                                 alt="EngLearn"
-                                width={220} // Tăng kích thước logo
-                                height={220} // Tăng kích thước logo
-                                className="object-contain drop-shadow-xl" // Thêm viền bóng mờ giúp logo nổi bật
+                                width={220}
+                                height={220}
+                                className="object-contain drop-shadow-xl"
                             />
                         </Link>
 

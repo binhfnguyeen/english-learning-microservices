@@ -98,11 +98,14 @@ export default function AdminDashboard() {
                 className="mb-4 border-0 shadow-sm text-white"
                 style={{ background: "linear-gradient(90deg, #1976d2, #512da8)" }}
             >
-                <Card.Body>
-                    <h2 className="fw-bold mb-1"><BarChartFill /> Admin Dashboard</h2>
-                    <p className="mb-0 text-light">
-                        Overview of user learning statistics and contributions
-                    </p>
+                <Card.Body className="d-flex align-items-center gap-3 p-4">
+                    <div className="opacity-85"><BarChartFill size={44} /></div>
+                    <div>
+                        <h2 className="fw-bold mb-1">Admin Dashboard</h2>
+                        <p className="mb-0 text-light">
+                            Overview of user learning statistics and contributions
+                        </p>
+                    </div>
                 </Card.Body>
             </Card>
 
@@ -119,36 +122,42 @@ export default function AdminDashboard() {
                 <>
                     <Row className="mb-4 g-4">
                         <Col md={4}>
-                            <Card className="shadow-sm border-0 text-center h-100 text-white"
+                            <Card className="shadow-sm border-0 h-100 text-white"
                                 style={{ background: "linear-gradient(135deg, #2196f3, #21cbf3)" }}
                             >
-                                <Card.Body>
-                                    <div className="mb-2 fs-3"><PeopleFill /></div>
-                                    <h6 className="text-uppercase fw-semibold">Total Users</h6>
-                                    <h3 className="fw-bold">{totalUsers}</h3>
+                                <Card.Body className="d-flex align-items-center justify-content-between p-4">
+                                    <div className="opacity-80"><PeopleFill size={64} /></div>
+                                    <div className="text-end">
+                                        <h5 className="text-uppercase fw-semibold mb-2 text-light">Total Users</h5>
+                                        <h1 className="display-6 fw-bold mb-0">{totalUsers}</h1>
+                                    </div>
                                 </Card.Body>
                             </Card>
                         </Col>
                         <Col md={4}>
-                            <Card className="shadow-sm border-0 text-center h-100 text-white"
+                            <Card className="shadow-sm border-0 h-100 text-white"
                                 style={{ background: "linear-gradient(135deg, #43a047, #66bb6a)" }}
                             >
-                                <Card.Body>
-                                    <div className="mb-2 fs-3"><BookFill /></div>
-                                    <h6 className="text-uppercase fw-semibold">Total Learned Words</h6>
-                                    <h3 className="fw-bold">{totalWords}</h3>
+                                <Card.Body className="d-flex align-items-center justify-content-between p-4">
+                                    <div className="opacity-80"><BookFill size={64} /></div>
+                                    <div className="text-end">
+                                        <h5 className="text-uppercase fw-semibold mb-2 text-light">Total Learned Words</h5>
+                                        <h1 className="display-6 fw-bold mb-0">{totalWords}</h1>
+                                    </div>
                                 </Card.Body>
                             </Card>
                         </Col>
                         <Col md={4}>
-                            <Card className="shadow-sm border-0 text-center h-100 text-white"
+                            <Card className="shadow-sm border-0 h-100 text-white"
                                 style={{ background: "linear-gradient(135deg, #ff9800, #ffc107)" }}
                             >
-                                <Card.Body>
-                                    <div className="mb-2 fs-3"><AwardFill /></div>
-                                    <h6 className="text-uppercase fw-semibold">Top User</h6>
-                                    <h5 className="fw-bold">{topUser?.user?.username || "N/A"}</h5>
-                                    <p className="mb-0">{topUser?.totalWords || 0} words</p>
+                                <Card.Body className="d-flex align-items-center justify-content-between p-4">
+                                    <div className="opacity-80"><AwardFill size={64} /></div>
+                                    <div className="text-end">
+                                        <h5 className="text-uppercase fw-semibold mb-2 text-light">Top User</h5>
+                                        <h3 className="fw-bold mb-1 text-truncate" style={{ maxWidth: "200px" }}>{topUser?.user?.username || "N/A"}</h3>
+                                        <p className="mb-0 fs-5 text-light">{topUser?.totalWords || 0} words</p>
+                                    </div>
                                 </Card.Body>
                             </Card>
                         </Col>

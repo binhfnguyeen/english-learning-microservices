@@ -157,7 +157,14 @@ export default function PublicApiSuggestVocab({ show, onHide, topicId, topicName
             if (onSuccess) onSuccess();
         } catch (err) {
             console.error(err);
-            alert("Failed to add word!");
+            let errorMsg = "Failed to add word!";
+            if (err && typeof err === "object" && "response" in err) {
+                const resObj = (err as { response?: { data?: { message?: string } } }).response;
+                if (resObj?.data?.message) {
+                    errorMsg = resObj.data.message;
+                }
+            }
+            alert(errorMsg);
             setSuggestions(prev => prev.map((v, i) => i === index ? { ...v, isLoading: false } : v));
         }
     };

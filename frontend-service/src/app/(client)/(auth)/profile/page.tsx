@@ -177,7 +177,7 @@ export default function UpdateProfile() {
                                     alt="Avatar"
                                     width={180}
                                     height={180}
-                                    className="rounded-circle"
+                                    className="rounded-circle mx-auto d-block"
                                     style={{
                                         width: "180px",
                                         height: "180px",

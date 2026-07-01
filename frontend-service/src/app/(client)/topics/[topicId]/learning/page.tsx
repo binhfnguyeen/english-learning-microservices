@@ -130,7 +130,7 @@ export default function Learning() {
         setShowExercise(true);
     };
 
-    const handleFinish = async () => {
+    const handleFinish = useCallback(async () => {
         const Swal = (await import("sweetalert2")).default;
         await Swal.fire({
             icon: "success",
@@ -140,7 +140,16 @@ export default function Learning() {
             confirmButtonColor: "#0d6efd"
         });
         router.push("/topics");
-    };
+    }, [router]);
+
+    const handleExerciseDone = useCallback(() => {
+        setShowExercise(false);
+        if (hasMore) {
+            setPage(prev => prev + 1);
+        } else {
+            void handleFinish();
+        }
+    }, [hasMore, handleFinish]);
 
     const currentVocab = vocabularies[currentIndex];
 
@@ -167,14 +176,7 @@ export default function Learning() {
                     <div className="w-100" style={{ maxWidth: "700px" }}>
                         <Exercise
                             vocabId={currentVocab.id}
-                            onDone={() => {
-                                setShowExercise(false);
-                                if (hasMore) {
-                                    setPage(prev => prev + 1);
-                                } else {
-                                    void handleFinish();
-                                }
-                            }}
+                            onDone={handleExerciseDone}
                         />
                     </div>
                 ) : (

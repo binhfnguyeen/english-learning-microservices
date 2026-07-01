@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react"
 import { Alert, Button, Card, Col, Form, Nav, Row } from "react-bootstrap";
+import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
 interface Vocabulary {
     id: number;
@@ -21,55 +22,52 @@ export default function VocabTopic() {
     const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
     const [page, setPage] = useState<number>(0);
     const [keyword, setKeyword] = useState<string>("");
+    const [debouncedKeyword, setDebouncedKeyword] = useState<string>("");
     const [hasMore, setHasMore] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
     const { topicId } = useParams();
     const id = Number(topicId);
 
-    const loadVocabularies = useCallback(async () => {
-        let url = `${endpoints["topic_vocabs"](id)}?page=${page}`;
+    const loadVocabularies = useCallback(async (targetPage: number, searchKeyword: string) => {
+        let url = `${endpoints["topic_vocabs"](id)}?page=${targetPage}`;
 
-        if (keyword) {
-            url += `&keyword=${keyword}`;
+        if (searchKeyword) {
+            url += `&keyword=${encodeURIComponent(searchKeyword)}`;
         }
 
         try {
             setLoading(true);
             const res = await authApis.get(url);
             const content = res.data.result.content || [];
-            setHasMore(!res.data.result.last)
+            setHasMore(!res.data.result.last);
 
-            if (page === 0) {
+            if (targetPage === 0) {
                 setVocabularies(content);
             } else {
-                setVocabularies(prev => [...prev, ...content]);
+                setVocabularies(content);
             }
         } catch (ex) {
             console.error(ex);
         } finally {
             setLoading(false);
         }
-    }, [id, page, keyword]);
+    }, [id]);
 
     useEffect(() => {
-        setLoading(true);
-        const timer = setTimeout(() => {
-            if (page === 0 || (page > 0 && hasMore)) {
-                loadVocabularies();
-            }
+        const handler = setTimeout(() => {
+            setDebouncedKeyword(keyword);
         }, 500);
-
-        return () => clearTimeout(timer);
-    }, [page, keyword, hasMore, loadVocabularies])
+        return () => clearTimeout(handler);
+    }, [keyword]);
 
     useEffect(() => {
         setPage(0);
-    }, [keyword]);
+    }, [debouncedKeyword]);
 
-    const loadMore = () => {
-        setPage(page + 1);
-    }
+    useEffect(() => {
+        void loadVocabularies(page, debouncedKeyword);
+    }, [page, debouncedKeyword, loadVocabularies]);
 
     const handleRemove = async (e: React.FormEvent<HTMLElement>, topicId: number, vocabId: number) => {
         e.preventDefault();
@@ -79,14 +77,15 @@ export default function VocabTopic() {
                 params: { vocabId }
             });
             setMsg("Vocabulary removed successfully!");
-            loadVocabularies();
+            void loadVocabularies(0, debouncedKeyword);
+            setPage(0);
         } catch (err) {
             console.error(err);
             setMsg("Failed to remove vocabulary!");
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         if (msg) {
@@ -127,7 +126,7 @@ export default function VocabTopic() {
                 </Alert>
             )}
 
-            <Row className="g-4 mt-3">
+            <Row className="g-4 mt-3" style={{ opacity: loading ? 0.6 : 1, transition: "opacity 0.15s ease-in-out" }}>
                 {vocabularies.map((vocab) => (
                     <Col key={vocab.id} xs={12} sm={6} md={4} lg={3}>
                         <Card className="h-100 shadow-sm">
@@ -149,7 +148,7 @@ export default function VocabTopic() {
                                 <div className="d-flex gap-2 mt-2">
                                     <Link
                                         href="#"
-                                        onClick={(e)=>handleRemove(e, id, vocab.id)}
+                                        onClick={(e) => handleRemove(e, id, vocab.id)}
                                         className="btn btn-danger btn-sm flex-grow-1"
                                     >
                                         Remove
@@ -165,13 +164,47 @@ export default function VocabTopic() {
                 <Alert variant="info">No vocabulary belongs to this topic</Alert>
             }
 
-            {loading && <MySpinner />}
+            {loading && vocabularies.length === 0 && <MySpinner />}
 
-            {page > 0 && hasMore && (
-                <div className="mt-2 mb-2 text-center">
-                    <Button variant="primary" onClick={loadMore}>Load More...</Button>
-                </div>
-            )}
+            <div className="d-flex justify-content-center align-items-center gap-3 mt-4 pt-3 border-top">
+                <Button
+                    variant="primary"
+                    className="d-flex align-items-center justify-content-center p-0"
+                    style={{ 
+                        borderRadius: "50%", 
+                        width: "38px", 
+                        height: "38px",
+                        transition: "opacity 0.2s ease-in-out",
+                        opacity: 1 
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                    disabled={page === 0 || loading}
+                    onClick={() => setPage(prev => prev - 1)}
+                >
+                    <ChevronLeft size={18} />
+                </Button>
+                <span className="fw-bold text-slate-600 fs-6 select-none bg-light px-3 py-2 rounded-3 border">
+                    Page {page + 1}
+                </span>
+                <Button
+                    variant="primary"
+                    className="d-flex align-items-center justify-content-center p-0"
+                    style={{ 
+                        borderRadius: "50%", 
+                        width: "38px", 
+                        height: "38px",
+                        transition: "opacity 0.2s ease-in-out",
+                        opacity: 1 
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                    disabled={!hasMore || loading}
+                    onClick={() => setPage(prev => prev + 1)}
+                >
+                    <ChevronRight size={18} />
+                </Button>
+            </div>
         </div>
     );
 }

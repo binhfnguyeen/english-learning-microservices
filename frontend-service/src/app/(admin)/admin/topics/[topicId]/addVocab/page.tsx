@@ -69,7 +69,14 @@ export default function AddVocab() {
             setMsg("Word added successfully!");
             loadVocabularies();
         } catch (err) {
-            setMsg("Failed to add word!");
+            let errorMsg = "Failed to add word!";
+            if (err && typeof err === "object" && "response" in err) {
+                const resObj = (err as { response?: { data?: { message?: string } } }).response;
+                if (resObj?.data?.message) {
+                    errorMsg = resObj.data.message;
+                }
+            }
+            setMsg(errorMsg);
             console.error(err);
         }
     };
@@ -111,7 +118,7 @@ export default function AddVocab() {
 
             {msg && (
                 <Alert
-                    variant={msg.toLowerCase().includes("failed") ? "danger" : "success"}
+                    variant={msg.includes("successfully") ? "success" : "danger"}
                     className="py-2 position-fixed top-0 end-0 m-3 shadow"
                     style={{ zIndex: 9999, minWidth: "250px" }}
                 >

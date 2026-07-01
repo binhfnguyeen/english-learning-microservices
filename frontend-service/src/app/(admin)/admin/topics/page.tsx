@@ -6,6 +6,7 @@ import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import React, { useCallback, useEffect, useState } from "react"
 import { Alert, Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
 interface Topic {
     id: number;
@@ -17,13 +18,14 @@ export default function Topics() {
     const [topics, setTopics] = useState<Topic[]>([]);
     const [page, setPage] = useState<number>(0);
     const [keyword, setKeyword] = useState<string>("");
+    const [debouncedKeyword, setDebouncedKeyword] = useState<string>("");
     const [hasMore, setHasMore] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
 
-    const loadTopics = useCallback(async () => {
-        let url = `${endpoints["topics"]}?page=${page}`;
-        if (keyword) url += `&keyword=${keyword}`;
+    const loadTopics = useCallback(async (targetPage: number, searchKeyword: string) => {
+        let url = `${endpoints["topics"]}?page=${targetPage}`;
+        if (searchKeyword) url += `&keyword=${encodeURIComponent(searchKeyword)}`;
 
         try {
             setLoading(true);
@@ -31,43 +33,43 @@ export default function Topics() {
             const content = res.data.result.content || [];
             setHasMore(!res.data.result.last);
 
-            if (page === 0) {
+            if (targetPage === 0) {
                 setTopics(content);
             } else {
-                setTopics(prev => [...prev, ...content]);
+                setTopics(content);
             }
         } catch (ex) {
             console.error(ex);
         } finally {
             setLoading(false);
         }
-    }, [page, keyword]);
+    }, []);
 
+    // Debounce keyword input
     useEffect(() => {
-        setLoading(true);
-        const timer = setTimeout(() => {
-            if (page === 0 || (page > 0 && hasMore)) {
-                loadTopics();
-            }
+        const handler = setTimeout(() => {
+            setDebouncedKeyword(keyword);
         }, 500);
-
-        return () => clearTimeout(timer);
-    }, [page, keyword, hasMore, loadTopics]);
-
-    useEffect(() => {
-        setPage(0);
+        return () => clearTimeout(handler);
     }, [keyword]);
 
-    const loadMore = () => {
-        setPage(prev => prev + 1);
-    };
+    // Reset page to 0 on new search keyword
+    useEffect(() => {
+        setPage(0);
+    }, [debouncedKeyword]);
+
+    // Fetch data when page or debounced keyword changes
+    useEffect(() => {
+        void loadTopics(page, debouncedKeyword);
+    }, [page, debouncedKeyword, loadTopics]);
 
     const handleDelete = async (e: React.FormEvent<HTMLElement>, id: number) => {
         e.preventDefault();
         try {
             await authApis.delete(endpoints["topic"](id));
             setMsg("Topic deleted successfully!");
-            setTopics(prev => prev.filter(t => t.id !== id));
+            void loadTopics(0, debouncedKeyword);
+            setPage(0);
         } catch (err) {
             setMsg("Failed to delete topic!");
             console.error(err);
@@ -110,7 +112,7 @@ export default function Topics() {
                 </Alert>
             )}
 
-            <Row xs={1} md={2} lg={3} className="g-4">
+            <Row xs={1} md={2} lg={3} className="g-4" style={{ opacity: loading ? 0.6 : 1, transition: "opacity 0.15s ease-in-out" }}>
                 {topics.map((topic) => (
                     <Col key={topic.id}>
                         <Card className="h-100 shadow-sm border-0 rounded-3">
@@ -147,15 +149,47 @@ export default function Topics() {
                 <Alert className="mt-4" variant="info">No topics found</Alert>
             }
 
-            {loading && <MySpinner />}
+            {loading && topics.length === 0 && <MySpinner />}
 
-            {page > 0 && hasMore && (
-                <div className="mt-4 text-center">
-                    <Button variant="secondary" onClick={loadMore}>
-                        Load More...
-                    </Button>
-                </div>
-            )}
+            <div className="d-flex justify-content-center align-items-center gap-3 mt-4 pt-3 border-top">
+                <Button
+                    variant="primary"
+                    className="d-flex align-items-center justify-content-center p-0"
+                    style={{ 
+                        borderRadius: "50%", 
+                        width: "38px", 
+                        height: "38px",
+                        transition: "opacity 0.2s ease-in-out",
+                        opacity: 1 
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                    disabled={page === 0 || loading}
+                    onClick={() => setPage(prev => prev - 1)}
+                >
+                    <ChevronLeft size={18} />
+                </Button>
+                <span className="fw-bold text-slate-600 fs-6 select-none bg-light px-3 py-2 rounded-3 border">
+                    Page {page + 1}
+                </span>
+                <Button
+                    variant="primary"
+                    className="d-flex align-items-center justify-content-center p-0"
+                    style={{ 
+                        borderRadius: "50%", 
+                        width: "38px", 
+                        height: "38px",
+                        transition: "opacity 0.2s ease-in-out",
+                        opacity: 1 
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                    disabled={!hasMore || loading}
+                    onClick={() => setPage(prev => prev + 1)}
+                >
+                    <ChevronRight size={18} />
+                </Button>
+            </div>
         </Container>
     );
 }

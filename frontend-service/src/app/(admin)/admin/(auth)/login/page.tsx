@@ -92,7 +92,7 @@ export default function AdminLogin() {
                 }}
             >
                 <div className="text-center mb-4">
-                    <Database size={40} className="text-primary mb-2" />
+                    <Database size={40} className="text-primary mb-2 d-block mx-auto" />
                     <h2
                         className="fw-bold mb-0"
                         style={{

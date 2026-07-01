@@ -109,27 +109,37 @@ export default function ListAdmin() {
                                         }
                                     />
                                 </div>
-                                <Card.Body>
+                                <Card.Body className="text-center">
                                     <Card.Title className="fw-bold fs-5 mb-1">
                                         {u.firstName} {u.lastName}
                                     </Card.Title>
-                                    <Card.Text className="text-muted small mb-1">
-                                        {u.email}
-                                    </Card.Text>
-                                    <Card.Text className="text-muted small">
-                                        <TelephoneFill className="me-1" />
-                                        {u.phone || "-"}
-                                    </Card.Text>
-                                    <Badge bg="primary" className="px-3 py-2 rounded-pill d-block mb-3">
-                                        {u.role}
-                                    </Badge>
+                                    <div className="d-flex align-items-center justify-content-center gap-2 text-muted small mb-2 flex-wrap">
+                                        <span>{u.email}</span>
+                                        <span className="text-black-50 select-none">|</span>
+                                        <span className="d-inline-flex align-items-center">
+                                            <TelephoneFill className="me-1" />
+                                            {u.phone || "-"}
+                                        </span>
+                                    </div>
+                                    <div className="mb-3">
+                                        <Badge bg="primary" className="px-3 py-2 rounded-pill d-inline-block">
+                                            {u.role}
+                                        </Badge>
+                                    </div>
 
                                     <Button
-                                        variant="outline-danger"
-                                        size="sm"
+                                        variant="link"
+                                        className="text-danger p-1 border-0 shadow-none d-inline-flex align-items-center justify-content-center"
+                                        style={{ 
+                                            transition: "opacity 0.2s ease-in-out", 
+                                            opacity: 1 
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
+                                        onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
                                         onClick={() => confirmDelete(u)}
+                                        title="Delete user"
                                     >
-                                        <Trash className="me-1" /> Delete
+                                        <Trash size={22} />
                                     </Button>
                                 </Card.Body>
                             </Card>

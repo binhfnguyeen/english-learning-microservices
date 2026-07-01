@@ -4,6 +4,7 @@ import endpoints from "@/configs/Endpoints";
 import Link from "next/link";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Container, Form, Spinner, InputGroup, Alert } from "react-bootstrap";
+import { ChevronLeft, ChevronRight } from "react-bootstrap-icons";
 
 interface Test {
     id: number;
@@ -16,13 +17,14 @@ export default function Tests() {
     const [tests, setTests] = useState<Test[]>([]);
     const [page, setPage] = useState<number>(0);
     const [keyword, setKeyword] = useState<string>("");
+    const [debouncedKeyword, setDebouncedKeyword] = useState<string>("");
     const [hasMore, setHasMore] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [msg, setMsg] = useState<string>("");
 
-    const loadTests = useCallback(async () => {
-        let url = `${endpoints["Tests"]}?page=${page}`;
-        if (keyword) url += `&keyword=${keyword}`;
+    const loadTests = useCallback(async (targetPage: number, searchKeyword: string) => {
+        let url = `${endpoints["Tests"]}?page=${targetPage}`;
+        if (searchKeyword) url += `&keyword=${encodeURIComponent(searchKeyword)}`;
 
         try {
             setLoading(true);
@@ -30,17 +32,17 @@ export default function Tests() {
             const content = res.data.result.content || [];
             setHasMore(!res.data.result.last);
 
-            if (page === 0) {
+            if (targetPage === 0) {
                 setTests(content);
             } else {
-                setTests((prev) => [...prev, ...content]);
+                setTests(content);
             }
         } catch (err) {
             console.error(err);
         } finally {
             setLoading(false);
         }
-    }, [page, keyword]);
+    }, []);
 
     const handleDelete = async (e: React.FormEvent<HTMLElement>, id: number) => {
         e.preventDefault();
@@ -48,31 +50,30 @@ export default function Tests() {
             setLoading(true);
             await authApis.delete(endpoints["Test"](id));
             setMsg("Test deleted successfully!");
-            loadTests();
+            void loadTests(0, debouncedKeyword);
+            setPage(0);
         } catch (err) {
             console.error(err);
             setMsg("Failed to delete test!");
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
-        loadTests();
-    }, [loadTests]);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (page === 0 || (page > 0 && hasMore)) {
-                loadTests();
-            }
-        }, 400);
-        return () => clearTimeout(timer);
-    }, [page, keyword, hasMore, loadTests]);
+        const handler = setTimeout(() => {
+            setDebouncedKeyword(keyword);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [keyword]);
 
     useEffect(() => {
         setPage(0);
-    }, [keyword]);
+    }, [debouncedKeyword]);
+
+    useEffect(() => {
+        void loadTests(page, debouncedKeyword);
+    }, [page, debouncedKeyword, loadTests]);
 
     useEffect(() => {
         if (msg) {
@@ -112,12 +113,12 @@ export default function Tests() {
                 </Alert>
             )}
 
-            {loading ? (
+            {loading && tests.length === 0 ? (
                 <div className="text-center py-5">
                     <Spinner animation="border" variant="primary" />
                 </div>
             ) : (
-                <div className="row g-4">
+                <div className="row g-4" style={{ opacity: loading ? 0.6 : 1, transition: "opacity 0.15s ease-in-out" }}>
                     {tests.map((test) => (
                         <div key={test.id} className="col-md-6 col-lg-4">
                             <Card className="shadow-sm border-0 h-100 hover-shadow transition">
@@ -154,13 +155,45 @@ export default function Tests() {
                 <Alert variant="info" className="mt-2">No tests found.</Alert>
             )}
 
-            {!loading && hasMore && (
-                <div className="text-center mt-4">
-                    <Button variant="outline-secondary" onClick={() => setPage((p) => p + 1)}>
-                        Load More
-                    </Button>
-                </div>
-            )}
+            <div className="d-flex justify-content-center align-items-center gap-3 mt-4 pt-3 border-top">
+                <Button
+                    variant="primary"
+                    className="d-flex align-items-center justify-content-center p-0"
+                    style={{ 
+                        borderRadius: "50%", 
+                        width: "38px", 
+                        height: "38px",
+                        transition: "opacity 0.2s ease-in-out",
+                        opacity: 1 
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                    disabled={page === 0 || loading}
+                    onClick={() => setPage(prev => prev - 1)}
+                >
+                    <ChevronLeft size={18} />
+                </Button>
+                <span className="fw-bold text-slate-600 fs-6 select-none bg-light px-3 py-2 rounded-3 border">
+                    Page {page + 1}
+                </span>
+                <Button
+                    variant="primary"
+                    className="d-flex align-items-center justify-content-center p-0"
+                    style={{ 
+                        borderRadius: "50%", 
+                        width: "38px", 
+                        height: "38px",
+                        transition: "opacity 0.2s ease-in-out",
+                        opacity: 1 
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                    disabled={!hasMore || loading}
+                    onClick={() => setPage(prev => prev + 1)}
+                >
+                    <ChevronRight size={18} />
+                </Button>
+            </div>
         </Container>
     );
 }

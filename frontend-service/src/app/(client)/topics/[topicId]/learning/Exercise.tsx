@@ -35,11 +35,14 @@ export default function Exercise({ vocabId, onDone }: Props) {
     const exercise = exercises[current] ?? null;
 
     useEffect(() => {
+        let active = true;
         const loadExercises = async (): Promise<void> => {
             try {
                 setLoading(true);
                 const res = await authApis.get(endpoints["VocabExercises"](vocabId));
                 const data: ExerciseData[] = res.data.result || [];
+                if (!active) return;
+                
                 if (data.length === 0) {
                     onDone();
                 } else {
@@ -47,15 +50,20 @@ export default function Exercise({ vocabId, onDone }: Props) {
                 }
             } catch (err) {
                 console.error(err);
-                onDone();
+                if (active) {
+                    onDone();
+                }
             } finally {
-                setLoading(false);
+                if (active) {
+                    setLoading(false);
+                }
             }
         };
 
         void loadExercises();
 
         return () => {
+            active = false;
             if (typeof window !== "undefined" && window.speechSynthesis) {
                 window.speechSynthesis.cancel();
             }
